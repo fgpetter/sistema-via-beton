@@ -6,7 +6,7 @@
 
 @section('content')
     <div
-        class="bg-cover bg-no-repeat bg-left-top bg-[url('/images/header_electrical-substation.jpg')] dark:bg-[url('/images/header_electrical-substation.jpg')] min-h-screen flex justify-center items-center">
+        class="bg-cover bg-no-repeat bg-center bg-[url('/images/login-bg.jpg')] dark:bg-[url('/images/login-bg.jpg')] min-h-screen flex justify-center items-center">
         <div class="relative">
             <div class="bg-card/95 rounded-lg w-2/3 mx-auto">
                 <div class="grid lg:grid-cols-12 grid-cols-1 items-center gap-0">
@@ -161,7 +161,7 @@
                                 </div> --}}
                             </div>
                             <div class="mt-auto">
-                                <img alt="" src="" width="900" height="900"/>
+                                <img alt="Via Beton" src="{{ asset('images/logo-vb-hd.png') }}"/>
                             </div>
                         </div>
                     </div>
