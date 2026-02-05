@@ -1,6 +1,6 @@
 services:
-    sistema-proenergia:
-        container_name: proenergia.test
+    sistema-viabeton:
+        container_name: viabeton.test
         build:
             context: ./vendor/laravel/sail/runtimes/8.5
             dockerfile: Dockerfile

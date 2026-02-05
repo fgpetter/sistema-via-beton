@@ -40,9 +40,9 @@ class SendPasswordResetNotification extends Notification implements ShouldQueue
         $url = url('/reset-password/'.$token).'?email='.urlencode($notifiable->email);
 
         return (new MailMessage)
-            ->subject('Definir Senha - Sistema Proenergia')
+            ->subject('Definir Senha - Sistema Via Beton')
             ->greeting('Olá '.$notifiable->name.'!')
-            ->line('Uma conta foi criada para você no Sistema Proenergia.')
+            ->line('Uma conta foi criada para você no Sistema Via Beton.')
             ->line('Clique no botão abaixo para definir sua senha e fazer login no sistema.')
             ->action('Definir Senha', $url)
             ->line('Este link expirará em 60 minutos.')

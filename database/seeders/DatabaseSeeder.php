@@ -17,13 +17,13 @@ class DatabaseSeeder extends Seeder
         // Super Admin
         User::factory()->superAdmin()->create([
             'name' => 'Super Admin',
-            'email' => 'superadmin@proenergia.com',
+            'email' => 'superadmin@vbeton.com.br',
         ]);
 
         // Admin
         User::factory()->admin()->create([
             'name' => 'Admin',
-            'email' => 'admin@proenergia.com',
+            'email' => 'admin@vbeton.com.br',
         ]);
 
         // Gestores

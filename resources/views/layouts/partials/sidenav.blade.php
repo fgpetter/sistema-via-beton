@@ -5,13 +5,13 @@
         href="{{ route('painel.dashboard') }}">
         <!-- Light Brand Logo -->
         <div class="logo-light">
-            <img alt="Proenergia" class="logo-lg p-4" src="{{ asset('images/proenergia_logo.png') }}" />
-            <img alt="Proenergia" class="logo-sm" src="" />
+            <img alt="Via Beton" class="logo-lg p-4" src="{{ asset('images/viabeton_logo.png') }}" />
+            <img alt="Via Beton" class="logo-sm" src="{{ asset('images/viabeton_logo.png') }}" />
         </div>
         <!-- Dark Brand Logo -->
         <div class="logo-dark">
-            <img alt="Proenergia" class="logo-lg p-4" src="{{ asset('images/proenergia_logo.png') }}" />
-            <img alt="Proenergia" class="logo-sm" src="" />
+            <img alt="Via Beton" class="logo-lg p-4" src="{{ asset('images/viabeton_logo.png') }}" />
+            <img alt="Via Beton" class="logo-sm" src="{{ asset('images/viabeton_logo.png') }}" />
         </div>
     </a>
     <!-- Sidenav Menu Toggle Button -->

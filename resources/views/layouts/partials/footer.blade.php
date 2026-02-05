@@ -2,7 +2,7 @@
 <footer class="mt-auto footer flex items-center py-5 border-t border-default-200">
     <div class="lg:px-8 px-6 w-full flex md:justify-between justify-center gap-4">
         <div>
-            Proenergia - Sistema de Gestão de Projetos - 
+            Via Beton - Sistema de Gestão de Projetos - 
             <script>
                 document.write(new Date().getFullYear())
             </script>
