@@ -167,7 +167,7 @@ class UsersList extends Component
             $temporaryPassword = Str::random(32);
             $data['password'] = Hash::make($temporaryPassword);
             $user = User::create($data);
-            $user->notify(new SendPasswordResetNotification());
+            $user->notify(new SendPasswordResetNotification);
             session()->flash('success', 'Usuário criado com sucesso. Um email foi enviado para o usuário definir sua senha.');
         }
 
@@ -245,27 +245,14 @@ class UsersList extends Component
 
     protected function ensureUserIsAuthorized(): void
     {
-        /** @var User|null $user */
-        $user = auth()->user();
-        if (! $user?->isAdminOrSuperAdmin()) {
+        if (! auth()->user()?->isAdmin()) {
             abort(403, 'Você não tem permissão para acessar esta funcionalidade.');
         }
     }
 
     protected function canEditUser(User $user): bool
     {
-        /** @var User $currentUser */
-        $currentUser = auth()->user();
-
-        if ($currentUser->isSuperAdmin()) {
-            return true;
-        }
-
-        if ($currentUser->isAdmin() && $user->isSuperAdmin()) {
-            return false;
-        }
-
-        return true;
+        return auth()->user()?->isAdmin() ?? false;
     }
 
     protected function canDeleteUser(User $user): bool
@@ -277,15 +264,7 @@ class UsersList extends Component
             return false;
         }
 
-        if ($currentUser->isSuperAdmin()) {
-            return true;
-        }
-
-        if ($currentUser->isAdmin() && $user->isSuperAdmin()) {
-            return false;
-        }
-
-        return true;
+        return $currentUser->isAdmin();
     }
 
     public function render(): View

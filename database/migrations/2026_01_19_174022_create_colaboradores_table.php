@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('colaboradores', function (Blueprint $table) {
             $table->id();
             $table->string('nome', 255);
-            $table->string('tipo')->default(TipoColaborador::Levantadores->value);
+            $table->string('tipo')->default(TipoColaborador::Prestadores->value);
             $table->string('contrato')->default(TipoContrato::CLT->value);
             $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
             $table->timestamps();

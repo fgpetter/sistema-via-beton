@@ -14,20 +14,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Super Admin
-        User::factory()->superAdmin()->create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@vbeton.com.br',
-        ]);
-
         // Admin
         User::factory()->admin()->create([
             'name' => 'Admin',
             'email' => 'admin@vbeton.com.br',
         ]);
-
-        // Gestores
-        User::factory()->gestor()->count(3)->create();
 
         // Prestadores com Colaboradores
         $prestadores = User::factory()->prestador()->count(5)->create();
