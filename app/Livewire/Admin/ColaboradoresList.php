@@ -154,7 +154,7 @@ class ColaboradoresList extends Component
         $this->resetForm();
         $this->editingId = null;
         $this->email = '';
-        $this->tipo = TipoColaborador::Levantadores->value;
+        $this->tipo = TipoColaborador::Prestadores->value;
         $this->contrato = TipoContrato::CLT->value;
         $this->showModal = true;
     }
@@ -265,7 +265,7 @@ class ColaboradoresList extends Component
     {
         /** @var User|null $user */
         $user = auth()->user();
-        if (! $user || (! $user->isAdminOrSuperAdmin() && ! $user->isGestor())) {
+        if (! $user?->isAdmin()) {
             abort(403, 'Você não tem permissão para acessar esta funcionalidade.');
         }
     }

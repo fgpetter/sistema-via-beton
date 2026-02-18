@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Http\Controllers\RoutingController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +13,7 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
 
     Route::group(['prefix' => '/admin'], function () {
         Route::view('/usuarios', 'admin.usuarios')->name('admin.usuarios')->can('admin');
-        Route::view('/colaboradores', 'admin.colaboradores')->name('admin.colaboradores')->can('admin-or-coordenador');
+        Route::view('/colaboradores', 'admin.colaboradores')->name('admin.colaboradores')->can('admin');
     });
 
 });

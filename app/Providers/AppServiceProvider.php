@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,28 +21,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Se for super admin, permite acesso a todas as rotas
+        // Admin é o papel mais alto e tem acesso a todas as áreas do sistema
         Gate::before(function (User $user, string $ability) {
-            if ($user->isSuperAdmin()) {
+            if ($user->isAdmin()) {
                 return true;
             }
-        });
-
-        Gate::define('admin', function (User $user) {
-            return $user->isAdmin();
-        });
-
-        Gate::define('coordenador', function (User $user) {
-            return $user->isCoordenador();
-        });
-
-        Gate::define('admin-or-coordenador', function (User $user) {
-            return $user->isAdmin() || $user->isCoordenador();
         });
 
         Gate::define('prestador', function (User $user) {
             return $user->isPrestador();
         });
-
     }
 }
