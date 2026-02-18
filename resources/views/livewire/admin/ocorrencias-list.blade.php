@@ -1,0 +1,436 @@
+<div
+    x-data="{
+        showModal: @entangle('showModal'),
+        showDeleteModal: @entangle('showDeleteModal')
+    }"
+    x-init="
+        $watch('showModal', value => {
+            if (value) document.body.classList.add('overflow-hidden');
+            else document.body.classList.remove('overflow-hidden');
+        });
+        $watch('showDeleteModal', value => {
+            if (value) document.body.classList.add('overflow-hidden');
+            else document.body.classList.remove('overflow-hidden');
+        });
+    "
+>
+
+    <div class="card">
+        <div class="card-header">
+            <h6 class="card-title">Gestão de Ocorrências</h6>
+            @can('admin')
+                <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Nova Ocorrência
+                </button>
+            @endcan
+        </div>
+        <div class="card-header">
+            <div class="md:flex items-center md:space-y-0 space-y-4 gap-3 w-1/2">
+                <div class="relative w-3/5">
+                    <input
+                        wire:model.live.debounce.300ms="search"
+                        class="form-input form-input-sm ps-9"
+                        placeholder="Buscar por título, agência ou responsável"
+                        type="text"
+                    />
+                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-500"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </div>
+                </div>
+
+                <div class="relative w-2/5">
+                    <select wire:model.live="statusFilter" class="form-input form-input-sm">
+                        <option value="">Todos os status</option>
+                        @foreach ($this->statuses as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col">
+            <div class="overflow-x-auto">
+                <div class="min-w-full inline-block align-middle">
+                    <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-default-200">
+                            <thead class="bg-default-150">
+                                <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
+                                    <th class="px-3.5 py-3 text-start" scope="col">ID</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Status</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Título</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Agência</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Responsável</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Abertura</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">E-mail Enviado</th>
+                                    @can('admin') <th class="px-3.5 py-3 text-start" scope="col">Ações</th> @endcan
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($this->ocorrencias as $ocorrencia)
+                                    <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
+                                        <td class="px-3.5 py-3 text-primary">#{{ $ocorrencia->id }}</td>
+                                        <td class="px-3.5 py-3">
+                                            <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $ocorrencia->status->color() }}/10 text-{{ $ocorrencia->status->color() }} rounded">
+                                                {{ $ocorrencia->status->label() }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3.5 py-3">
+                                            <h6 class="mb-0.5 font-semibold text-default-800">{{ $ocorrencia->titulo }}</h6>
+                                        </td>
+                                        <td class="px-3.5 py-3">{{ $ocorrencia->agencia }}</td>
+                                        <td class="px-3.5 py-3">{{ $ocorrencia->colaborador?->nome ?? '—' }}</td>
+                                        <td class="px-3.5 py-3">{{ $ocorrencia->abertura->format('d/m/Y') }}</td>
+                                        <td class="px-3.5 py-3">
+                                            @if ($ocorrencia->email_enviado)
+                                                <span class="text-success">{{ $ocorrencia->email_enviado->format('d/m/Y H:i') }}</span>
+                                            @else
+                                                <span class="text-default-400">—</span>
+                                            @endif
+                                        </td>
+                                        @can('admin')
+                                        <td class="px-3.5 py-3">
+                                            <div class="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    @click="$wire.openEditModal({{ $ocorrencia->id }})"
+                                                    class="btn size-7.5 bg-default-200 hover:bg-primary/10 text-default-500 hover:text-primary"
+                                                    title="Editar"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    @click="$wire.confirmDelete({{ $ocorrencia->id }})"
+                                                    class="btn size-7.5 bg-default-200 hover:bg-danger/10 text-default-500 hover:text-danger"
+                                                    title="Excluir"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        @endcan
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="px-3.5 py-8 text-center text-default-500">
+                                            <div class="flex flex-col items-center gap-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                                <p>Nenhuma ocorrência encontrada.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @if ($this->ocorrencias->hasPages())
+                <div class="card-footer">
+                    <p class="text-default-500 text-sm">
+                        Exibindo <b>{{ $this->ocorrencias->firstItem() ?? 0 }}</b> a <b>{{ $this->ocorrencias->lastItem() ?? 0 }}</b> de <b>{{ $this->ocorrencias->total() }}</b> resultados
+                    </p>
+                    <nav aria-label="Pagination" class="flex items-center gap-2">
+                        @if ($this->ocorrencias->onFirstPage())
+                            <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="15 18 9 12 15 6"/></svg> Anterior
+                            </button>
+                        @else
+                            <button wire:click="previousPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="15 18 9 12 15 6"/></svg> Anterior
+                            </button>
+                        @endif
+
+                        @foreach ($this->ocorrencias->getUrlRange(1, $this->ocorrencias->lastPage()) as $page => $url)
+                            @if ($page == $this->ocorrencias->currentPage())
+                                <button class="btn size-7.5 bg-primary text-white" type="button">{{ $page }}</button>
+                            @else
+                                <button wire:click="gotoPage({{ $page }})" class="btn size-7.5 bg-transparent border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
+                                    {{ $page }}
+                                </button>
+                            @endif
+                        @endforeach
+
+                        @if ($this->ocorrencias->hasMorePages())
+                            <button wire:click="nextPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
+                                Próximo <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-1"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                        @else
+                            <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
+                                Próximo <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-1"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                        @endif
+                    </nav>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- Modal Criar/Editar Ocorrência -->
+    <template x-teleport="body">
+        <div
+            x-show="showModal"
+            x-cloak
+            class="size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto pointer-events-none"
+            role="dialog"
+            tabindex="-1"
+            aria-labelledby="modal-title"
+        >
+            <!-- Backdrop -->
+            <div
+                x-show="showModal"
+                x-transition:enter="ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/50 pointer-events-auto"
+                @click="$wire.closeModal()"
+            ></div>
+
+            <!-- Modal Content -->
+            <div class="sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center relative z-10">
+                <div
+                    x-show="showModal"
+                    x-transition:enter="ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-95"
+                    class="w-full flex flex-col bg-white border border-default-200 shadow-lg rounded-md pointer-events-auto"
+                    @click.stop
+                >
+                    <div class="flex justify-between items-center p-4 border-b border-default-200">
+                        <h3 id="modal-title" class="font-bold text-default-800 text-base">
+                            {{ $editingId ? 'Editar Ocorrência' : 'Nova Ocorrência' }}
+                        </h3>
+                        <button type="button" aria-label="Fechar" @click="$wire.closeModal()">
+                            <span class="sr-only">Fechar</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+
+                    <form wire:submit="save">
+                        <div class="p-4 overflow-y-auto max-h-[70vh]">
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="status" class="block text-sm font-medium text-default-700 mb-1">Status</label>
+                                        <select
+                                            wire:model="status"
+                                            id="status"
+                                            class="form-input w-full @error('status') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione um status</option>
+                                            @foreach ($this->statuses as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('status')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="abertura" class="block text-sm font-medium text-default-700 mb-1">Data de Abertura</label>
+                                        <input
+                                            wire:model="abertura"
+                                            type="date"
+                                            id="abertura"
+                                            class="form-input w-full @error('abertura') border-danger @enderror"
+                                        >
+                                        @error('abertura')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="titulo" class="block text-sm font-medium text-default-700 mb-1">Título</label>
+                                    <input
+                                        wire:model="titulo"
+                                        type="text"
+                                        id="titulo"
+                                        class="form-input w-full @error('titulo') border-danger @enderror"
+                                        placeholder="Resumo da ocorrência"
+                                    >
+                                    @error('titulo')
+                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="descricao" class="block text-sm font-medium text-default-700 mb-1">Descrição</label>
+                                    <textarea
+                                        wire:model="descricao"
+                                        id="descricao"
+                                        rows="3"
+                                        class="form-input w-full @error('descricao') border-danger @enderror"
+                                        placeholder="Descrição detalhada (opcional)"
+                                    ></textarea>
+                                    @error('descricao')
+                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="agencia" class="block text-sm font-medium text-default-700 mb-1">Agência</label>
+                                        <input
+                                            wire:model="agencia"
+                                            type="text"
+                                            id="agencia"
+                                            class="form-input w-full @error('agencia') border-danger @enderror"
+                                            placeholder="Usuário final afetado"
+                                        >
+                                        @error('agencia')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="colaboradorId" class="block text-sm font-medium text-default-700 mb-1">Responsável</label>
+                                        <select
+                                            wire:model="colaboradorId"
+                                            id="colaboradorId"
+                                            class="form-input w-full @error('colaboradorId') border-danger @enderror"
+                                        >
+                                            <option value="">Sem responsável</option>
+                                            @foreach ($this->colaboradores as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('colaboradorId')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="comentarios" class="block text-sm font-medium text-default-700 mb-1">Comentários</label>
+                                    <textarea
+                                        wire:model="comentarios"
+                                        id="comentarios"
+                                        rows="3"
+                                        class="form-input w-full @error('comentarios') border-danger @enderror"
+                                        placeholder="Comentários adicionais (opcional)"
+                                    ></textarea>
+                                    @error('comentarios')
+                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 p-4 border-t border-default-200">
+                            <button
+                                type="button"
+                                @click="$wire.closeModal()"
+                                class="btn bg-default-200 text-default-600 hover:bg-default-300"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="submit"
+                                class="btn bg-primary text-white hover:bg-primary/90"
+                                wire:loading.attr="disabled"
+                            >
+                                <span wire:loading.remove wire:target="save">
+                                    {{ $editingId ? 'Salvar Alterações' : 'Criar Ocorrência' }}
+                                </span>
+                                <span wire:loading wire:target="save">
+                                    Salvando...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal Confirmar Exclusão -->
+    <template x-teleport="body">
+        <div
+            x-show="showDeleteModal"
+            x-cloak
+            class="size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto pointer-events-none"
+            role="dialog"
+            tabindex="-1"
+            aria-labelledby="delete-modal-title"
+        >
+            <!-- Backdrop -->
+            <div
+                x-show="showDeleteModal"
+                x-transition:enter="ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/50 pointer-events-auto"
+                @click="$wire.closeDeleteModal()"
+            ></div>
+
+            <!-- Modal Content -->
+            <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center relative z-10">
+                <div
+                    x-show="showDeleteModal"
+                    x-transition:enter="ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-95"
+                    class="w-full flex flex-col bg-white border border-default-200 shadow-lg rounded-md pointer-events-auto"
+                    @click.stop
+                >
+                    <div class="flex justify-between items-center p-4 border-b border-default-200">
+                        <h3 id="delete-modal-title" class="font-bold text-default-800 text-base">
+                            Excluir Ocorrência
+                        </h3>
+                        <button type="button" aria-label="Fechar" @click="$wire.closeDeleteModal()">
+                            <span class="sr-only">Fechar</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="p-4 overflow-y-auto">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-danger/10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-danger"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-default-500">
+                                    Tem certeza que deseja excluir esta ocorrência? Esta ação não pode ser desfeita.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 p-4 border-t border-default-200">
+                        <button
+                            type="button"
+                            @click="$wire.closeDeleteModal()"
+                            class="btn bg-default-200 text-default-600 hover:bg-default-300"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            wire:click="delete"
+                            class="btn bg-danger text-white hover:bg-danger/90"
+                            wire:loading.attr="disabled"
+                        >
+                            <span wire:loading.remove wire:target="delete">Excluir</span>
+                            <span wire:loading wire:target="delete">Excluindo...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>

@@ -49,6 +49,14 @@
                             <div class="menu-text">Colaboradores</div>
                         </a>
                     </li>
+                    @can('admin')
+                        <li class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('admin.ocorrencias') ? 'active' : '' }}" href="{{ route('admin.ocorrencias') }}">
+                                <span class="menu-icon"><i data-lucide="file-warning"></i></span>
+                                <div class="menu-text">Ocorrências</div>
+                            </a>
+                        </li>
+                    @endcan
                 @endcanany
             </ul>
         </div>

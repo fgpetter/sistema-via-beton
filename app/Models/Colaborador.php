@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Colaborador extends Model
 {
@@ -44,6 +45,11 @@ class Colaborador extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function ocorrencias(): HasMany
+    {
+        return $this->hasMany(Ocorrencia::class);
     }
 
     public function scopeTipo(Builder $query, TipoColaborador $tipo): Builder
