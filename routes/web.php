@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\RoutingController;
+use App\Livewire\Admin\OcorrenciasList;
+use App\Livewire\Prestador\AtendimentoDetalhe;
+use App\Livewire\Prestador\MeusAtendimentos;
 use Illuminate\Support\Facades\Route;
 
 // Rota do painel (home do sistema autenticado)
@@ -14,7 +17,12 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
     Route::group(['prefix' => '/admin'], function () {
         Route::view('/usuarios', 'admin.usuarios')->name('admin.usuarios')->can('admin');
         Route::view('/colaboradores', 'admin.colaboradores')->name('admin.colaboradores')->can('admin');
-        Route::view('/ocorrencias', 'admin.ocorrencias')->name('admin.ocorrencias')->can('admin');
+        Route::get('/ocorrencias', OcorrenciasList::class)->name('admin.ocorrencias')->can('admin');
+    });
+
+    Route::group(['prefix' => '/prestador'], function () {
+        Route::get('/atendimentos', MeusAtendimentos::class)->name('prestador.atendimentos')->can('prestador');
+        Route::get('/atendimentos/{ocorrenciaId}', AtendimentoDetalhe::class)->name('prestador.atendimento')->can('prestador');
     });
 
 });

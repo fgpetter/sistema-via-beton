@@ -1,0 +1,260 @@
+<?php
+
+namespace Tests\Feature\Livewire\Prestador;
+
+use App\Enums\OcorrenciaStatus;
+use App\Enums\TipoImagemOcorrencia;
+use App\Livewire\Prestador\AtendimentoDetalhe;
+use App\Models\Colaborador;
+use App\Models\Ocorrencia;
+use App\Models\OcorrenciaImagem;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+class AtendimentoDetalheTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $prestador;
+
+    private Colaborador $colaborador;
+
+    private Ocorrencia $ocorrencia;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->prestador = User::factory()->prestador()->create();
+        $this->colaborador = Colaborador::factory()->create(['user_id' => $this->prestador->id]);
+        $this->ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'email_enviado' => null,
+        ]);
+    }
+
+    public function test_prestador_can_access_atendimento_page(): void
+    {
+        $response = $this->actingAs($this->prestador)
+            ->get(route('prestador.atendimento', $this->ocorrencia->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('Detalhes do Atendimento');
+    }
+
+    public function test_prestador_cannot_access_another_prestador_ocorrencia(): void
+    {
+        $outroPrestador = User::factory()->prestador()->create();
+        $outroColaborador = Colaborador::factory()->create(['user_id' => $outroPrestador->id]);
+        $outraOcorrencia = Ocorrencia::factory()->create(['colaborador_id' => $outroColaborador->id]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $outraOcorrencia->id])
+            ->assertForbidden();
+    }
+
+    public function test_prestador_can_see_ocorrencia_details(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->assertSee($this->ocorrencia->titulo)
+            ->assertSee($this->ocorrencia->agencia);
+    }
+
+    public function test_prestador_can_save_comentarios(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('comentariosPrestador', 'Trabalho realizado com sucesso')
+            ->call('salvarComentarios')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $this->ocorrencia->id,
+            'comentarios_prestador' => 'Trabalho realizado com sucesso',
+        ]);
+    }
+
+    public function test_prestador_can_upload_fotos_antes(): void
+    {
+        Storage::fake('public');
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('fotosAntes', [UploadedFile::fake()->image('antes1.jpg')])
+            ->call('uploadFotosAntes')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencia_imagens', [
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes->value,
+        ]);
+    }
+
+    public function test_prestador_can_upload_fotos_depois(): void
+    {
+        Storage::fake('public');
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('fotosDepois', [UploadedFile::fake()->image('depois1.jpg')])
+            ->call('uploadFotosDepois')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencia_imagens', [
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Depois->value,
+        ]);
+    }
+
+    public function test_prestador_can_upload_multiple_images(): void
+    {
+        Storage::fake('public');
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('fotosAntes', [
+                UploadedFile::fake()->image('antes1.jpg'),
+                UploadedFile::fake()->image('antes2.jpg'),
+                UploadedFile::fake()->image('antes3.jpg'),
+            ])
+            ->call('uploadFotosAntes')
+            ->assertHasNoErrors();
+
+        $this->assertEquals(3, OcorrenciaImagem::where('ocorrencia_id', $this->ocorrencia->id)->count());
+    }
+
+    public function test_prestador_can_remove_image(): void
+    {
+        Storage::fake('public');
+
+        $imagem = OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'path' => 'ocorrencias/test/antes/test.jpg',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->call('removerImagem', $imagem->id);
+
+        $this->assertDatabaseMissing('ocorrencia_imagens', ['id' => $imagem->id]);
+    }
+
+    public function test_prestador_can_enviar_email(): void
+    {
+        $this->freezeTime();
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('emailRat', 'contato@agencia.com')
+            ->call('enviarEmail')
+            ->assertHasNoErrors();
+
+        $this->ocorrencia->refresh();
+        $this->assertEquals('contato@agencia.com', $this->ocorrencia->email_rat);
+        $this->assertNotNull($this->ocorrencia->email_rat_enviado);
+    }
+
+    public function test_enviar_email_requires_email(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('emailRat', null)
+            ->call('enviarEmail')
+            ->assertHasErrors(['emailRat']);
+    }
+
+    public function test_enviar_email_validates_format(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('emailRat', 'email-invalido')
+            ->call('enviarEmail')
+            ->assertHasErrors(['emailRat']);
+    }
+
+    public function test_prestador_cannot_concluir_without_requirements(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->call('concluir');
+
+        $this->ocorrencia->refresh();
+        $this->assertNotEquals(OcorrenciaStatus::Concluido, $this->ocorrencia->status);
+    }
+
+    public function test_prestador_can_concluir_with_all_requirements(): void
+    {
+        Storage::fake('public');
+
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'path' => 'test/antes.jpg',
+        ]);
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Depois,
+            'path' => 'test/depois.jpg',
+        ]);
+        $this->ocorrencia->update(['email_rat_enviado' => now()]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->call('concluir')
+            ->assertHasNoErrors();
+
+        $this->ocorrencia->refresh();
+        $this->assertEquals(OcorrenciaStatus::Concluido, $this->ocorrencia->status);
+    }
+
+    public function test_prestador_cannot_concluir_without_antes_image(): void
+    {
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Depois,
+            'path' => 'test/depois.jpg',
+        ]);
+        $this->ocorrencia->update(['email_rat_enviado' => now()]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->call('concluir');
+
+        $this->ocorrencia->refresh();
+        $this->assertNotEquals(OcorrenciaStatus::Concluido, $this->ocorrencia->status);
+    }
+
+    public function test_prestador_cannot_concluir_without_email_sent(): void
+    {
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'path' => 'test/antes.jpg',
+        ]);
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Depois,
+            'path' => 'test/depois.jpg',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->call('concluir');
+
+        $this->ocorrencia->refresh();
+        $this->assertNotEquals(OcorrenciaStatus::Concluido, $this->ocorrencia->status);
+    }
+
+    public function test_guest_cannot_access_atendimento_page(): void
+    {
+        $response = $this->get(route('prestador.atendimento', $this->ocorrencia->id));
+
+        $response->assertRedirect(route('login'));
+    }
+}

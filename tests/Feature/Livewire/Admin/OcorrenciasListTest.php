@@ -5,10 +5,12 @@ namespace Tests\Feature\Livewire\Admin;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\UserRole;
 use App\Livewire\Admin\OcorrenciasList;
+use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -33,7 +35,7 @@ class OcorrenciasListTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('admin.ocorrencias'));
 
         $response->assertStatus(200);
-        $response->assertSeeLivewire(OcorrenciasList::class);
+        $response->assertSee('Gestão de Ocorrências');
     }
 
     public function test_non_admin_cannot_access_ocorrencias_page(): void
@@ -66,17 +68,19 @@ class OcorrenciasListTest extends TestCase
 
     public function test_admin_can_create_ocorrencia(): void
     {
+        Mail::fake();
+
         $colaborador = Colaborador::factory()->create(['user_id' => $this->prestador->id]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
-            ->set('titulo', 'Nova Ocorrência')
-            ->set('status', OcorrenciaStatus::Andamento->value)
-            ->set('abertura', '2026-02-18')
-            ->set('agencia', 'Agência Central')
-            ->set('colaboradorId', $colaborador->id)
-            ->set('descricao', 'Descrição da ocorrência')
+            ->set('form.titulo', 'Nova Ocorrência')
+            ->set('form.status', OcorrenciaStatus::Andamento->value)
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.colaboradorId', $colaborador->id)
+            ->set('form.descricao', 'Descrição da ocorrência')
             ->call('save')
             ->assertHasNoErrors();
 
@@ -86,17 +90,24 @@ class OcorrenciasListTest extends TestCase
             'agencia' => 'Agência Central',
             'colaborador_id' => $colaborador->id,
         ]);
+
+        Mail::assertQueued(OcorrenciaCriada::class, function (OcorrenciaCriada $mail) {
+            return $mail->ocorrencia->titulo === 'Nova Ocorrência'
+                && $mail->hasTo($this->prestador->email);
+        });
     }
 
     public function test_admin_can_create_ocorrencia_without_optional_fields(): void
     {
+        Mail::fake();
+
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
-            ->set('titulo', 'Ocorrência Mínima')
-            ->set('status', OcorrenciaStatus::Andamento->value)
-            ->set('abertura', '2026-02-18')
-            ->set('agencia', 'Agência Norte')
+            ->set('form.titulo', 'Ocorrência Mínima')
+            ->set('form.status', OcorrenciaStatus::Andamento->value)
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', 'Agência Norte')
             ->call('save')
             ->assertHasNoErrors();
 
@@ -106,20 +117,26 @@ class OcorrenciasListTest extends TestCase
         $this->assertNull($ocorrencia->colaborador_id);
         $this->assertNull($ocorrencia->descricao);
         $this->assertNull($ocorrencia->comentarios);
-        $this->assertNotNull($ocorrencia->email_enviado);
+        $this->assertNull($ocorrencia->email_enviado);
+
+        Mail::assertNotQueued(OcorrenciaCriada::class);
     }
 
-    public function test_create_ocorrencia_sets_email_enviado_automatically(): void
+    public function test_create_ocorrencia_sends_email_and_sets_email_enviado(): void
     {
+        Mail::fake();
         $this->freezeTime();
+
+        $colaborador = Colaborador::factory()->create(['user_id' => $this->prestador->id]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
-            ->set('titulo', 'Ocorrência com Email')
-            ->set('status', OcorrenciaStatus::Andamento->value)
-            ->set('abertura', '2026-02-18')
-            ->set('agencia', 'Agência Sul')
+            ->set('form.titulo', 'Ocorrência com Email')
+            ->set('form.status', OcorrenciaStatus::Andamento->value)
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', 'Agência Sul')
+            ->set('form.colaboradorId', $colaborador->id)
             ->call('save')
             ->assertHasNoErrors();
 
@@ -127,6 +144,11 @@ class OcorrenciasListTest extends TestCase
 
         $this->assertNotNull($ocorrencia->email_enviado);
         $this->assertEquals(now()->format('Y-m-d H:i'), $ocorrencia->email_enviado->format('Y-m-d H:i'));
+
+        Mail::assertQueued(OcorrenciaCriada::class, function (OcorrenciaCriada $mail) use ($ocorrencia) {
+            return $mail->ocorrencia->id === $ocorrencia->id
+                && $mail->hasTo($this->prestador->email);
+        });
     }
 
     public function test_edit_ocorrencia_does_not_change_email_enviado(): void
@@ -140,7 +162,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->set('titulo', 'Editado')
+            ->set('form.titulo', 'Editado')
             ->call('save')
             ->assertHasNoErrors();
 
@@ -154,12 +176,12 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
-            ->set('titulo', '')
-            ->set('status', OcorrenciaStatus::Andamento->value)
-            ->set('abertura', '2026-02-18')
-            ->set('agencia', 'Agência')
+            ->set('form.titulo', '')
+            ->set('form.status', OcorrenciaStatus::Andamento->value)
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', 'Agência')
             ->call('save')
-            ->assertHasErrors(['titulo']);
+            ->assertHasErrors(['form.titulo']);
     }
 
     public function test_create_ocorrencia_validation_requires_status(): void
@@ -167,12 +189,12 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
-            ->set('titulo', 'Teste')
-            ->set('status', '')
-            ->set('abertura', '2026-02-18')
-            ->set('agencia', 'Agência')
+            ->set('form.titulo', 'Teste')
+            ->set('form.status', '')
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', 'Agência')
             ->call('save')
-            ->assertHasErrors(['status']);
+            ->assertHasErrors(['form.status']);
     }
 
     public function test_create_ocorrencia_validation_requires_abertura(): void
@@ -180,12 +202,12 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
-            ->set('titulo', 'Teste')
-            ->set('status', OcorrenciaStatus::Andamento->value)
-            ->set('abertura', '')
-            ->set('agencia', 'Agência')
+            ->set('form.titulo', 'Teste')
+            ->set('form.status', OcorrenciaStatus::Andamento->value)
+            ->set('form.abertura', '')
+            ->set('form.agencia', 'Agência')
             ->call('save')
-            ->assertHasErrors(['abertura']);
+            ->assertHasErrors(['form.abertura']);
     }
 
     public function test_create_ocorrencia_validation_requires_agencia(): void
@@ -193,12 +215,12 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
-            ->set('titulo', 'Teste')
-            ->set('status', OcorrenciaStatus::Andamento->value)
-            ->set('abertura', '2026-02-18')
-            ->set('agencia', '')
+            ->set('form.titulo', 'Teste')
+            ->set('form.status', OcorrenciaStatus::Andamento->value)
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', '')
             ->call('save')
-            ->assertHasErrors(['agencia']);
+            ->assertHasErrors(['form.agencia']);
     }
 
     public function test_create_ocorrencia_validation_rejects_invalid_status(): void
@@ -206,12 +228,12 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
-            ->set('titulo', 'Teste')
-            ->set('status', 'invalido')
-            ->set('abertura', '2026-02-18')
-            ->set('agencia', 'Agência')
+            ->set('form.titulo', 'Teste')
+            ->set('form.status', 'invalido')
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', 'Agência')
             ->call('save')
-            ->assertHasErrors(['status']);
+            ->assertHasErrors(['form.status']);
     }
 
     public function test_admin_can_edit_ocorrencia(): void
@@ -226,10 +248,10 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->assertSet('titulo', 'Título Original')
-            ->assertSet('status', OcorrenciaStatus::Andamento->value)
-            ->set('titulo', 'Título Editado')
-            ->set('status', OcorrenciaStatus::Concluido->value)
+            ->assertSet('form.titulo', 'Título Original')
+            ->assertSet('form.status', OcorrenciaStatus::Andamento->value)
+            ->set('form.titulo', 'Título Editado')
+            ->set('form.status', OcorrenciaStatus::Concluido->value)
             ->call('save')
             ->assertHasNoErrors();
 
@@ -332,10 +354,10 @@ class OcorrenciasListTest extends TestCase
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
             ->assertSet('showModal', true)
-            ->set('titulo', 'Teste')
+            ->set('form.titulo', 'Teste')
             ->call('closeModal')
             ->assertSet('showModal', false)
-            ->assertSet('titulo', '');
+            ->assertSet('form.titulo', '');
     }
 
     public function test_close_delete_modal_resets_state(): void

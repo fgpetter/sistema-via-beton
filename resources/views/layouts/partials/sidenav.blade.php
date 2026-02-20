@@ -24,12 +24,14 @@
     <div class="relative min-h-0 flex-grow">
         <div class="size-full" data-simplebar="">
             <ul class="side-nav p-3 hs-accordion-group">
-                <li class="menu-item">
-                    <a class="menu-link {{ request()->routeIs('painel.dashboard') ? 'active' : '' }}" href="{{ route('painel.dashboard') }}">
-                        <span class="menu-icon"><i data-lucide="home"></i></span>
-                        <div class="menu-text">Dashboard</div>
-                    </a>
-                </li>
+                @canany(['admin', 'coordenador'])
+                    <li class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('painel.dashboard') ? 'active' : '' }}" href="{{ route('painel.dashboard') }}">
+                            <span class="menu-icon"><i data-lucide="home"></i></span>
+                            <div class="menu-text">Dashboard</div>
+                        </a>
+                    </li>
+                @endcanany
 
                 @canany(['admin', 'coordenador'])
                     <li class="menu-title">
@@ -58,6 +60,18 @@
                         </li>
                     @endcan
                 @endcanany
+
+                @can('prestador')
+                    <li class="menu-title">
+                        <span>Atendimentos</span>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('prestador.atendimentos') || request()->routeIs('prestador.atendimento') ? 'active' : '' }}" href="{{ route('prestador.atendimentos') }}">
+                            <span class="menu-icon"><i data-lucide="clipboard-list"></i></span>
+                            <div class="menu-text">Meus Atendimentos</div>
+                        </a>
+                    </li>
+                @endcan
             </ul>
         </div>
     </div>

@@ -23,7 +23,9 @@ class OcorrenciaFactory extends Factory
             'abertura' => fake()->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
             'colaborador_id' => Colaborador::factory(),
             'agencia' => fake()->company(),
+            'endereco' => fake()->optional()->address(),
             'email_enviado' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
+            'email_rat' => fake()->optional(0.3)->safeEmail(),
             'comentarios' => fake()->optional()->paragraph(),
         ];
     }
