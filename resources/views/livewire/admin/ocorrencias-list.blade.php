@@ -15,6 +15,8 @@
     "
 >
 
+    @include('layouts.partials/page-title', ['subtitle' => 'Admin', 'title' => 'Gestão de Ocorrências'])
+
     <div class="card">
         <div class="card-header">
             <h6 class="card-title">Gestão de Ocorrências</h6>
@@ -205,7 +207,7 @@
                 >
                     <div class="flex justify-between items-center p-4 border-b border-default-200">
                         <h3 id="modal-title" class="font-bold text-default-800 text-base">
-                            {{ $editingId ? 'Editar Ocorrência' : 'Nova Ocorrência' }}
+                            {{ $form->editingId ? 'Editar Ocorrência' : 'Nova Ocorrência' }}
                         </h3>
                         <button type="button" aria-label="Fechar" @click="$wire.closeModal()">
                             <span class="sr-only">Fechar</span>
@@ -220,7 +222,7 @@
                                     <div>
                                         <label for="status" class="block text-sm font-medium text-default-700 mb-1">Status</label>
                                         <select
-                                            wire:model="status"
+                                            wire:model="form.status"
                                             id="status"
                                             class="form-input w-full @error('status') border-danger @enderror"
                                         >
@@ -229,7 +231,7 @@
                                                 <option value="{{ $value }}">{{ $label }}</option>
                                             @endforeach
                                         </select>
-                                        @error('status')
+                                        @error('form.status')
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -237,12 +239,12 @@
                                     <div>
                                         <label for="abertura" class="block text-sm font-medium text-default-700 mb-1">Data de Abertura</label>
                                         <input
-                                            wire:model="abertura"
+                                            wire:model="form.abertura"
                                             type="date"
                                             id="abertura"
                                             class="form-input w-full @error('abertura') border-danger @enderror"
                                         >
-                                        @error('abertura')
+                                        @error('form.abertura')
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -251,13 +253,13 @@
                                 <div>
                                     <label for="titulo" class="block text-sm font-medium text-default-700 mb-1">Título</label>
                                     <input
-                                        wire:model="titulo"
+                                        wire:model="form.titulo"
                                         type="text"
                                         id="titulo"
                                         class="form-input w-full @error('titulo') border-danger @enderror"
                                         placeholder="Resumo da ocorrência"
                                     >
-                                    @error('titulo')
+                                    @error('form.titulo')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -265,13 +267,13 @@
                                 <div>
                                     <label for="descricao" class="block text-sm font-medium text-default-700 mb-1">Descrição</label>
                                     <textarea
-                                        wire:model="descricao"
+                                        wire:model="form.descricao"
                                         id="descricao"
                                         rows="3"
                                         class="form-input w-full @error('descricao') border-danger @enderror"
                                         placeholder="Descrição detalhada (opcional)"
                                     ></textarea>
-                                    @error('descricao')
+                                    @error('form.descricao')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -280,13 +282,27 @@
                                     <div>
                                         <label for="agencia" class="block text-sm font-medium text-default-700 mb-1">Agência</label>
                                         <input
-                                            wire:model="agencia"
+                                            wire:model="form.agencia"
                                             type="text"
                                             id="agencia"
                                             class="form-input w-full @error('agencia') border-danger @enderror"
                                             placeholder="Usuário final afetado"
                                         >
-                                        @error('agencia')
+                                        @error('form.agencia')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="endereco" class="block text-sm font-medium text-default-700 mb-1">Endereço</label>
+                                        <input
+                                            wire:model="form.endereco"
+                                            type="text"
+                                            id="endereco"
+                                            class="form-input w-full @error('endereco') border-danger @enderror"
+                                            placeholder="Endereço do local (opcional)"
+                                        >
+                                        @error('form.endereco')
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -294,7 +310,7 @@
                                     <div>
                                         <label for="colaboradorId" class="block text-sm font-medium text-default-700 mb-1">Responsável</label>
                                         <select
-                                            wire:model="colaboradorId"
+                                            wire:model="form.colaboradorId"
                                             id="colaboradorId"
                                             class="form-input w-full @error('colaboradorId') border-danger @enderror"
                                         >
@@ -303,7 +319,7 @@
                                                 <option value="{{ $id }}">{{ $nome }}</option>
                                             @endforeach
                                         </select>
-                                        @error('colaboradorId')
+                                        @error('form.colaboradorId')
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -312,13 +328,13 @@
                                 <div>
                                     <label for="comentarios" class="block text-sm font-medium text-default-700 mb-1">Comentários</label>
                                     <textarea
-                                        wire:model="comentarios"
+                                        wire:model="form.comentarios"
                                         id="comentarios"
                                         rows="3"
                                         class="form-input w-full @error('comentarios') border-danger @enderror"
                                         placeholder="Comentários adicionais (opcional)"
                                     ></textarea>
-                                    @error('comentarios')
+                                    @error('form.comentarios')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -339,7 +355,7 @@
                                 wire:loading.attr="disabled"
                             >
                                 <span wire:loading.remove wire:target="save">
-                                    {{ $editingId ? 'Salvar Alterações' : 'Criar Ocorrência' }}
+                                    {{ $form->editingId ? 'Salvar Alterações' : 'Criar Ocorrência' }}
                                 </span>
                                 <span wire:loading wire:target="save">
                                     Salvando...

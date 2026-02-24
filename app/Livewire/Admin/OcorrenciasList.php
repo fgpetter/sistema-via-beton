@@ -3,21 +3,29 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
+use App\Livewire\Admin\Forms\OcorrenciaForm;
+use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
+#[Layout('layouts.vertical')]
+#[Title('Gestão de Ocorrências')]
 class OcorrenciasList extends Component
 {
     use WithPagination;
     use WithSweetAlert;
+
+    public OcorrenciaForm $form;
 
     #[Url(as: 'busca')]
     public string $search = '';
@@ -27,53 +35,9 @@ class OcorrenciasList extends Component
 
     public bool $showModal = false;
 
-    public ?int $editingId = null;
-
-    public string $status = '';
-
-    public string $titulo = '';
-
-    public ?string $descricao = null;
-
-    public string $abertura = '';
-
-    public ?int $colaboradorId = null;
-
-    public string $agencia = '';
-
-    public ?string $comentarios = null;
-
     public bool $showDeleteModal = false;
 
     public ?int $deletingId = null;
-
-    protected function rules(): array
-    {
-        return [
-            'status' => ['required', Rule::enum(OcorrenciaStatus::class)],
-            'titulo' => ['required', 'string', 'max:255'],
-            'descricao' => ['nullable', 'string'],
-            'abertura' => ['required', 'date'],
-            'colaboradorId' => ['nullable', 'exists:colaboradores,id'],
-            'agencia' => ['required', 'string', 'max:255'],
-            'comentarios' => ['nullable', 'string'],
-        ];
-    }
-
-    protected function messages(): array
-    {
-        return [
-            'status.required' => 'O status é obrigatório.',
-            'status.enum' => 'O status selecionado é inválido.',
-            'titulo.required' => 'O título é obrigatório.',
-            'titulo.max' => 'O título não pode ter mais de 255 caracteres.',
-            'abertura.required' => 'A data de abertura é obrigatória.',
-            'abertura.date' => 'A data de abertura deve ser uma data válida.',
-            'colaboradorId.exists' => 'O colaborador selecionado não existe.',
-            'agencia.required' => 'A agência é obrigatória.',
-            'agencia.max' => 'A agência não pode ter mais de 255 caracteres.',
-        ];
-    }
 
     public function updatedSearch(): void
     {
@@ -130,50 +94,33 @@ class OcorrenciasList extends Component
     public function openCreateModal(): void
     {
         $this->ensureUserIsAuthorized();
-        $this->resetForm();
-        $this->editingId = null;
-        $this->status = OcorrenciaStatus::Andamento->value;
-        $this->abertura = now()->format('Y-m-d');
+        $this->form->setForCreate();
         $this->showModal = true;
     }
 
     public function openEditModal(int $ocorrenciaId): void
     {
         $this->ensureUserIsAuthorized();
-
-        $ocorrencia = Ocorrencia::findOrFail($ocorrenciaId);
-
-        $this->editingId = $ocorrencia->id;
-        $this->status = $ocorrencia->status->value;
-        $this->titulo = $ocorrencia->titulo;
-        $this->descricao = $ocorrencia->descricao;
-        $this->abertura = $ocorrencia->abertura->format('Y-m-d');
-        $this->colaboradorId = $ocorrencia->colaborador_id;
-        $this->agencia = $ocorrencia->agencia;
-        $this->comentarios = $ocorrencia->comentarios;
+        $this->form->setFromOcorrencia(Ocorrencia::findOrFail($ocorrenciaId));
         $this->showModal = true;
     }
 
     public function save(): void
     {
         $this->ensureUserIsAuthorized();
-        $this->validate();
+        $this->form->validate();
 
-        $data = [
-            'status' => $this->status,
-            'titulo' => $this->titulo,
-            'descricao' => $this->descricao,
-            'abertura' => $this->abertura,
-            'colaborador_id' => $this->colaboradorId,
-            'agencia' => $this->agencia,
-            'comentarios' => $this->comentarios,
-        ];
-
-        if ($this->editingId) {
-            Ocorrencia::findOrFail($this->editingId)->update($data);
+        if ($this->form->editingId) {
+            Ocorrencia::findOrFail($this->form->editingId)->update($this->form->toData());
         } else {
-            $data['email_enviado'] = now();
-            Ocorrencia::create($data);
+            $ocorrencia = Ocorrencia::create($this->form->toData());
+
+            if ($ocorrencia->colaborador_id) {
+                $ocorrencia->load('colaborador.user');
+                Mail::to($ocorrencia->colaborador->user->email)
+                    ->send(new OcorrenciaCriada($ocorrencia));
+                $ocorrencia->update(['email_enviado' => now()]);
+            }
         }
 
         $this->swalToastSuccess([
@@ -189,7 +136,6 @@ class OcorrenciasList extends Component
     public function confirmDelete(int $ocorrenciaId): void
     {
         $this->ensureUserIsAuthorized();
-
         $this->deletingId = $ocorrenciaId;
         $this->showDeleteModal = true;
     }
@@ -217,26 +163,13 @@ class OcorrenciasList extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
-        $this->resetForm();
+        $this->form->reset();
     }
 
     public function closeDeleteModal(): void
     {
         $this->showDeleteModal = false;
         $this->deletingId = null;
-    }
-
-    protected function resetForm(): void
-    {
-        $this->status = '';
-        $this->titulo = '';
-        $this->descricao = null;
-        $this->abertura = '';
-        $this->colaboradorId = null;
-        $this->agencia = '';
-        $this->comentarios = null;
-        $this->editingId = null;
-        $this->resetValidation();
     }
 
     protected function ensureUserIsAuthorized(): void
