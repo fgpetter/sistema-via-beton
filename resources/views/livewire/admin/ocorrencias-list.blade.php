@@ -193,7 +193,7 @@
             ></div>
 
             <!-- Modal Content -->
-            <div class="sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center relative z-10">
+            <div class="sm:max-w-4xl lg:max-w-none lg:w-2/3 sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center relative z-10">
                 <div
                     x-show="showModal"
                     x-transition:enter="ease-out duration-200"
