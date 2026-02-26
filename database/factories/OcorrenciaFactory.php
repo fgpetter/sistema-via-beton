@@ -29,6 +29,12 @@ class OcorrenciaFactory extends Factory
             'comentarios' => fake()->optional()->paragraph(),
         ];
     }
+    public function aberto(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+    }
 
     public function emAndamento(): static
     {

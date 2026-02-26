@@ -65,7 +65,7 @@ class OcorrenciaForm extends Form
     public function setForCreate(): void
     {
         $this->reset();
-        $this->status = OcorrenciaStatus::Andamento->value;
+        $this->status = OcorrenciaStatus::Aberto->value;
         $this->abertura = now()->format('Y-m-d');
     }
 

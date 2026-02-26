@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum OcorrenciaStatus: string
 {
+    case Aberto = 'aberto';
     case Andamento = 'andamento';
     case Revisar = 'revisar';
     case Concluido = 'concluido';
@@ -11,6 +12,7 @@ enum OcorrenciaStatus: string
     public function label(): string
     {
         return match ($this) {
+            self::Aberto => 'Aberto',
             self::Andamento => 'Em Andamento',
             self::Revisar => 'Revisar',
             self::Concluido => 'Concluído',
@@ -20,6 +22,7 @@ enum OcorrenciaStatus: string
     public function color(): string
     {
         return match ($this) {
+            self::Aberto => 'danger',
             self::Andamento => 'warning',
             self::Revisar => 'info',
             self::Concluido => 'success',

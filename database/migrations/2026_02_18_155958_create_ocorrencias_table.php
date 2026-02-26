@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('ocorrencias', function (Blueprint $table) {
             $table->id();
-            $table->string('status')->default(OcorrenciaStatus::Andamento->value);
+            $table->string('status')->default(OcorrenciaStatus::Aberto->value);
             $table->string('titulo', 255);
             $table->text('descricao')->nullable();
             $table->date('abertura');
