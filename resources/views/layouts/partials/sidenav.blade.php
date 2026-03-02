@@ -58,6 +58,12 @@
                                 <div class="menu-text">Ocorrências</div>
                             </a>
                         </li>
+                        <li class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('admin.configuracoes-sistema') ? 'active' : '' }}" href="{{ route('admin.configuracoes-sistema') }}">
+                                <span class="menu-icon"><i data-lucide="settings"></i></span>
+                                <div class="menu-text">Configurações do sistema</div>
+                            </a>
+                        </li>
                     @endcan
                 @endcanany
 
