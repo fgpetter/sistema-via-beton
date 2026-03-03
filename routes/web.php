@@ -18,6 +18,7 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
         Route::view('/usuarios', 'admin.usuarios')->name('admin.usuarios')->can('admin');
         Route::view('/colaboradores', 'admin.colaboradores')->name('admin.colaboradores')->can('admin');
         Route::get('/ocorrencias', OcorrenciasList::class)->name('admin.ocorrencias')->can('admin');
+        Route::view('/configuracoes-sistema', 'admin.configuracoes-sistema')->name('admin.configuracoes-sistema')->can('admin');
     });
 
     Route::group(['prefix' => '/prestador'], function () {
