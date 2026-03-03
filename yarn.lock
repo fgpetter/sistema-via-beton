@@ -125,9 +125,9 @@
   integrity sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==
 
 "@isaacs/brace-expansion@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.npmjs.org/@isaacs/brace-expansion/-/brace-expansion-5.0.0.tgz"
-  integrity sha512-ZT55BDLV0yv0RBm2czMiZ+SqCGO7AvmOM3G/w2xhVPH+te0aKgFjmBvGlL1dH+ql2tgGO3MVrbb3jCKyvpgnxA==
+  version "5.0.1"
+  resolved "https://registry.npmjs.org/@isaacs/brace-expansion/-/brace-expansion-5.0.1.tgz"
+  integrity sha512-WMz71T1JS624nWj2n2fnYAuPovhv7EUhk69R6i9dsVyzxt5eM3bjwvgk9L+APE1TRscGysAVMANkB0jh0LQZrQ==
   dependencies:
     "@isaacs/balanced-match" "^4.0.1"
 
@@ -919,9 +919,9 @@ local-pkg@^1.0.0:
     quansync "^0.2.11"
 
 lodash-es@^4.17.21:
-  version "4.17.21"
-  resolved "https://registry.npmjs.org/lodash-es/-/lodash-es-4.17.21.tgz"
-  integrity sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==
+  version "4.17.23"
+  resolved "https://registry.npmjs.org/lodash-es/-/lodash-es-4.17.23.tgz"
+  integrity sha512-kVI48u3PZr38HdYz98UmfPnXl2DXrpdctLrFLCd3kOx1xUkOmpFPx7gCWWM5MPkL/fD8zb+Ph0QzjGFs4+hHWg==
 
 lodash.castarray@^4.4.0:
   version "4.4.0"
@@ -933,9 +933,9 @@ lodash.merge@^4.6.2:
   version "4.6.2"
 
 lodash@^4.17.21:
-  version "4.17.21"
-  resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
-  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
+  version "4.17.23"
+  resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.23.tgz"
+  integrity sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==
 
 lru-cache@^11.0.0:
   version "11.2.1"
@@ -1343,9 +1343,9 @@ tapable@^2.2.0:
   integrity sha512-ZL6DDuAlRlLGghwcfmSn9sK3Hr6ArtyudlSAiCqQ6IfE+b+HHbydbYDIG15IfS5do+7XQQBdBiubF/cV2dnDzg==
 
 tar@^7.4.3:
-  version "7.5.6"
-  resolved "https://registry.npmjs.org/tar/-/tar-7.5.6.tgz"
-  integrity sha512-xqUeu2JAIJpXyvskvU3uvQW8PAmHrtXp2KDuMJwQqW8Sqq0CaZBAQ+dKS3RBXVhU4wC5NjAdKrmh84241gO9cA==
+  version "7.5.7"
+  resolved "https://registry.npmjs.org/tar/-/tar-7.5.7.tgz"
+  integrity sha512-fov56fJiRuThVFXD6o6/Q354S7pnWMJIVlDBYijsTNx6jKSE4pvrDTs6lUnmGvNyfJwFQQwWy3owKz1ucIhveQ==
   dependencies:
     "@isaacs/fs-minipass" "^4.0.0"
     chownr "^3.0.0"
