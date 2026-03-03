@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // TODO: mover para um seeder
         DB::table('prazos')->insert([
             [
                 'nome' => 'Engenharia.Emergencial',
