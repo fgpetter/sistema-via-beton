@@ -3,11 +3,11 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
-use App\Enums\UserRole;
 use App\Livewire\Admin\OcorrenciasList;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
+use App\Models\Prazo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -371,5 +371,118 @@ class OcorrenciasListTest extends TestCase
             ->call('closeDeleteModal')
             ->assertSet('showDeleteModal', false)
             ->assertSet('deletingId', null);
+    }
+
+    public function test_emergencial_ocorrencias_appear_first(): void
+    {
+        $prazoEmergencial = Prazo::query()->firstOrCreate(
+            ['nome' => Prazo::EMERGENCIAL],
+            ['prazo_valor' => 6, 'prazo_unidade' => 'hora']
+        );
+        $prazoNormal = Prazo::query()->firstOrCreate(
+            ['nome' => 'Engenharia.Inspeção'],
+            ['prazo_valor' => 5, 'prazo_unidade' => 'dia']
+        );
+
+        Ocorrencia::factory()->create([
+            'prazo_id' => $prazoNormal->id,
+            'titulo' => 'Ocorrência Normal',
+            'abertura' => now(),
+        ]);
+        Ocorrencia::factory()->create([
+            'prazo_id' => $prazoEmergencial->id,
+            'titulo' => 'Ocorrência Emergencial',
+            'abertura' => now()->subDays(5),
+        ]);
+
+        $html = Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->html();
+
+        $emergencialPos = strpos($html, 'Ocorrência Emergencial');
+        $normalPos = strpos($html, 'Ocorrência Normal');
+
+        $this->assertNotFalse($emergencialPos);
+        $this->assertNotFalse($normalPos);
+        $this->assertLessThan($normalPos, $emergencialPos);
+    }
+
+    public function test_emergencial_ocorrencia_row_is_highlighted(): void
+    {
+        $prazoEmergencial = Prazo::query()->firstOrCreate(
+            ['nome' => Prazo::EMERGENCIAL],
+            ['prazo_valor' => 6, 'prazo_unidade' => 'hora']
+        );
+
+        Ocorrencia::factory()->create([
+            'prazo_id' => $prazoEmergencial->id,
+            'titulo' => 'Ocorrência Emergencial',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->assertSee('Ocorrência Emergencial')
+            ->assertSeeHtml('bg-danger/10 border-l-4 border-l-danger');
+    }
+
+    public function test_non_emergencial_row_is_not_highlighted(): void
+    {
+        $prazoNormal = Prazo::query()->firstOrCreate(
+            ['nome' => 'Engenharia.Inspeção'],
+            ['prazo_valor' => 5, 'prazo_unidade' => 'dia']
+        );
+
+        Ocorrencia::factory()->create([
+            'prazo_id' => $prazoNormal->id,
+            'titulo' => 'Ocorrência Normal',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->assertSee('Ocorrência Normal')
+            ->assertDontSeeHtml('bg-danger/10 border-l-4 border-l-danger');
+    }
+
+    public function test_admin_can_create_ocorrencia_with_prazo(): void
+    {
+        Mail::fake();
+
+        $prazo = Prazo::query()->firstOrCreate(
+            ['nome' => Prazo::EMERGENCIAL],
+            ['prazo_valor' => 6, 'prazo_unidade' => 'hora']
+        );
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Emergência Teste')
+            ->set('form.status', OcorrenciaStatus::Aberto->value)
+            ->set('form.abertura', '2026-03-06')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.prazoId', $prazo->id)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'titulo' => 'Emergência Teste',
+            'prazo_id' => $prazo->id,
+        ]);
+    }
+
+    public function test_categoria_column_shows_prazo_nome(): void
+    {
+        $prazo = Prazo::query()->firstOrCreate(
+            ['nome' => 'Engenharia.Vistoria e confecção'],
+            ['prazo_valor' => 5, 'prazo_unidade' => 'dia']
+        );
+
+        Ocorrencia::factory()->create([
+            'prazo_id' => $prazo->id,
+            'titulo' => 'Ocorrência Vistoria',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->assertSee('Engenharia.Vistoria e confecção');
     }
 }

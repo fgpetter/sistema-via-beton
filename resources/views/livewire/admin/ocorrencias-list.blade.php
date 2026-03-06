@@ -60,6 +60,7 @@
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
                                     <th class="px-3.5 py-3 text-start" scope="col">ID</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Status</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Categoria</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Título</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Agência</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Responsável</th>
@@ -70,12 +71,21 @@
                             </thead>
                             <tbody>
                                 @forelse ($this->ocorrencias as $ocorrencia)
-                                    <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
+                                    <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap {{ $ocorrencia->isEmergencial() ? 'bg-danger/10 border-l-4 border-l-danger' : '' }}">
                                         <td class="px-3.5 py-3 text-primary">#{{ $ocorrencia->id }}</td>
                                         <td class="px-3.5 py-3">
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $ocorrencia->status->color() }}/10 text-{{ $ocorrencia->status->color() }} rounded">
                                                 {{ $ocorrencia->status->label() }}
                                             </span>
+                                        </td>
+                                        <td class="px-3.5 py-3">
+                                            @if ($ocorrencia->isEmergencial())
+                                                <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-bold bg-danger/15 text-danger rounded">
+                                                    {{ $ocorrencia->prazo->nome }}
+                                                </span>
+                                            @else
+                                                <span class="text-default-600">{{ $ocorrencia->prazo?->nome ?? '—' }}</span>
+                                            @endif
                                         </td>
                                         <td class="px-3.5 py-3">
                                             <h6 class="mb-0.5 font-semibold text-default-800">{{ $ocorrencia->titulo }}</h6>
@@ -115,7 +125,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-3.5 py-8 text-center text-default-500">
+                                        <td colspan="9" class="px-3.5 py-8 text-center text-default-500">
                                             <div class="flex flex-col items-center gap-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                                                 <p>Nenhuma ocorrência encontrada.</p>
@@ -274,6 +284,23 @@
                                         placeholder="Descrição detalhada (opcional)"
                                     ></textarea>
                                     @error('form.descricao')
+                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="prazoId" class="block text-sm font-medium text-default-700 mb-1">Categoria</label>
+                                    <select
+                                        wire:model="form.prazoId"
+                                        id="prazoId"
+                                        class="form-input w-full @error('prazoId') border-danger @enderror"
+                                    >
+                                        <option value="">Selecione uma categoria</option>
+                                        @foreach ($this->prazos as $id => $nome)
+                                            <option value="{{ $id }}">{{ $nome }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('form.prazoId')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>

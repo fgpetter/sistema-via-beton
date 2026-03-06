@@ -26,6 +26,7 @@ class Ocorrencia extends Model
         'descricao',
         'abertura',
         'colaborador_id',
+        'prazo_id',
         'agencia',
         'endereco',
         'email_enviado',
@@ -51,6 +52,24 @@ class Ocorrencia extends Model
     public function colaborador(): BelongsTo
     {
         return $this->belongsTo(Colaborador::class);
+    }
+
+    public function prazo(): BelongsTo
+    {
+        return $this->belongsTo(Prazo::class);
+    }
+
+    public function isEmergencial(): bool
+    {
+        return $this->prazo?->nome === Prazo::EMERGENCIAL;
+    }
+
+    public function scopeEmergenciaisFirst(Builder $query): Builder
+    {
+        return $query->orderByRaw(
+            'EXISTS (SELECT 1 FROM prazos WHERE prazos.id = ocorrencias.prazo_id AND prazos.nome = ?) DESC',
+            [Prazo::EMERGENCIAL]
+        );
     }
 
     public function imagens(): HasMany

@@ -21,6 +21,8 @@ class OcorrenciaForm extends Form
 
     public ?int $colaboradorId = null;
 
+    public ?int $prazoId = null;
+
     public string $agencia = '';
 
     public ?string $endereco = null;
@@ -38,6 +40,7 @@ class OcorrenciaForm extends Form
             'descricao' => ['nullable', 'string'],
             'abertura' => ['required', 'date'],
             'colaboradorId' => ['nullable', 'exists:colaboradores,id'],
+            'prazoId' => ['nullable', 'exists:prazos,id'],
             'agencia' => ['required', 'string', 'max:255'],
             'endereco' => ['nullable', 'string', 'max:255'],
             'comentarios' => ['nullable', 'string'],
@@ -57,6 +60,7 @@ class OcorrenciaForm extends Form
             'abertura.required' => 'A data de abertura é obrigatória.',
             'abertura.date' => 'A data de abertura deve ser uma data válida.',
             'colaboradorId.exists' => 'O colaborador selecionado não existe.',
+            'prazoId.exists' => 'A categoria selecionada não existe.',
             'agencia.required' => 'A agência é obrigatória.',
             'agencia.max' => 'A agência não pode ter mais de 255 caracteres.',
         ];
@@ -77,6 +81,7 @@ class OcorrenciaForm extends Form
         $this->descricao = $ocorrencia->descricao;
         $this->abertura = $ocorrencia->abertura->format('Y-m-d');
         $this->colaboradorId = $ocorrencia->colaborador_id;
+        $this->prazoId = $ocorrencia->prazo_id;
         $this->agencia = $ocorrencia->agencia;
         $this->endereco = $ocorrencia->endereco;
         $this->comentarios = $ocorrencia->comentarios;
@@ -93,6 +98,7 @@ class OcorrenciaForm extends Form
             'descricao' => $this->descricao,
             'abertura' => $this->abertura,
             'colaborador_id' => $this->colaboradorId,
+            'prazo_id' => $this->prazoId,
             'agencia' => $this->agencia,
             'endereco' => $this->endereco,
             'comentarios' => $this->comentarios,

@@ -7,6 +7,7 @@ use App\Livewire\Admin\Forms\OcorrenciaForm;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
+use App\Models\Prazo;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Mail;
@@ -53,7 +54,7 @@ class OcorrenciasList extends Component
     public function ocorrencias()
     {
         return Ocorrencia::query()
-            ->with('colaborador')
+            ->with(['colaborador', 'prazo'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('titulo', 'like', "%{$this->search}%")
@@ -69,6 +70,7 @@ class OcorrenciasList extends Component
                     $query->status($status);
                 }
             })
+            ->emergenciaisFirst()
             ->orderByDesc('abertura')
             ->paginate(10);
     }
@@ -87,6 +89,18 @@ class OcorrenciasList extends Component
             ->get()
             ->mapWithKeys(fn (Colaborador $colaborador) => [
                 $colaborador->id => $colaborador->nome,
+            ])
+            ->toArray();
+    }
+
+    #[Computed]
+    public function prazos(): array
+    {
+        return Prazo::query()
+            ->orderBy('nome')
+            ->get()
+            ->mapWithKeys(fn (Prazo $prazo) => [
+                $prazo->id => $prazo->nome,
             ])
             ->toArray();
     }
