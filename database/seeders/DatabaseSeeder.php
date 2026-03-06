@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Colaborador;
+use App\Models\Endereco;
 use App\Models\Ocorrencia;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -30,6 +31,9 @@ class DatabaseSeeder extends Seeder
                 'nome' => $prestador->name,
             ]);
         }
+
+        // Endereços
+        Endereco::factory()->count(10)->create();
 
         // Ocorrências
         foreach ($colaboradores as $colaborador) {
