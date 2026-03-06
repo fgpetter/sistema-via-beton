@@ -19,6 +19,7 @@ class OcorrenciaImagem extends Model
     protected $fillable = [
         'ocorrencia_id',
         'tipo',
+        'par',
         'path',
     ];
 
