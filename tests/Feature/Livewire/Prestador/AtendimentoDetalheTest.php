@@ -31,7 +31,7 @@ class AtendimentoDetalheTest extends TestCase
 
         $this->prestador = User::factory()->prestador()->create();
         $this->colaborador = Colaborador::factory()->create(['user_id' => $this->prestador->id]);
-        $this->ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+        $this->ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
             'colaborador_id' => $this->colaborador->id,
             'email_enviado' => null,
         ]);
@@ -65,6 +65,73 @@ class AtendimentoDetalheTest extends TestCase
             ->assertSee($this->ocorrencia->agencia);
     }
 
+    public function test_prestador_can_see_iniciar_atendimento_button_when_not_started(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->assertSee('Iniciar Atendimento');
+    }
+
+    public function test_prestador_can_iniciar_atendimento(): void
+    {
+        $this->freezeTime();
+
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->call('iniciarAtendimento')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertNotNull($ocorrencia->datahora_chegada);
+        $this->assertEquals(now()->startOfSecond()->toDateTimeString(), $ocorrencia->datahora_chegada->toDateTimeString());
+    }
+
+    public function test_prestador_cannot_iniciar_atendimento_twice(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->call('iniciarAtendimento')
+            ->assertForbidden();
+    }
+
+    public function test_prestador_can_iniciar_atendimento_from_aberto(): void
+    {
+        $this->freezeTime();
+
+        $ocorrencia = Ocorrencia::factory()->aberto()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->call('iniciarAtendimento')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals(OcorrenciaStatus::Andamento, $ocorrencia->status);
+        $this->assertNotNull($ocorrencia->datahora_chegada);
+    }
+
+    public function test_prestador_cannot_iniciar_atendimento_with_wrong_status(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->call('iniciarAtendimento')
+            ->assertForbidden();
+    }
+
     public function test_prestador_can_save_comentarios(): void
     {
         Livewire::actingAs($this->prestador)
@@ -77,6 +144,19 @@ class AtendimentoDetalheTest extends TestCase
             'id' => $this->ocorrencia->id,
             'comentarios_prestador' => 'Trabalho realizado com sucesso',
         ]);
+    }
+
+    public function test_prestador_cannot_save_comentarios_before_iniciar(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->set('comentariosPrestador', 'Teste')
+            ->call('salvarComentarios')
+            ->assertForbidden();
     }
 
     public function test_prestador_can_upload_fotos_antes(): void
@@ -185,11 +265,12 @@ class AtendimentoDetalheTest extends TestCase
             ->call('concluir');
 
         $this->ocorrencia->refresh();
-        $this->assertNotEquals(OcorrenciaStatus::Concluido, $this->ocorrencia->status);
+        $this->assertNotEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
     }
 
     public function test_prestador_can_concluir_with_all_requirements(): void
     {
+        $this->freezeTime();
         Storage::fake('public');
 
         OcorrenciaImagem::create([
@@ -210,7 +291,9 @@ class AtendimentoDetalheTest extends TestCase
             ->assertHasNoErrors();
 
         $this->ocorrencia->refresh();
-        $this->assertEquals(OcorrenciaStatus::Concluido, $this->ocorrencia->status);
+        $this->assertEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
+        $this->assertNotNull($this->ocorrencia->datahora_saida);
+        $this->assertEquals(now()->startOfSecond()->toDateTimeString(), $this->ocorrencia->datahora_saida->toDateTimeString());
     }
 
     public function test_prestador_cannot_concluir_without_antes_image(): void
@@ -227,7 +310,7 @@ class AtendimentoDetalheTest extends TestCase
             ->call('concluir');
 
         $this->ocorrencia->refresh();
-        $this->assertNotEquals(OcorrenciaStatus::Concluido, $this->ocorrencia->status);
+        $this->assertNotEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
     }
 
     public function test_prestador_cannot_concluir_without_email_sent(): void
@@ -248,7 +331,19 @@ class AtendimentoDetalheTest extends TestCase
             ->call('concluir');
 
         $this->ocorrencia->refresh();
-        $this->assertNotEquals(OcorrenciaStatus::Concluido, $this->ocorrencia->status);
+        $this->assertNotEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
+    }
+
+    public function test_prestador_cannot_concluir_before_iniciar(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->call('concluir')
+            ->assertForbidden();
     }
 
     public function test_guest_cannot_access_atendimento_page(): void
@@ -256,5 +351,54 @@ class AtendimentoDetalheTest extends TestCase
         $response = $this->get(route('prestador.atendimento', $this->ocorrencia->id));
 
         $response->assertRedirect(route('login'));
+    }
+
+    public function test_prestador_sees_revisar_message_after_concluding(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->assertSee('Aguardando revisão do administrador');
+    }
+
+    public function test_prestador_sees_concluida_message(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->concluida()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->assertSee('Esta ocorrência foi concluída');
+    }
+
+    public function test_prestador_sees_revisado_por_when_concluida(): void
+    {
+        $admin = User::factory()->admin()->create(['name' => 'João Admin']);
+
+        $ocorrencia = Ocorrencia::factory()->concluida()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'concluido_por' => $admin->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->assertSee('Revisado por:')
+            ->assertSee('João Admin');
+    }
+
+    public function test_prestador_sees_iniciar_atendimento_when_aberto(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->aberto()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->assertSee('Iniciar Atendimento')
+            ->assertDontSee('Esta ocorrência foi concluída');
     }
 }

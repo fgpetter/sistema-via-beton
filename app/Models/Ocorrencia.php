@@ -33,6 +33,9 @@ class Ocorrencia extends Model
         'email_rat_enviado',
         'comentarios',
         'comentarios_prestador',
+        'datahora_chegada',
+        'datahora_saida',
+        'concluido_por',
     ];
 
     /**
@@ -45,12 +48,19 @@ class Ocorrencia extends Model
             'abertura' => 'date',
             'email_enviado' => 'datetime',
             'email_rat_enviado' => 'datetime',
+            'datahora_chegada' => 'datetime',
+            'datahora_saida' => 'datetime',
         ];
     }
 
     public function colaborador(): BelongsTo
     {
         return $this->belongsTo(Colaborador::class);
+    }
+
+    public function concluidoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'concluido_por');
     }
 
     public function imagens(): HasMany
@@ -66,6 +76,11 @@ class Ocorrencia extends Model
     public function imagensDepois(): HasMany
     {
         return $this->imagens()->where('tipo', TipoImagemOcorrencia::Depois);
+    }
+
+    public function atendimentoIniciado(): bool
+    {
+        return $this->datahora_chegada !== null;
     }
 
     public function podeConcluir(): bool

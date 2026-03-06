@@ -39,13 +39,46 @@
                     <p class="text-default-800">{{ $this->ocorrencia->endereco }}</p>
                 </div>
             @endif
-            <div class="text-sm text-default-500">
+            <div class="flex flex-wrap gap-4 text-sm text-default-500">
                 <span>Abertura: <strong>{{ $this->ocorrencia->abertura->format('d/m/Y') }}</strong></span>
+                @if ($this->ocorrencia->datahora_chegada)
+                    <span>Chegada: <strong>{{ $this->ocorrencia->datahora_chegada->format('d/m/Y H:i') }}</strong></span>
+                @endif
+                @if ($this->ocorrencia->datahora_saida)
+                    <span>Saída: <strong>{{ $this->ocorrencia->datahora_saida->format('d/m/Y H:i') }}</strong></span>
+                @endif
             </div>
         </div>
     </div>
 
-    @if ($this->ocorrencia->status !== \App\Enums\OcorrenciaStatus::Concluido)
+    @if (in_array($this->ocorrencia->status, [\App\Enums\OcorrenciaStatus::Aberto, \App\Enums\OcorrenciaStatus::Andamento]) && ! $this->ocorrencia->atendimentoIniciado())
+
+    <!-- Botão Iniciar Atendimento -->
+    <div class="card">
+        <div class="card-body">
+            <div class="flex flex-col items-center gap-4 py-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                    <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
+                </svg>
+                <p class="text-default-600 text-center max-w-sm">
+                    Clique no botão abaixo para registrar sua chegada e iniciar o atendimento.
+                </p>
+                <button
+                    type="button"
+                    wire:click="iniciarAtendimento"
+                    wire:confirm="Confirma o início do atendimento? A data e hora de chegada serão registradas."
+                    class="btn bg-primary text-white uppercase font-semibold text-lg px-8 py-3"
+                    wire:loading.attr="disabled"
+                    wire:target="iniciarAtendimento"
+                >
+                    <span wire:loading.remove wire:target="iniciarAtendimento">Iniciar Atendimento</span>
+                    <span wire:loading wire:target="iniciarAtendimento">Iniciando...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @elseif ($this->ocorrencia->status === \App\Enums\OcorrenciaStatus::Andamento && $this->ocorrencia->atendimentoIniciado())
 
     <!-- Fotos Antes e Depois -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -117,6 +150,7 @@
     <button
         type="button"
         wire:click="concluir"
+        wire:confirm="Confirma a conclusão do atendimento? A data e hora de saída serão registradas."
         class="btn bg-success text-white uppercase font-semibold"
         wire:loading.attr="disabled"
         wire:target="concluir"
@@ -132,14 +166,43 @@
         </p>
     @endif
 
-    @else
+    @elseif ($this->ocorrencia->status === \App\Enums\OcorrenciaStatus::Revisar)
 
-    <!-- Ocorrência já concluída -->
+    <!-- Ocorrência em revisão -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="flex flex-col items-center gap-3 py-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <p class="text-default-600 font-medium">Atendimento concluído. Aguardando revisão do administrador.</p>
+            </div>
+        </div>
+    </div>
+
+    @if ($this->ocorrencia->imagensAntes->count() || $this->ocorrencia->imagensDepois->count())
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            @include('livewire.prestador.partials.image-gallery-card', ['label' => 'Antes', 'imagens' => $this->ocorrencia->imagensAntes])
+            @include('livewire.prestador.partials.image-gallery-card', ['label' => 'Depois', 'imagens' => $this->ocorrencia->imagensDepois])
+        </div>
+    @endif
+
+    @if ($this->ocorrencia->comentarios_prestador)
+        <div class="card mb-4">
+            <div class="card-header"><h6 class="card-title text-sm">Comentários do Atendimento</h6></div>
+            <div class="card-body"><p class="text-default-700">{{ $this->ocorrencia->comentarios_prestador }}</p></div>
+        </div>
+    @endif
+
+    @elseif ($this->ocorrencia->status === \App\Enums\OcorrenciaStatus::Concluido)
+
+    <!-- Ocorrência concluída -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="flex flex-col items-center gap-3 py-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 <p class="text-default-600 font-medium">Esta ocorrência foi concluída.</p>
+                @if ($this->ocorrencia->concluidoPor)
+                    <p class="text-sm text-default-400">Revisado por: <strong>{{ $this->ocorrencia->concluidoPor->name }}</strong></p>
+                @endif
             </div>
         </div>
     </div>

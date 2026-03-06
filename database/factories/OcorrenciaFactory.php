@@ -29,6 +29,7 @@ class OcorrenciaFactory extends Factory
             'comentarios' => fake()->optional()->paragraph(),
         ];
     }
+
     public function aberto(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -40,6 +41,23 @@ class OcorrenciaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => OcorrenciaStatus::Andamento,
+        ]);
+    }
+
+    public function emAtendimentoIniciado(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => OcorrenciaStatus::Andamento,
+            'datahora_chegada' => now(),
+        ]);
+    }
+
+    public function revisar(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => OcorrenciaStatus::Revisar,
+            'datahora_chegada' => now()->subHours(2),
+            'datahora_saida' => now(),
         ]);
     }
 

@@ -3,7 +3,6 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
-use App\Enums\UserRole;
 use App\Livewire\Admin\OcorrenciasList;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
@@ -371,5 +370,55 @@ class OcorrenciasListTest extends TestCase
             ->call('closeDeleteModal')
             ->assertSet('showDeleteModal', false)
             ->assertSet('deletingId', null);
+    }
+
+    public function test_admin_can_concluir_revisao(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->call('concluirRevisao', $ocorrencia->id)
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals(OcorrenciaStatus::Concluido, $ocorrencia->status);
+        $this->assertEquals($this->admin->id, $ocorrencia->concluido_por);
+    }
+
+    public function test_admin_cannot_concluir_revisao_with_wrong_status(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->call('concluirRevisao', $ocorrencia->id)
+            ->assertForbidden();
+    }
+
+    public function test_non_admin_cannot_concluir_revisao(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+
+        Livewire::actingAs($this->prestador)
+            ->test(OcorrenciasList::class)
+            ->call('concluirRevisao', $ocorrencia->id)
+            ->assertForbidden();
+    }
+
+    public function test_edit_to_concluido_sets_concluido_por(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.status', OcorrenciaStatus::Concluido->value)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals(OcorrenciaStatus::Concluido, $ocorrencia->status);
+        $this->assertEquals($this->admin->id, $ocorrencia->concluido_por);
     }
 }
