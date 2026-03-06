@@ -59,12 +59,13 @@
                             <thead class="bg-default-150">
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
                                     <th class="px-3.5 py-3 text-start" scope="col">ID</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">OC</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Status</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Título</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Agência</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Responsável</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Abertura</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">E-mail Enviado</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">RAT enviada</th>
                                     @can('admin') <th class="px-3.5 py-3 text-start" scope="col">Ações</th> @endcan
                                 </tr>
                             </thead>
@@ -72,6 +73,7 @@
                                 @forelse ($this->ocorrencias as $ocorrencia)
                                     <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
                                         <td class="px-3.5 py-3 text-primary">#{{ $ocorrencia->id }}</td>
+                                        <td class="px-3.5 py-3">{{ $ocorrencia->numero_ocorrencia ?? '—' }}</td>
                                         <td class="px-3.5 py-3">
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $ocorrencia->status->color() }}/10 text-{{ $ocorrencia->status->color() }} rounded">
                                                 {{ $ocorrencia->status->label() }}
@@ -115,7 +117,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-3.5 py-8 text-center text-default-500">
+                                        <td colspan="9" class="px-3.5 py-8 text-center text-default-500">
                                             <div class="flex flex-col items-center gap-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                                                 <p>Nenhuma ocorrência encontrada.</p>

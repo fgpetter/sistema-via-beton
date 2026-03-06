@@ -58,6 +58,7 @@ class OcorrenciasList extends Component
                 $query->where(function ($q) {
                     $q->where('titulo', 'like', "%{$this->search}%")
                         ->orWhere('agencia', 'like', "%{$this->search}%")
+                        ->orWhere('numero_ocorrencia', 'like', "%{$this->search}%")
                         ->orWhereHas('colaborador', function ($colaboradorQuery) {
                             $colaboradorQuery->where('nome', 'like', "%{$this->search}%");
                         });
