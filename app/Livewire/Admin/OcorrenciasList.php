@@ -53,7 +53,7 @@ class OcorrenciasList extends Component
     public function ocorrencias()
     {
         return Ocorrencia::query()
-            ->with('colaborador')
+            ->with('colaborador.user')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('titulo', 'like', "%{$this->search}%")
@@ -83,10 +83,11 @@ class OcorrenciasList extends Component
     public function colaboradores(): array
     {
         return Colaborador::query()
+            ->with('user')
             ->orderBy('nome')
             ->get()
             ->mapWithKeys(fn (Colaborador $colaborador) => [
-                $colaborador->id => $colaborador->nome,
+                $colaborador->id => $colaborador->nome_exibicao,
             ])
             ->toArray();
     }

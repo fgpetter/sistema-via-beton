@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\TipoColaborador;
+use App\Enums\TipoContrato;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
 use App\Models\User;
@@ -16,9 +18,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin
-        User::factory()->admin()->create([
+        $admin = User::factory()->admin()->create([
             'name' => 'Admin',
             'email' => 'admin@vbeton.com.br',
+        ]);
+
+        Colaborador::create([
+            'nome' => $admin->name,
+            'tipo' => TipoColaborador::Administrativos,
+            'contrato' => TipoContrato::CLT,
+            'user_id' => $admin->id,
         ]);
 
         // Prestadores com Colaboradores

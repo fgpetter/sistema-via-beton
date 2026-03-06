@@ -71,7 +71,7 @@
                                     <tr wire:key="colaborador-{{ $colaborador->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
                                         <td class="px-3.5 py-3 text-primary">#{{ $colaborador->id }}</td>
                                         <td class="px-3.5 py-3">
-                                            <h6 class="mb-0.5 font-semibold text-default-800">{{ $colaborador->nome }}</h6>
+                                            <h6 class="mb-0.5 font-semibold text-default-800">{{ $colaborador->nome_exibicao }}</h6>
                                         </td>
                                         <td class="px-3.5 py-3">
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-primary/10 text-primary rounded">
