@@ -52,6 +52,17 @@ class Colaborador extends Model
         return $this->hasMany(Ocorrencia::class);
     }
 
+    public function getNomeExibicaoAttribute(): string
+    {
+        $isAdmin = $this->relationLoaded('user')
+            ? $this->user?->isAdmin()
+            : $this->user()->first()?->isAdmin();
+
+        return $isAdmin
+            ? "{$this->nome} (admin)"
+            : $this->nome;
+    }
+
     public function scopeTipo(Builder $query, TipoColaborador $tipo): Builder
     {
         return $query->where('tipo', $tipo);

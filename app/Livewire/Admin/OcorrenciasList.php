@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\TipoColaborador;
 use App\Livewire\Admin\Forms\OcorrenciaForm;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
@@ -53,7 +54,7 @@ class OcorrenciasList extends Component
     public function ocorrencias()
     {
         return Ocorrencia::query()
-            ->with('colaborador')
+            ->with('colaborador.user')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('titulo', 'like', "%{$this->search}%")
@@ -83,10 +84,13 @@ class OcorrenciasList extends Component
     public function colaboradores(): array
     {
         return Colaborador::query()
+            ->with('user')
             ->orderBy('nome')
             ->get()
             ->mapWithKeys(fn (Colaborador $colaborador) => [
-                $colaborador->id => $colaborador->nome,
+                $colaborador->id => $colaborador->tipo === TipoColaborador::Administrativos
+                    ? "{$colaborador->nome_exibicao} (admin)"
+                    : $colaborador->nome_exibicao,
             ])
             ->toArray();
     }
