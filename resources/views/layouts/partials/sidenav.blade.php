@@ -2,7 +2,7 @@
 <aside class="app-menu" id="app-menu">
     <!-- Sidenav Menu Brand Logo -->
     <a class="logo-box sticky top-0 flex min-h-topbar-height items-center justify-start px-6 backdrop-blur-xs"
-        href="{{ route('painel.dashboard') }}">
+        href="{{ auth()->user()->isPrestador() ? route('prestador.atendimentos') : route('painel.dashboard') }}">
         <!-- Light Brand Logo -->
         <div class="logo-light">
             <img alt="Via Beton" class="logo-lg p-4" src="{{ asset('images/viabeton_logo.png') }}" />
