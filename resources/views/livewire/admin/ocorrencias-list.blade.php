@@ -229,7 +229,7 @@
                     <form wire:submit="save">
                         <div class="p-4 overflow-y-auto max-h-[70vh]">
                             <div class="space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                     <div>
                                         <label for="status" class="block text-sm font-medium text-default-700 mb-1">Status</label>
                                         <select
@@ -305,20 +305,6 @@
                                     </div>
 
                                     <div>
-                                        <label for="endereco" class="block text-sm font-medium text-default-700 mb-1">Endereço</label>
-                                        <input
-                                            wire:model="form.endereco"
-                                            type="text"
-                                            id="endereco"
-                                            class="form-input w-full @error('endereco') border-danger @enderror"
-                                            placeholder="Endereço do local (opcional)"
-                                        >
-                                        @error('form.endereco')
-                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-
-                                    <div>
                                         <label for="colaboradorId" class="block text-sm font-medium text-default-700 mb-1">Responsável</label>
                                         <select
                                             wire:model="form.colaboradorId"
@@ -336,9 +322,25 @@
                                     </div>
                                 </div>
 
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label for="endereco" class="block text-sm font-medium text-default-700 mb-1">Endereço</label>
+                                        <input
+                                            wire:model="form.endereco"
+                                            type="text"
+                                            id="endereco"
+                                            class="form-input w-full @error('endereco') border-danger @enderror"
+                                            placeholder="Endereço do local (opcional)"
+                                        >
+                                        @error('form.endereco')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
                                 <!-- Fotos (Collapse) - Disponível apenas na edição -->
                                 @if ($form->editingId)
-                                    <div class="border border-default-200 rounded-md" x-data="{ fotosOpen: false }">
+                                    <div class="border border-blue-200 rounded-md bg-blue-50" x-data="{ fotosOpen: false }">
                                         <button
                                             type="button"
                                             @click="fotosOpen = !fotosOpen"
