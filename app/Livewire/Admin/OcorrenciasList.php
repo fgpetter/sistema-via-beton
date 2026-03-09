@@ -164,14 +164,14 @@ class OcorrenciasList extends Component
             }
         }
 
+        $this->closeModal();
+
         $this->swalToastSuccess([
             'title' => 'Salvo com sucesso!',
             'showConfirmButton' => false,
             'position' => 'top-end',
             'timer' => 2000,
         ]);
-
-        $this->closeModal();
     }
 
     public function adicionarPar(): void

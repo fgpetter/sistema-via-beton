@@ -59,6 +59,12 @@
                             </a>
                         </li>
                         <li class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('admin.enderecos') ? 'active' : '' }}" href="{{ route('admin.enderecos') }}">
+                                <span class="menu-icon"><i data-lucide="map-pin"></i></span>
+                                <div class="menu-text">Endereços</div>
+                            </a>
+                        </li>
+                        <li class="menu-item">
                             <a class="menu-link {{ request()->routeIs('admin.configuracoes-sistema') ? 'active' : '' }}" href="{{ route('admin.configuracoes-sistema') }}">
                                 <span class="menu-icon"><i data-lucide="settings"></i></span>
                                 <div class="menu-text">Configurações do sistema</div>
