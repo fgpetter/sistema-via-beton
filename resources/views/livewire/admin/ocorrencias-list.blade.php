@@ -81,7 +81,7 @@
                                             <h6 class="mb-0.5 font-semibold text-default-800">{{ $ocorrencia->titulo }}</h6>
                                         </td>
                                         <td class="px-3.5 py-3">{{ $ocorrencia->agencia }}</td>
-                                        <td class="px-3.5 py-3">{{ $ocorrencia->colaborador?->nome ?? '—' }}</td>
+                                        <td class="px-3.5 py-3">{{ $ocorrencia->colaborador?->nome_exibicao ?? '—' }}</td>
                                         <td class="px-3.5 py-3">{{ $ocorrencia->abertura->format('d/m/Y') }}</td>
                                         <td class="px-3.5 py-3">
                                             @if ($ocorrencia->email_enviado)
