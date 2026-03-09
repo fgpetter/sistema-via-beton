@@ -80,6 +80,31 @@ class Ocorrencia extends Model
             && $this->email_rat_enviado !== null;
     }
 
+    /**
+     * @return array<int, array{antes: OcorrenciaImagem|null, depois: OcorrenciaImagem|null}>
+     */
+    public function fotoPares(int $minPares = 1): array
+    {
+        $imagens = $this->imagens;
+        $maxPar = max($minPares, (int) $imagens->max('par'), 1);
+        $pares = [];
+
+        for ($i = 1; $i <= $maxPar; $i++) {
+            $parImagens = $imagens->where('par', $i);
+            $pares[$i] = [
+                'antes' => $parImagens->firstWhere('tipo', TipoImagemOcorrencia::Antes),
+                'depois' => $parImagens->firstWhere('tipo', TipoImagemOcorrencia::Depois),
+            ];
+        }
+
+        return $pares;
+    }
+
+    public function proximoPar(): int
+    {
+        return ((int) $this->imagens()->max('par')) + 1;
+    }
+
     public function scopeStatus(Builder $query, OcorrenciaStatus $status): Builder
     {
         return $query->where('status', $status);

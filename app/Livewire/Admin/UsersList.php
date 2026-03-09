@@ -14,10 +14,12 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
 class UsersList extends Component
 {
     use WithPagination;
+    use WithSweetAlert;
 
     #[Url(as: 'busca')]
     public string $search = '';
@@ -162,16 +164,21 @@ class UsersList extends Component
             }
 
             $user->update($data);
-            session()->flash('success', 'Usuário atualizado com sucesso.');
         } else {
             $temporaryPassword = Str::random(32);
             $data['password'] = Hash::make($temporaryPassword);
             $user = User::create($data);
             $user->notify(new SendPasswordResetNotification);
-            session()->flash('success', 'Usuário criado com sucesso. Um email foi enviado para o usuário definir sua senha.');
         }
 
         $this->closeModal();
+
+        $this->swalToastSuccess([
+            'title' => 'Salvo com sucesso!',
+            'showConfirmButton' => false,
+            'position' => 'top-end',
+            'timer' => 2000,
+        ]);
     }
 
     public function confirmDelete(int $userId): void

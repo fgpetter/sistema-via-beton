@@ -3,7 +3,6 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
-use App\Enums\UserRole;
 use App\Livewire\Admin\OcorrenciasList;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
@@ -12,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+use SweetAlert2\Laravel\Swal;
 use Tests\TestCase;
 
 class OcorrenciasListTest extends TestCase
@@ -82,6 +82,12 @@ class OcorrenciasListTest extends TestCase
             ->set('form.colaboradorId', $colaborador->id)
             ->set('form.descricao', 'Descrição da ocorrência')
             ->call('save')
+            ->assertDispatched(Swal::SESSION_KEY, function (string $event, array $params): bool {
+                return $event === Swal::SESSION_KEY
+                    && ($params['title'] ?? null) === 'Salvo com sucesso!'
+                    && ($params['icon'] ?? null) === 'success'
+                    && ($params['toast'] ?? null) === true;
+            })
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencias', [
