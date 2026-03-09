@@ -186,7 +186,7 @@
                 @click="$wire.closeModal()"
             ></div>
 
-            <div class="sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center relative z-10">
+            <div class="w-1/2 mx-auto min-h-screen flex items-center justify-center relative z-10">
                 <div
                     x-show="showModal"
                     x-transition:enter="ease-out duration-200"
@@ -211,21 +211,21 @@
                     <form wire:submit="save">
                         <div class="p-4 overflow-y-auto">
                             <div class="space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="nome" class="block text-sm font-medium text-default-700 mb-1">Nome</label>
-                                        <input
-                                            wire:model.blur="nome"
-                                            type="text"
-                                            id="nome"
-                                            class="form-input w-full @error('nome') border-danger @enderror"
-                                            placeholder="Ex.: AG ACEGUA"
-                                        >
-                                        @error('nome')
-                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                        @enderror
-                                    </div>
+                                <div>
+                                    <label for="nome" class="block text-sm font-medium text-default-700 mb-1">Nome</label>
+                                    <input
+                                        wire:model.blur="nome"
+                                        type="text"
+                                        id="nome"
+                                        class="form-input w-full @error('nome') border-danger @enderror"
+                                        placeholder="Ex.: AG ACEGUA"
+                                    >
+                                    @error('nome')
+                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                         <label for="tipo" class="block text-sm font-medium text-default-700 mb-1">Tipo</label>
                                         <select
@@ -242,9 +242,7 @@
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
-                                </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label for="numero" class="block text-sm font-medium text-default-700 mb-1">Número</label>
                                         <input
@@ -288,7 +286,7 @@
                                     @enderror
                                 </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                         <label for="cidadeEstado" class="block text-sm font-medium text-default-700 mb-1">Cidade/Estado</label>
                                         <input
@@ -316,16 +314,19 @@
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
-                                </div>
 
-                                <div class="flex items-center gap-2">
-                                    <input
-                                        wire:model="ativo"
-                                        type="checkbox"
-                                        id="ativo"
-                                        class="form-checkbox rounded text-primary"
-                                    >
-                                    <label for="ativo" class="text-sm font-medium text-default-700">Ativo</label>
+                                    <div>
+                                        <label for="ativo" class="block text-sm font-medium text-default-700 mb-1">Ativo</label>
+                                        <div class="flex min-h-10 items-center gap-2">
+                                            <input
+                                                wire:model="ativo"
+                                                type="checkbox"
+                                                id="ativo"
+                                                class="form-checkbox rounded text-primary"
+                                            >
+                                            <span class="text-sm text-default-700">Endereço ativo</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

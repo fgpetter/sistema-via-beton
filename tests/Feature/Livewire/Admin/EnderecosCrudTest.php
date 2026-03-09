@@ -8,6 +8,7 @@ use App\Models\Endereco;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use SweetAlert2\Laravel\Swal;
 use Tests\TestCase;
 
 class EnderecosCrudTest extends TestCase
@@ -55,6 +56,12 @@ class EnderecosCrudTest extends TestCase
             ->set('fone', '(53) 3000-0000')
             ->set('ativo', true)
             ->call('save')
+            ->assertDispatched(Swal::SESSION_KEY, function (string $event, array $params): bool {
+                return $event === Swal::SESSION_KEY
+                    && ($params['title'] ?? null) === 'Salvo com sucesso!'
+                    && ($params['icon'] ?? null) === 'success'
+                    && ($params['toast'] ?? null) === true;
+            })
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('enderecos', [

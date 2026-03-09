@@ -11,10 +11,12 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
 class EnderecosCrud extends Component
 {
     use WithPagination;
+    use WithSweetAlert;
 
     #[Url(as: 'busca')]
     public string $search = '';
@@ -162,13 +164,18 @@ class EnderecosCrud extends Component
 
         if ($this->editingId) {
             Endereco::findOrFail($this->editingId)->update($data);
-            session()->flash('success', 'Endereço atualizado com sucesso.');
         } else {
             Endereco::create($data);
-            session()->flash('success', 'Endereço criado com sucesso.');
         }
 
         $this->closeModal();
+
+        $this->swalToastSuccess([
+            'title' => 'Salvo com sucesso!',
+            'showConfirmButton' => false,
+            'position' => 'top-end',
+            'timer' => 2000,
+        ]);
     }
 
     public function confirmDelete(int $enderecoId): void
