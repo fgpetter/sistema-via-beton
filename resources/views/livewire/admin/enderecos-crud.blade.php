@@ -14,24 +14,29 @@
         });
     "
 >
+    @session('success')
+        <div class="mb-4 p-4 bg-success/10 text-success rounded-lg flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>{{ $value }}</span>
+        </div>
+    @endsession
 
     <div class="card">
         <div class="card-header">
-            <h6 class="card-title">Gestão de Colaboradores</h6>
-            @can('admin')
-                <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Novo Colaborador
-                </button>
-            @endcan
+            <h6 class="card-title">Endereços</h6>
+            <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Novo Endereço
+            </button>
         </div>
+
         <div class="card-header">
             <div class="md:flex items-center md:space-y-0 space-y-4 gap-3 w-1/2">
                 <div class="relative w-3/5">
                     <input
                         wire:model.live.debounce.300ms="search"
                         class="form-input form-input-sm ps-9"
-                        placeholder="Buscar por nome ou e-mail"
+                        placeholder="Buscar por nome, endereço ou cidade"
                         type="text"
                     />
                     <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -40,16 +45,15 @@
                 </div>
 
                 <div class="relative w-2/5">
-                    <select wire:model.live="tipoFilter" class="form-input form-input-sm">
-                        <option value="">Todos os tipos</option>
-                        @foreach ($this->tipos as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
+                    <select wire:model.live="ativoFilter" class="form-input form-input-sm">
+                        <option value="">Todos os status</option>
+                        <option value="1">Ativos</option>
+                        <option value="0">Inativos</option>
                     </select>
                 </div>
-
             </div>
         </div>
+
         <div class="flex flex-col">
             <div class="overflow-x-auto">
                 <div class="min-w-full inline-block align-middle">
@@ -57,46 +61,39 @@
                         <table class="min-w-full divide-y divide-default-200">
                             <thead class="bg-default-150">
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
-                                    <th class="px-3.5 py-3 text-start" scope="col">ID</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Nome</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Tipo</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Contrato</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Usuário</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Criado em</th>
-                                    @can('admin') <th class="px-3.5 py-3 text-start" scope="col">Ações</th> @endcan
+                                    <th class="px-3.5 py-3 text-start" scope="col">Nº</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Horário</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Endereço</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Cidade/Estado</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Fone</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Ativo</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($this->colaboradores as $colaborador)
-                                    <tr wire:key="colaborador-{{ $colaborador->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
-                                        <td class="px-3.5 py-3 text-primary">#{{ $colaborador->id }}</td>
+                                @forelse ($this->enderecos as $endereco)
+                                    <tr wire:key="endereco-{{ $endereco->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
+                                        <td class="px-3.5 py-3">{{ $endereco->nome }}</td>
+                                        <td class="px-3.5 py-3">{{ $endereco->tipo->label() }}</td>
+                                        <td class="px-3.5 py-3">{{ $endereco->numero }}</td>
+                                        <td class="px-3.5 py-3">{{ $endereco->horario }}</td>
+                                        <td class="px-3.5 py-3 max-w-xs truncate" title="{{ $endereco->endereco }}">{{ $endereco->endereco }}</td>
+                                        <td class="px-3.5 py-3">{{ $endereco->cidade_estado }}</td>
+                                        <td class="px-3.5 py-3">{{ $endereco->fone }}</td>
                                         <td class="px-3.5 py-3">
-                                            <h6 class="mb-0.5 font-semibold text-default-800">{{ $colaborador->nome_exibicao }}</h6>
-                                        </td>
-                                        <td class="px-3.5 py-3">
-                                            <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-primary/10 text-primary rounded">
-                                                {{ $colaborador->tipo->label() }}
-                                            </span>
-                                        </td>
-                                        <td class="px-3.5 py-3">
-                                            @if ($colaborador->contrato->label() === "CLT")
-                                                <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-success/10 text-success rounded">
-                                                    {{ $colaborador->contrato->label() }}
-                                                </span>
+                                            @if ($endereco->ativo)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">Ativo</span>
                                             @else
-                                                <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-warning/10 text-warning rounded">
-                                                    {{ $colaborador->contrato->label() }}
-                                                </span>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger/10 text-danger">Inativo</span>
                                             @endif
                                         </td>
-                                        <td class="py-3 px-3.5">{{ $colaborador->user->email }}</td>
-                                        <td class="py-3 px-3.5">{{ $colaborador->created_at->format('d/m/Y') }}</td>
-                                        @can('admin') 
                                         <td class="px-3.5 py-3">
                                             <div class="flex items-center gap-2">
                                                 <button
                                                     type="button"
-                                                    @click="$wire.openEditModal({{ $colaborador->id }})"
+                                                    @click="$wire.openEditModal({{ $endereco->id }})"
                                                     class="btn size-7.5 bg-default-200 hover:bg-primary/10 text-default-500 hover:text-primary"
                                                     title="Editar"
                                                 >
@@ -104,7 +101,7 @@
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    @click="$wire.confirmDelete({{ $colaborador->id }})"
+                                                    @click="$wire.confirmDelete({{ $endereco->id }})"
                                                     class="btn size-7.5 bg-default-200 hover:bg-danger/10 text-default-500 hover:text-danger"
                                                     title="Excluir"
                                                 >
@@ -112,15 +109,11 @@
                                                 </button>
                                             </div>
                                         </td>
-                                        @endcan
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-3.5 py-8 text-center text-default-500">
-                                            <div class="flex flex-col items-center gap-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                                <p>Nenhum colaborador encontrado.</p>
-                                            </div>
+                                        <td colspan="9" class="px-3.5 py-8 text-center text-default-500">
+                                            Nenhum endereço encontrado.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -129,24 +122,25 @@
                     </div>
                 </div>
             </div>
-            @if ($this->colaboradores->hasPages())
+
+            @if ($this->enderecos->hasPages())
                 <div class="card-footer">
                     <p class="text-default-500 text-sm">
-                        Exibindo <b>{{ $this->colaboradores->firstItem() ?? 0 }}</b> a <b>{{ $this->colaboradores->lastItem() ?? 0 }}</b> de <b>{{ $this->colaboradores->total() }}</b> resultados
+                        Exibindo <b>{{ $this->enderecos->firstItem() ?? 0 }}</b> a <b>{{ $this->enderecos->lastItem() ?? 0 }}</b> de <b>{{ $this->enderecos->total() }}</b> resultados
                     </p>
                     <nav aria-label="Pagination" class="flex items-center gap-2">
-                        @if ($this->colaboradores->onFirstPage())
+                        @if ($this->enderecos->onFirstPage())
                             <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="15 18 9 12 15 6"/></svg> Anterior
+                                Anterior
                             </button>
                         @else
                             <button wire:click="previousPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="15 18 9 12 15 6"/></svg> Anterior
+                                Anterior
                             </button>
                         @endif
 
-                        @foreach ($this->colaboradores->getUrlRange(1, $this->colaboradores->lastPage()) as $page => $url)
-                            @if ($page == $this->colaboradores->currentPage())
+                        @foreach ($this->enderecos->getUrlRange(1, $this->enderecos->lastPage()) as $page => $url)
+                            @if ($page == $this->enderecos->currentPage())
                                 <button class="btn size-7.5 bg-primary text-white" type="button">{{ $page }}</button>
                             @else
                                 <button wire:click="gotoPage({{ $page }})" class="btn size-7.5 bg-transparent border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
@@ -155,13 +149,13 @@
                             @endif
                         @endforeach
 
-                        @if ($this->colaboradores->hasMorePages())
+                        @if ($this->enderecos->hasMorePages())
                             <button wire:click="nextPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                Próximo <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-1"><polyline points="9 18 15 12 9 6"/></svg>
+                                Próximo
                             </button>
                         @else
                             <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
-                                Próximo <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-1"><polyline points="9 18 15 12 9 6"/></svg>
+                                Próximo
                             </button>
                         @endif
                     </nav>
@@ -170,7 +164,7 @@
         </div>
     </div>
 
-    <!-- Modal Criar/Editar Colaborador -->
+    {{-- Modal de Criação/Edição --}}
     <template x-teleport="body">
         <div
             x-show="showModal"
@@ -180,7 +174,6 @@
             tabindex="-1"
             aria-labelledby="modal-title"
         >
-            <!-- Backdrop -->
             <div
                 x-show="showModal"
                 x-transition:enter="ease-out duration-200"
@@ -193,8 +186,7 @@
                 @click="$wire.closeModal()"
             ></div>
 
-            <!-- Modal Content -->
-            <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center relative z-10">
+            <div class="w-1/2 mx-auto min-h-screen flex items-center justify-center relative z-10">
                 <div
                     x-show="showModal"
                     x-transition:enter="ease-out duration-200"
@@ -208,7 +200,7 @@
                 >
                     <div class="flex justify-between items-center p-4 border-b border-default-200">
                         <h3 id="modal-title" class="font-bold text-default-800 text-base">
-                            {{ $editingId ? 'Editar Colaborador' : 'Novo Colaborador' }}
+                            {{ $editingId ? 'Editar Endereço' : 'Novo Endereço' }}
                         </h3>
                         <button type="button" aria-label="Fechar" @click="$wire.closeModal()">
                             <span class="sr-only">Fechar</span>
@@ -222,85 +214,120 @@
                                 <div>
                                     <label for="nome" class="block text-sm font-medium text-default-700 mb-1">Nome</label>
                                     <input
-                                        wire:model="nome"
+                                        wire:model.blur="nome"
                                         type="text"
                                         id="nome"
                                         class="form-input w-full @error('nome') border-danger @enderror"
-                                        placeholder="Nome completo"
+                                        placeholder="Ex.: AG ACEGUA"
                                     >
                                     @error('nome')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>
 
-                                <div>
-                                    <label for="tipo" class="block text-sm font-medium text-default-700 mb-1">Tipo</label>
-                                    <select
-                                        wire:model="tipo"
-                                        id="tipo"
-                                        class="form-input w-full @error('tipo') border-danger @enderror"
-                                    >
-                                        <option value="">Selecione um tipo</option>
-                                        @foreach ($this->tipos as $value => $label)
-                                            <option value="{{ $value }}">{{ $label }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('tipo')
-                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label for="contrato" class="block text-sm font-medium text-default-700 mb-1">Contrato</label>
-                                    <select
-                                        wire:model="contrato"
-                                        id="contrato"
-                                        class="form-input w-full @error('contrato') border-danger @enderror"
-                                    >
-                                        <option value="">Selecione um contrato</option>
-                                        @foreach ($this->contratos as $value => $label)
-                                            <option value="{{ $value }}">{{ $label }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('contrato')
-                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                @if ($editingId)
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
-                                        <label for="userName" class="block text-sm font-medium text-default-700 mb-1">Usuário</label>
-                                        <input
-                                            type="text"
-                                            id="userName"
-                                            class="form-input w-full bg-default-100"
-                                            value="{{ $nome }}"
-                                            disabled
+                                        <label for="tipo" class="block text-sm font-medium text-default-700 mb-1">Tipo</label>
+                                        <select
+                                            wire:model.blur="tipo"
+                                            id="tipo"
+                                            class="form-input w-full @error('tipo') border-danger @enderror"
                                         >
-                                        <label for="userEmail" class="block text-sm font-medium text-default-700 mt-3">Email</label>
-                                        <input
-                                            type="text"
-                                            id="userEmail"
-                                            class="form-input w-full bg-default-100"
-                                            value="{{ $email }}"
-                                            disabled
-                                        >
-                                    </div>
-                                @else
-                                    <div>
-                                        <label for="email" class="block text-sm font-medium text-default-700 mb-1">E-mail</label>
-                                        <input
-                                            wire:model="email"
-                                            type="email"
-                                            id="email"
-                                            class="form-input w-full @error('email') border-danger @enderror"
-                                            placeholder="email@exemplo.com"
-                                        >
-                                        @error('email')
+                                            <option value="">Selecione</option>
+                                            @foreach ($this->tipos as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('tipo')
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
-                                @endif
+
+                                    <div>
+                                        <label for="numero" class="block text-sm font-medium text-default-700 mb-1">Número</label>
+                                        <input
+                                            wire:model.blur="numero"
+                                            type="text"
+                                            id="numero"
+                                            class="form-input w-full @error('numero') border-danger @enderror"
+                                            placeholder="Ex.: 5"
+                                        >
+                                        @error('numero')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="horario" class="block text-sm font-medium text-default-700 mb-1">Horário</label>
+                                        <input
+                                            wire:model.blur="horario"
+                                            type="text"
+                                            id="horario"
+                                            class="form-input w-full @error('horario') border-danger @enderror"
+                                            placeholder="Ex.: 08:00 às 17:00"
+                                        >
+                                        @error('horario')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="endereco" class="block text-sm font-medium text-default-700 mb-1">Endereço</label>
+                                    <input
+                                        wire:model.blur="endereco"
+                                        type="text"
+                                        id="endereco"
+                                        class="form-input w-full @error('endereco') border-danger @enderror"
+                                        placeholder="Ex.: Rua Principal, 123"
+                                    >
+                                    @error('endereco')
+                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div>
+                                        <label for="cidadeEstado" class="block text-sm font-medium text-default-700 mb-1">Cidade/Estado</label>
+                                        <input
+                                            wire:model.blur="cidadeEstado"
+                                            type="text"
+                                            id="cidadeEstado"
+                                            class="form-input w-full @error('cidadeEstado') border-danger @enderror"
+                                            placeholder="Ex.: Porto Alegre/RS"
+                                        >
+                                        @error('cidadeEstado')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="fone" class="block text-sm font-medium text-default-700 mb-1">Fone</label>
+                                        <input
+                                            wire:model.blur="fone"
+                                            type="text"
+                                            id="fone"
+                                            class="form-input w-full @error('fone') border-danger @enderror"
+                                            placeholder="Ex.: (51) 3000-0000"
+                                        >
+                                        @error('fone')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="ativo" class="block text-sm font-medium text-default-700 mb-1">Ativo</label>
+                                        <div class="flex min-h-10 items-center gap-2">
+                                            <input
+                                                wire:model="ativo"
+                                                type="checkbox"
+                                                id="ativo"
+                                                class="form-checkbox rounded text-primary"
+                                            >
+                                            <span class="text-sm text-default-700">Endereço ativo</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -318,11 +345,9 @@
                                 wire:loading.attr="disabled"
                             >
                                 <span wire:loading.remove wire:target="save">
-                                    {{ $editingId ? 'Salvar Alterações' : 'Criar Colaborador' }}
+                                    {{ $editingId ? 'Salvar Alterações' : 'Criar Endereço' }}
                                 </span>
-                                <span wire:loading wire:target="save">
-                                    Salvando...
-                                </span>
+                                <span wire:loading wire:target="save">Salvando...</span>
                             </button>
                         </div>
                     </form>
@@ -331,7 +356,7 @@
         </div>
     </template>
 
-    <!-- Modal Confirmar Exclusão -->
+    {{-- Modal de Exclusão --}}
     <template x-teleport="body">
         <div
             x-show="showDeleteModal"
@@ -341,7 +366,6 @@
             tabindex="-1"
             aria-labelledby="delete-modal-title"
         >
-            <!-- Backdrop -->
             <div
                 x-show="showDeleteModal"
                 x-transition:enter="ease-out duration-200"
@@ -354,7 +378,6 @@
                 @click="$wire.closeDeleteModal()"
             ></div>
 
-            <!-- Modal Content -->
             <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center relative z-10">
                 <div
                     x-show="showDeleteModal"
@@ -369,7 +392,7 @@
                 >
                     <div class="flex justify-between items-center p-4 border-b border-default-200">
                         <h3 id="delete-modal-title" class="font-bold text-default-800 text-base">
-                            Excluir Colaborador
+                            Excluir Endereço
                         </h3>
                         <button type="button" aria-label="Fechar" @click="$wire.closeDeleteModal()">
                             <span class="sr-only">Fechar</span>
@@ -378,16 +401,9 @@
                     </div>
 
                     <div class="p-4 overflow-y-auto">
-                        <div class="flex items-start gap-4">
-                            <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-danger/10">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-danger"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm text-default-500">
-                                    Tem certeza que deseja excluir este colaborador? Esta ação não pode ser desfeita.
-                                </p>
-                            </div>
-                        </div>
+                        <p class="text-sm text-default-500">
+                            Tem certeza que deseja excluir este endereço? Esta ação não pode ser desfeita.
+                        </p>
                     </div>
 
                     <div class="flex items-center justify-end gap-2 p-4 border-t border-default-200">

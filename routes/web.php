@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\RoutingController;
+use App\Http\Middleware\RedirectPrestadorDashboard;
 use App\Livewire\Admin\OcorrenciasList;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Livewire\Prestador\MeusAtendimentos;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::redirect('/', '/painel');
 
 Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
-    Route::view('/', 'painel.dashboard')->name('painel.dashboard');
+    Route::view('/', 'painel.dashboard')->name('painel.dashboard')->middleware(RedirectPrestadorDashboard::class);
 
     Route::view('/perfil', 'profile.edit')->name('profile.edit');
 
@@ -18,6 +19,7 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
         Route::view('/usuarios', 'admin.usuarios')->name('admin.usuarios')->can('admin');
         Route::view('/colaboradores', 'admin.colaboradores')->name('admin.colaboradores')->can('admin');
         Route::get('/ocorrencias', OcorrenciasList::class)->name('admin.ocorrencias')->can('admin');
+        Route::view('/enderecos', 'admin.enderecos')->name('admin.enderecos')->can('admin');
         Route::view('/configuracoes-sistema', 'admin.configuracoes-sistema')->name('admin.configuracoes-sistema')->can('admin');
     });
 

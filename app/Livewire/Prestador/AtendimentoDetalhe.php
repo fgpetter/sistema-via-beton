@@ -31,11 +31,13 @@ class AtendimentoDetalhe extends Component
 
     public ?string $emailRat = null;
 
-    /** @var array<\Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
-    public array $fotosAntes = [];
+    public $fotoUpload;
 
-    /** @var array<\Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
-    public array $fotosDepois = [];
+    public ?int $uploadingPar = null;
+
+    public ?string $uploadingTipo = null;
+
+    public int $totalPares = 1;
 
     public function mount(int $ocorrenciaId): void
     {
@@ -43,6 +45,7 @@ class AtendimentoDetalhe extends Component
         $ocorrencia = $this->ensureUserOwnsOcorrencia();
         $this->comentariosPrestador = $ocorrencia->comentarios_prestador;
         $this->emailRat = $ocorrencia->email_rat;
+        $this->totalPares = max(1, (int) $ocorrencia->imagens()->max('par'));
     }
 
     protected function rules(): array
@@ -50,8 +53,7 @@ class AtendimentoDetalhe extends Component
         return [
             'comentariosPrestador' => ['nullable', 'string'],
             'emailRat' => ['nullable', 'email', 'max:255'],
-            'fotosAntes.*' => ['image', 'max:5120'],
-            'fotosDepois.*' => ['image', 'max:5120'],
+            'fotoUpload' => ['nullable', 'image', 'max:5120'],
         ];
     }
 
@@ -60,17 +62,15 @@ class AtendimentoDetalhe extends Component
         return [
             'emailRat.email' => 'O e-mail informado não é válido.',
             'emailRat.max' => 'O e-mail não pode ter mais de 255 caracteres.',
-            'fotosAntes.*.image' => 'O arquivo deve ser uma imagem.',
-            'fotosAntes.*.max' => 'Cada imagem deve ter no máximo 5MB.',
-            'fotosDepois.*.image' => 'O arquivo deve ser uma imagem.',
-            'fotosDepois.*.max' => 'Cada imagem deve ter no máximo 5MB.',
+            'fotoUpload.image' => 'O arquivo deve ser uma imagem.',
+            'fotoUpload.max' => 'A imagem deve ter no máximo 5MB.',
         ];
     }
 
     #[Computed]
     public function ocorrencia(): Ocorrencia
     {
-        return Ocorrencia::with(['colaborador', 'imagensAntes', 'imagensDepois', 'concluidoPor'])
+        return Ocorrencia::with(['colaborador', 'imagens', 'imagensAntes', 'imagensDepois', 'concluidoPor'])
             ->findOrFail($this->ocorrenciaId);
     }
 
@@ -91,25 +91,40 @@ class AtendimentoDetalhe extends Component
         $this->swalToastSuccess(['title' => 'Atendimento iniciado!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
     }
 
-    public function salvarComentarios(): void
+    #[Computed]
+    public function fotoPares(): array
     {
-        $this->ensureAtendimentoIniciado();
-        $this->validateOnly('comentariosPrestador');
-        $this->ocorrencia->update(['comentarios_prestador' => $this->comentariosPrestador]);
-
-        $this->swalToastSuccess(['title' => 'Comentários salvos!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        return $this->ocorrencia->fotoPares($this->totalPares);
     }
 
-    public function uploadFotosAntes(): void
+    public function adicionarPar(): void
     {
-        $this->storeImages($this->fotosAntes, TipoImagemOcorrencia::Antes, 'fotosAntes');
-        $this->fotosAntes = [];
+        $this->totalPares++;
     }
 
-    public function uploadFotosDepois(): void
+    public function updatedFotoUpload(): void
     {
-        $this->storeImages($this->fotosDepois, TipoImagemOcorrencia::Depois, 'fotosDepois');
-        $this->fotosDepois = [];
+        if (! $this->fotoUpload || $this->uploadingPar === null || ! $this->uploadingTipo) {
+            return;
+        }
+
+        $this->ensureUserOwnsOcorrencia();
+        $this->validateOnly('fotoUpload');
+
+        $tipo = TipoImagemOcorrencia::from($this->uploadingTipo);
+        $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
+
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrenciaId,
+            'tipo' => $tipo,
+            'par' => $this->uploadingPar,
+            'path' => $path,
+        ]);
+
+        $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
+        unset($this->ocorrencia, $this->fotoPares);
+
+        $this->swalToastSuccess(['title' => 'Foto enviada!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
     }
 
     public function removerImagem(int $imagemId): void
@@ -121,7 +136,16 @@ class AtendimentoDetalhe extends Component
 
         Storage::disk('public')->delete($imagem->path);
         $imagem->delete();
-        unset($this->ocorrencia);
+        unset($this->ocorrencia, $this->fotoPares);
+    }
+
+    public function salvarComentarios(): void
+    {
+        $this->ensureAtendimentoIniciado();
+        $this->validateOnly('comentariosPrestador');
+        $this->ocorrencia->update(['comentarios_prestador' => $this->comentariosPrestador]);
+
+        $this->swalToastSuccess(['title' => 'Comentários salvos!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
     }
 
     public function enviarEmail(): void
@@ -188,24 +212,6 @@ class AtendimentoDetalhe extends Component
         }
 
         return $ocorrencia;
-    }
-
-    private function storeImages(array $files, TipoImagemOcorrencia $tipo, string $field): void
-    {
-        $this->ensureAtendimentoIniciado();
-        $this->validateOnly("{$field}.*");
-
-        foreach ($files as $foto) {
-            $path = $foto->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
-            OcorrenciaImagem::create([
-                'ocorrencia_id' => $this->ocorrenciaId,
-                'tipo' => $tipo,
-                'path' => $path,
-            ]);
-        }
-
-        unset($this->ocorrencia);
-        $this->swalToastSuccess(['title' => 'Fotos enviadas!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
     }
 
     public function render(): View

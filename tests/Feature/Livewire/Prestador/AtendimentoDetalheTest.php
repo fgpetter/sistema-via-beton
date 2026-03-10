@@ -69,6 +69,7 @@ class AtendimentoDetalheTest extends TestCase
     {
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
+            'datahora_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -82,6 +83,7 @@ class AtendimentoDetalheTest extends TestCase
 
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
+            'datahora_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -108,6 +110,7 @@ class AtendimentoDetalheTest extends TestCase
 
         $ocorrencia = Ocorrencia::factory()->aberto()->create([
             'colaborador_id' => $this->colaborador->id,
+            'datahora_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -159,53 +162,65 @@ class AtendimentoDetalheTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_prestador_can_upload_fotos_antes(): void
+    public function test_prestador_can_upload_foto_antes(): void
     {
         Storage::fake('public');
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
-            ->set('fotosAntes', [UploadedFile::fake()->image('antes1.jpg')])
-            ->call('uploadFotosAntes')
+            ->set('uploadingPar', 1)
+            ->set('uploadingTipo', TipoImagemOcorrencia::Antes->value)
+            ->set('fotoUpload', UploadedFile::fake()->image('antes1.jpg'))
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencia_imagens', [
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Antes->value,
+            'par' => 1,
         ]);
     }
 
-    public function test_prestador_can_upload_fotos_depois(): void
+    public function test_prestador_can_upload_foto_depois(): void
     {
         Storage::fake('public');
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
-            ->set('fotosDepois', [UploadedFile::fake()->image('depois1.jpg')])
-            ->call('uploadFotosDepois')
+            ->set('uploadingPar', 1)
+            ->set('uploadingTipo', TipoImagemOcorrencia::Depois->value)
+            ->set('fotoUpload', UploadedFile::fake()->image('depois1.jpg'))
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencia_imagens', [
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Depois->value,
+            'par' => 1,
         ]);
     }
 
-    public function test_prestador_can_upload_multiple_images(): void
+    public function test_prestador_can_upload_multiple_pairs(): void
     {
         Storage::fake('public');
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
-            ->set('fotosAntes', [
-                UploadedFile::fake()->image('antes1.jpg'),
-                UploadedFile::fake()->image('antes2.jpg'),
-                UploadedFile::fake()->image('antes3.jpg'),
-            ])
-            ->call('uploadFotosAntes')
+            ->set('uploadingPar', 1)
+            ->set('uploadingTipo', TipoImagemOcorrencia::Antes->value)
+            ->set('fotoUpload', UploadedFile::fake()->image('antes1.jpg'))
+            ->set('uploadingPar', 1)
+            ->set('uploadingTipo', TipoImagemOcorrencia::Depois->value)
+            ->set('fotoUpload', UploadedFile::fake()->image('depois1.jpg'))
+            ->set('uploadingPar', 2)
+            ->set('uploadingTipo', TipoImagemOcorrencia::Antes->value)
+            ->set('fotoUpload', UploadedFile::fake()->image('antes2.jpg'))
             ->assertHasNoErrors();
 
         $this->assertEquals(3, OcorrenciaImagem::where('ocorrencia_id', $this->ocorrencia->id)->count());
+        $this->assertDatabaseHas('ocorrencia_imagens', [
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'par' => 2,
+            'tipo' => TipoImagemOcorrencia::Antes->value,
+        ]);
     }
 
     public function test_prestador_can_remove_image(): void
@@ -215,6 +230,7 @@ class AtendimentoDetalheTest extends TestCase
         $imagem = OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
             'path' => 'ocorrencias/test/antes/test.jpg',
         ]);
 
@@ -276,11 +292,13 @@ class AtendimentoDetalheTest extends TestCase
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
             'path' => 'test/antes.jpg',
         ]);
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Depois,
+            'par' => 1,
             'path' => 'test/depois.jpg',
         ]);
         $this->ocorrencia->update(['email_rat_enviado' => now()]);
@@ -301,6 +319,7 @@ class AtendimentoDetalheTest extends TestCase
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Depois,
+            'par' => 1,
             'path' => 'test/depois.jpg',
         ]);
         $this->ocorrencia->update(['email_rat_enviado' => now()]);
@@ -318,11 +337,13 @@ class AtendimentoDetalheTest extends TestCase
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
             'path' => 'test/antes.jpg',
         ]);
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Depois,
+            'par' => 1,
             'path' => 'test/depois.jpg',
         ]);
 
@@ -338,6 +359,7 @@ class AtendimentoDetalheTest extends TestCase
     {
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
+            'datahora_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -394,6 +416,7 @@ class AtendimentoDetalheTest extends TestCase
     {
         $ocorrencia = Ocorrencia::factory()->aberto()->create([
             'colaborador_id' => $this->colaborador->id,
+            'datahora_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
