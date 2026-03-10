@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\PrazoUnidade;
 use App\Models\Colaborador;
 use App\Models\Prazo;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,16 +19,23 @@ class OcorrenciaFactory extends Factory
     public function definition(): array
     {
         return [
+            'numero_ocorrencia' => fake()->optional(0.7)->numerify('OC-#####'),
             'status' => fake()->randomElement(OcorrenciaStatus::cases()),
             'titulo' => fake()->sentence(4),
             'descricao' => fake()->optional()->paragraph(),
             'abertura' => fake()->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
             'colaborador_id' => Colaborador::factory(),
-            'prazo_id' => Prazo::factory(),
+            'prazo_id' => (Prazo::query()->inRandomOrder()->first()
+                ?? Prazo::firstOrCreate(
+                    ['nome' => Prazo::EMERGENCIAL],
+                    ['prazo_valor' => 6, 'prazo_unidade' => PrazoUnidade::Hora->value]
+                ))->id,
             'agencia' => fake()->company(),
             'endereco' => fake()->optional()->address(),
             'email_enviado' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
             'email_rat' => fake()->optional(0.3)->safeEmail(),
+            'datahora_chegada' => fake()->optional(0.4)->dateTimeBetween('-3 months', 'now'),
+            'datahora_saida' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
             'comentarios' => fake()->optional()->paragraph(),
         ];
     }
@@ -57,7 +65,10 @@ class OcorrenciaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'prazo_id' => Prazo::query()->where('nome', Prazo::EMERGENCIAL)->first()?->id
-                ?? Prazo::factory()->state(['nome' => Prazo::EMERGENCIAL]),
+                ?? Prazo::firstOrCreate(
+                    ['nome' => Prazo::EMERGENCIAL],
+                    ['prazo_valor' => 6, 'prazo_unidade' => PrazoUnidade::Hora->value]
+                )->id,
         ]);
     }
 }

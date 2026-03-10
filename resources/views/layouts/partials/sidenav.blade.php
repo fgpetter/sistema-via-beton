@@ -2,7 +2,7 @@
 <aside class="app-menu" id="app-menu">
     <!-- Sidenav Menu Brand Logo -->
     <a class="logo-box sticky top-0 flex min-h-topbar-height items-center justify-start px-6 backdrop-blur-xs"
-        href="{{ route('painel.dashboard') }}">
+        href="{{ auth()->user()->isPrestador() ? route('prestador.atendimentos') : route('painel.dashboard') }}">
         <!-- Light Brand Logo -->
         <div class="logo-light">
             <img alt="Via Beton" class="logo-lg p-4" src="{{ asset('images/viabeton_logo.png') }}" />
@@ -56,6 +56,12 @@
                             <a class="menu-link {{ request()->routeIs('admin.ocorrencias') ? 'active' : '' }}" href="{{ route('admin.ocorrencias') }}">
                                 <span class="menu-icon"><i data-lucide="file-warning"></i></span>
                                 <div class="menu-text">Ocorrências</div>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('admin.enderecos') ? 'active' : '' }}" href="{{ route('admin.enderecos') }}">
+                                <span class="menu-icon"><i data-lucide="map-pin"></i></span>
+                                <div class="menu-text">Endereços</div>
                             </a>
                         </li>
                         <li class="menu-item">

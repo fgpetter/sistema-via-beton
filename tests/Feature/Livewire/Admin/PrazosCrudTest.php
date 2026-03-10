@@ -62,7 +62,7 @@ class PrazosCrudTest extends TestCase
 
     public function test_admin_can_update_prazo(): void
     {
-        $prazo = Prazo::factory()->create([
+        $prazo = Prazo::create([
             'nome' => 'Engenharia.Antigo',
             'prazo_valor' => 5,
             'prazo_unidade' => PrazoUnidade::Dia,
@@ -87,7 +87,11 @@ class PrazosCrudTest extends TestCase
 
     public function test_admin_can_delete_prazo(): void
     {
-        $prazo = Prazo::factory()->create();
+        $prazo = Prazo::create([
+            'nome' => 'Engenharia.Deletar',
+            'prazo_valor' => 3,
+            'prazo_unidade' => PrazoUnidade::Dia,
+        ]);
 
         Livewire::actingAs($this->admin)
             ->test(PrazosCrud::class)
@@ -104,11 +108,11 @@ class PrazosCrudTest extends TestCase
         Carbon::setTestNow(Carbon::parse('2026-03-02 10:00:00'));
 
         $baseDate = now();
-        $prazoHora = Prazo::factory()->make([
+        $prazoHora = new Prazo([
             'prazo_valor' => 6,
             'prazo_unidade' => PrazoUnidade::Hora,
         ]);
-        $prazoDia = Prazo::factory()->make([
+        $prazoDia = new Prazo([
             'prazo_valor' => 5,
             'prazo_unidade' => PrazoUnidade::Dia,
         ]);

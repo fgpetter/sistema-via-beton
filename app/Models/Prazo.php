@@ -3,15 +3,11 @@
 namespace App\Models;
 
 use App\Enums\PrazoUnidade;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 class Prazo extends Model
 {
-    /** @use HasFactory<\Database\Factories\PrazoFactory> */
-    use HasFactory;
-
     const EMERGENCIAL = 'Engenharia.Emergencial';
 
     /**
