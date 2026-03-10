@@ -47,6 +47,23 @@ class OcorrenciaFactory extends Factory
         ]);
     }
 
+    public function emAtendimentoIniciado(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => OcorrenciaStatus::Andamento,
+            'datahora_chegada' => now(),
+        ]);
+    }
+
+    public function revisar(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => OcorrenciaStatus::Revisar,
+            'datahora_chegada' => now()->subHours(2),
+            'datahora_saida' => now(),
+        ]);
+    }
+
     public function concluida(): static
     {
         return $this->state(fn (array $attributes) => [

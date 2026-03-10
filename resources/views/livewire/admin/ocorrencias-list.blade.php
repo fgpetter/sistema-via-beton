@@ -79,6 +79,9 @@
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $ocorrencia->status->color() }}/10 text-{{ $ocorrencia->status->color() }} rounded">
                                                 {{ $ocorrencia->status->label() }}
                                             </span>
+                                            @if ($ocorrencia->status === \App\Enums\OcorrenciaStatus::Concluido && $ocorrencia->concluidoPor)
+                                                <p class="text-xs text-default-400 mt-0.5">por {{ $ocorrencia->concluidoPor->name }}</p>
+                                            @endif
                                         </td>
                                         <td class="px-3.5 py-3">
                                             <h6 class="mb-0.5 font-semibold text-default-800">{{ $ocorrencia->titulo }}</h6>
@@ -106,6 +109,19 @@
                                         @can('admin')
                                         <td class="px-3.5 py-3">
                                             <div class="flex items-center gap-2">
+                                                @if ($ocorrencia->status === \App\Enums\OcorrenciaStatus::Revisar)
+                                                    <button
+                                                        type="button"
+                                                        wire:click="concluirRevisao({{ $ocorrencia->id }})"
+                                                        wire:confirm="Confirma a conclusão da revisão desta ocorrência?"
+                                                        class="btn size-7.5 bg-success/10 hover:bg-success/20 text-success"
+                                                        title="Concluir Revisão"
+                                                        wire:loading.attr="disabled"
+                                                        wire:target="concluirRevisao({{ $ocorrencia->id }})"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                    </button>
+                                                @endif
                                                 <button
                                                     type="button"
                                                     @click="$wire.openEditModal({{ $ocorrencia->id }})"
