@@ -68,7 +68,7 @@ class OcorrenciasList extends Component
     public function ocorrencias()
     {
         return Ocorrencia::query()
-            ->with(['colaborador', 'prazo'])
+            ->with(['colaborador', 'prazo', 'concluidoPor'])
             ->withCount('imagens')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -167,7 +167,14 @@ class OcorrenciasList extends Component
         $this->form->validate();
 
         if ($this->form->editingId) {
-            Ocorrencia::findOrFail($this->form->editingId)->update($this->form->toData());
+            $data = $this->form->toData();
+            $ocorrencia = Ocorrencia::findOrFail($this->form->editingId);
+
+            if ($data['status'] === OcorrenciaStatus::Concluido->value && $ocorrencia->status !== OcorrenciaStatus::Concluido) {
+                $data['concluido_por'] = auth()->id();
+            }
+
+            $ocorrencia->update($data);
         } else {
             $ocorrencia = Ocorrencia::create($this->form->toData());
 
@@ -234,6 +241,29 @@ class OcorrenciasList extends Component
         Storage::disk('public')->delete($imagem->path);
         $imagem->delete();
         unset($this->editingOcorrencia, $this->editingFotoPares);
+    }
+
+    public function concluirRevisao(int $ocorrenciaId): void
+    {
+        $this->ensureUserIsAuthorized();
+
+        $ocorrencia = Ocorrencia::findOrFail($ocorrenciaId);
+
+        if ($ocorrencia->status !== OcorrenciaStatus::Revisar) {
+            abort(403, 'Apenas ocorrências em revisão podem ser concluídas.');
+        }
+
+        $ocorrencia->update([
+            'status' => OcorrenciaStatus::Concluido,
+            'concluido_por' => auth()->id(),
+        ]);
+
+        $this->swalToastSuccess([
+            'title' => 'Ocorrência concluída!',
+            'showConfirmButton' => false,
+            'position' => 'top-end',
+            'timer' => 2000,
+        ]);
     }
 
     public function confirmDelete(int $ocorrenciaId): void

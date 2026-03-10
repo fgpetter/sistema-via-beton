@@ -37,6 +37,7 @@ class Ocorrencia extends Model
         'datahora_saida',
         'comentarios',
         'comentarios_prestador',
+        'concluido_por',
     ];
 
     /**
@@ -77,6 +78,11 @@ class Ocorrencia extends Model
         );
     }
 
+    public function concluidoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'concluido_por');
+    }
+
     public function imagens(): HasMany
     {
         return $this->hasMany(OcorrenciaImagem::class);
@@ -90,6 +96,11 @@ class Ocorrencia extends Model
     public function imagensDepois(): HasMany
     {
         return $this->imagens()->where('tipo', TipoImagemOcorrencia::Depois);
+    }
+
+    public function atendimentoIniciado(): bool
+    {
+        return $this->datahora_chegada !== null;
     }
 
     public function podeConcluir(): bool

@@ -70,8 +70,25 @@ class AtendimentoDetalhe extends Component
     #[Computed]
     public function ocorrencia(): Ocorrencia
     {
-        return Ocorrencia::with(['colaborador', 'imagens'])
+        return Ocorrencia::with(['colaborador', 'imagens', 'imagensAntes', 'imagensDepois', 'concluidoPor'])
             ->findOrFail($this->ocorrenciaId);
+    }
+
+    public function iniciarAtendimento(): void
+    {
+        $ocorrencia = $this->ensureUserOwnsOcorrencia();
+
+        if ($ocorrencia->atendimentoIniciado() || ! in_array($ocorrencia->status, [OcorrenciaStatus::Aberto, OcorrenciaStatus::Andamento])) {
+            abort(403, 'Não é possível iniciar este atendimento.');
+        }
+
+        $ocorrencia->update([
+            'datahora_chegada' => now(),
+            'status' => OcorrenciaStatus::Andamento,
+        ]);
+        unset($this->ocorrencia);
+
+        $this->swalToastSuccess(['title' => 'Atendimento iniciado!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
     }
 
     #[Computed]
@@ -112,7 +129,7 @@ class AtendimentoDetalhe extends Component
 
     public function removerImagem(int $imagemId): void
     {
-        $this->ensureUserOwnsOcorrencia();
+        $this->ensureAtendimentoIniciado();
 
         $imagem = OcorrenciaImagem::where('ocorrencia_id', $this->ocorrenciaId)
             ->findOrFail($imagemId);
@@ -124,7 +141,7 @@ class AtendimentoDetalhe extends Component
 
     public function salvarComentarios(): void
     {
-        $this->ensureUserOwnsOcorrencia();
+        $this->ensureAtendimentoIniciado();
         $this->validateOnly('comentariosPrestador');
         $this->ocorrencia->update(['comentarios_prestador' => $this->comentariosPrestador]);
 
@@ -133,7 +150,7 @@ class AtendimentoDetalhe extends Component
 
     public function enviarEmail(): void
     {
-        $this->ensureUserOwnsOcorrencia();
+        $this->ensureAtendimentoIniciado();
         $this->validateOnly('emailRat');
 
         if (! $this->emailRat) {
@@ -150,7 +167,7 @@ class AtendimentoDetalhe extends Component
 
     public function concluir(): void
     {
-        $ocorrencia = $this->ensureUserOwnsOcorrencia();
+        $ocorrencia = $this->ensureAtendimentoIniciado();
 
         if (! $ocorrencia->podeConcluir()) {
             $this->swalToastWarning([
@@ -163,10 +180,24 @@ class AtendimentoDetalhe extends Component
             return;
         }
 
-        $ocorrencia->update(['status' => OcorrenciaStatus::Concluido]);
+        $ocorrencia->update([
+            'datahora_saida' => now(),
+            'status' => OcorrenciaStatus::Revisar,
+        ]);
         unset($this->ocorrencia);
 
-        $this->swalToastSuccess(['title' => 'Ocorrência concluída!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(['title' => 'Atendimento concluído! Aguardando revisão.', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+    }
+
+    protected function ensureAtendimentoIniciado(): Ocorrencia
+    {
+        $ocorrencia = $this->ensureUserOwnsOcorrencia();
+
+        if (! $ocorrencia->atendimentoIniciado()) {
+            abort(403, 'O atendimento ainda não foi iniciado.');
+        }
+
+        return $ocorrencia;
     }
 
     protected function ensureUserOwnsOcorrencia(): Ocorrencia
