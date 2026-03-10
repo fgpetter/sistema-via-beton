@@ -61,6 +61,7 @@
                                     <th class="px-3.5 py-3 text-start" scope="col">ID</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">OC</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Status</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Categoria</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Título</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Agência</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Responsável</th>
@@ -72,7 +73,7 @@
                             </thead>
                             <tbody>
                                 @forelse ($this->ocorrencias as $ocorrencia)
-                                    <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
+                                    <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap {{ $ocorrencia->isEmergencial() ? 'bg-danger/10 border-l-4 border-l-danger' : '' }}">
                                         <td class="px-3.5 py-3 text-primary">#{{ $ocorrencia->id }}</td>
                                         <td class="px-3.5 py-3">{{ $ocorrencia->numero_ocorrencia ?? '—' }}</td>
                                         <td class="px-3.5 py-3">
@@ -81,6 +82,15 @@
                                             </span>
                                             @if ($ocorrencia->status === \App\Enums\OcorrenciaStatus::Concluido && $ocorrencia->concluidoPor)
                                                 <p class="text-xs text-default-400 mt-0.5">por {{ $ocorrencia->concluidoPor->name }}</p>
+                                            @endif
+                                        </td>
+                                        <td class="px-3.5 py-3">
+                                            @if ($ocorrencia->isEmergencial())
+                                                <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-bold bg-danger/15 text-danger rounded">
+                                                    {{ $ocorrencia->prazo->nome }}
+                                                </span>
+                                            @else
+                                                <span class="text-default-600">{{ $ocorrencia->prazo?->nome ?? '—' }}</span>
                                             @endif
                                         </td>
                                         <td class="px-3.5 py-3">
@@ -303,6 +313,23 @@
                                         placeholder="Descrição detalhada (opcional)"
                                     ></textarea>
                                     @error('form.descricao')
+                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="prazoId" class="block text-sm font-medium text-default-700 mb-1">Categoria</label>
+                                    <select
+                                        wire:model="form.prazoId"
+                                        id="prazoId"
+                                        class="form-input w-full @error('prazoId') border-danger @enderror"
+                                    >
+                                        <option value="">Selecione uma categoria</option>
+                                        @foreach ($this->prazos as $id => $nome)
+                                            <option value="{{ $id }}">{{ $nome }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('form.prazoId')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>

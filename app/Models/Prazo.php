@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use App\Enums\PrazoUnidade;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 class Prazo extends Model
 {
-    /** @use HasFactory<\Database\Factories\PrazoFactory> */
-    use HasFactory;
+    const EMERGENCIAL = 'Engenharia.Emergencial';
 
     /**
      * @var list<string>
@@ -35,6 +33,11 @@ class Prazo extends Model
     public function getPrazoFormatadoAttribute(): string
     {
         return $this->prazo_valor.' '.$this->prazo_unidade->label($this->prazo_valor);
+    }
+
+    public function isEmergencial(): bool
+    {
+        return $this->nome === self::EMERGENCIAL;
     }
 
     public function calcularDataLimite(Carbon $dataBase): Carbon

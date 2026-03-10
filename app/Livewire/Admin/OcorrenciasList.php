@@ -10,6 +10,7 @@ use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
+use App\Models\Prazo;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Mail;
@@ -67,7 +68,7 @@ class OcorrenciasList extends Component
     public function ocorrencias()
     {
         return Ocorrencia::query()
-            ->with(['colaborador', 'concluidoPor'])
+            ->with(['colaborador', 'prazo', 'concluidoPor'])
             ->withCount('imagens')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -85,6 +86,7 @@ class OcorrenciasList extends Component
                     $query->status($status);
                 }
             })
+            ->emergenciaisFirst()
             ->orderByDesc('abertura')
             ->paginate(10);
     }
@@ -106,6 +108,18 @@ class OcorrenciasList extends Component
                 $colaborador->id => $colaborador->tipo === TipoColaborador::Administrativos
                     ? "{$colaborador->nome_exibicao} (admin)"
                     : $colaborador->nome_exibicao,
+            ])
+            ->toArray();
+    }
+
+    #[Computed]
+    public function prazos(): array
+    {
+        return Prazo::query()
+            ->orderBy('nome')
+            ->get()
+            ->mapWithKeys(fn (Prazo $prazo) => [
+                $prazo->id => $prazo->nome,
             ])
             ->toArray();
     }

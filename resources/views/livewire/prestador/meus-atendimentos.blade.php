@@ -6,11 +6,16 @@
             <a
                 wire:key="ocorrencia-{{ $ocorrencia->id }}"
                 href="{{ route('prestador.atendimento', $ocorrencia->id) }}"
-                class="block card hover:shadow-lg transition-shadow duration-200"
+                class="block card hover:shadow-lg transition-shadow duration-200 {{ $ocorrencia->isEmergencial() ? 'border-l-4 border-l-danger bg-danger/5' : '' }}"
             >
                 <div class="card-body">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1 min-w-0">
+                            @if ($ocorrencia->isEmergencial())
+                                <span class="py-0.5 px-2 inline-flex items-center text-xs font-bold bg-danger/15 text-danger rounded mb-1">
+                                    {{ $ocorrencia->prazo->nome }}
+                                </span>
+                            @endif
                             <h6 class="font-semibold text-default-800 text-base mb-1">{{ $ocorrencia->agencia }}</h6>
                             <p class="text-default-700 font-medium text-sm mb-2">{{ $ocorrencia->titulo }}</p>
                             @if ($ocorrencia->descricao)
