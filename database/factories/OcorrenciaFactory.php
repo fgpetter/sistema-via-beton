@@ -17,6 +17,7 @@ class OcorrenciaFactory extends Factory
     public function definition(): array
     {
         return [
+            'numero_ocorrencia' => fake()->optional(0.7)->numerify('OC-#####'),
             'status' => fake()->randomElement(OcorrenciaStatus::cases()),
             'titulo' => fake()->sentence(4),
             'descricao' => fake()->optional()->paragraph(),
@@ -26,9 +27,12 @@ class OcorrenciaFactory extends Factory
             'endereco' => fake()->optional()->address(),
             'email_enviado' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
             'email_rat' => fake()->optional(0.3)->safeEmail(),
+            'datahora_chegada' => fake()->optional(0.4)->dateTimeBetween('-3 months', 'now'),
+            'datahora_saida' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
             'comentarios' => fake()->optional()->paragraph(),
         ];
     }
+
     public function aberto(): static
     {
         return $this->state(fn (array $attributes) => [

@@ -21,6 +21,7 @@ class Ocorrencia extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'numero_ocorrencia',
         'status',
         'titulo',
         'descricao',
@@ -31,6 +32,8 @@ class Ocorrencia extends Model
         'email_enviado',
         'email_rat',
         'email_rat_enviado',
+        'datahora_chegada',
+        'datahora_saida',
         'comentarios',
         'comentarios_prestador',
     ];
@@ -45,6 +48,8 @@ class Ocorrencia extends Model
             'abertura' => 'date',
             'email_enviado' => 'datetime',
             'email_rat_enviado' => 'datetime',
+            'datahora_chegada' => 'datetime',
+            'datahora_saida' => 'datetime',
         ];
     }
 

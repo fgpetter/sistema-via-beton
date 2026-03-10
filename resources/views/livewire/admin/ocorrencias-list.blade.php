@@ -59,13 +59,14 @@
                             <thead class="bg-default-150">
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
                                     <th class="px-3.5 py-3 text-start" scope="col">ID</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">OC</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Status</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Título</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Agência</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Responsável</th>
                                     <th class="px-3.5 py-3 text-center" scope="col">Fotos</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Abertura</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">E-mail Enviado</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">RAT enviada</th>
                                     @can('admin') <th class="px-3.5 py-3 text-start" scope="col">Ações</th> @endcan
                                 </tr>
                             </thead>
@@ -73,6 +74,7 @@
                                 @forelse ($this->ocorrencias as $ocorrencia)
                                     <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
                                         <td class="px-3.5 py-3 text-primary">#{{ $ocorrencia->id }}</td>
+                                        <td class="px-3.5 py-3">{{ $ocorrencia->numero_ocorrencia ?? '—' }}</td>
                                         <td class="px-3.5 py-3">
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $ocorrencia->status->color() }}/10 text-{{ $ocorrencia->status->color() }} rounded">
                                                 {{ $ocorrencia->status->label() }}
