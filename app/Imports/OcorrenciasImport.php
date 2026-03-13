@@ -93,6 +93,7 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             'em andamento' => OcorrenciaStatus::Andamento->value,
             'concluído', 'concluido' => OcorrenciaStatus::Concluido->value,
             'revisar' => OcorrenciaStatus::Revisar->value,
+            'espera' => OcorrenciaStatus::Espera->value,
             default => OcorrenciaStatus::Aberto->value,
         };
     }

@@ -9,17 +9,20 @@ enum OcorrenciaStatus: string
      * Importado da planilha ou cadastrado manualmente
      */
     case Aberto = 'aberto';
+
     /**
      * @var string
      * Quando o admin libera o atendimento para ficar visível para o prestador
      */
     case Andamento = 'andamento';
+
     /**
      * @var string
      * Quando o campo concluido_prestador estiver preenchido, para que o admin
      * possa revisar os dados do atendimento
      */
     case Revisar = 'revisar';
+
     /**
      * @var string
      * após o admin revisar e marcar como concluido, adicionar na tabela a coluna 
@@ -27,10 +30,13 @@ enum OcorrenciaStatus: string
      */
     case Concluido = 'concluido';
 
+    case Espera = 'espera';
+
     public function label(): string
     {
         return match ($this) {
             self::Aberto => 'Aberto',
+            self::Espera => 'Em Espera',
             self::Andamento => 'Em Andamento',
             self::Revisar => 'Revisar',
             self::Concluido => 'Concluído',
@@ -44,6 +50,7 @@ enum OcorrenciaStatus: string
             self::Andamento => 'warning',
             self::Revisar => 'info',
             self::Concluido => 'success',
+            self::Espera => 'info',
         };
     }
 
