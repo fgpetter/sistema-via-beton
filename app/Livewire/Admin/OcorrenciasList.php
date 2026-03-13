@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\PrazoNome;
 use App\Enums\TipoColaborador;
 use App\Enums\TipoImagemOcorrencia;
 use App\Livewire\Admin\Forms\OcorrenciaForm;
@@ -119,7 +120,7 @@ class OcorrenciasList extends Component
             ->orderBy('nome')
             ->get()
             ->mapWithKeys(fn (Prazo $prazo) => [
-                $prazo->id => $prazo->nome,
+                $prazo->id => PrazoNome::labelFor($prazo->nome),
             ])
             ->toArray();
     }

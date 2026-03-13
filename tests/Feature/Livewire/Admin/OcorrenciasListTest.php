@@ -490,7 +490,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
-            ->assertSee('Engenharia.Vistoria e confecção');
+            ->assertSee('Vistoria e confecção');
     }
 
     public function test_admin_can_concluir_revisao(): void
