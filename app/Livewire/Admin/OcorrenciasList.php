@@ -58,6 +58,13 @@ class OcorrenciasList extends Component
 
     public int $totalPares = 1;
 
+    public function updatedImportFile(): void
+    {
+        if ($this->importFile) {
+            $this->importOcorrencias();
+        }
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();
