@@ -124,10 +124,10 @@
                                         <td class="px-3.5 py-3">
                                             @if ($ocorrencia->isEmergencial())
                                                 <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-bold bg-danger/15 text-danger rounded">
-                                                    {{ $ocorrencia->prazo->nome }}
+                                                    {{ \App\Enums\PrazoNome::labelFor($ocorrencia->prazo?->nome) }}
                                                 </span>
                                             @else
-                                                <span class="text-default-600">{{ $ocorrencia->prazo?->nome ?? '—' }}</span>
+                                                <span class="text-default-600">{{ \App\Enums\PrazoNome::labelFor($ocorrencia->prazo?->nome) }}</span>
                                             @endif
                                         </td>
                                         <td class="px-3.5 py-3">
