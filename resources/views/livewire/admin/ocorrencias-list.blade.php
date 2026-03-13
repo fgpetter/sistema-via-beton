@@ -21,12 +21,49 @@
         <div class="card-header">
             <h6 class="card-title">Gestão de Ocorrências</h6>
             @can('admin')
-                <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Nova Ocorrência
-                </button>
+                <div class="flex items-center gap-2">
+                    <div x-data="{ importing: false }">
+                        <input
+                            type="file"
+                            x-ref="importInput"
+                            wire:model="importFile"
+                            accept=".xlsx,.xls,.csv"
+                            class="hidden"
+                            @change="if ($event.target.files.length) { importing = true; $wire.importOcorrencias().then(() => { importing = false; $refs.importInput.value = ''; }); }"
+                        />
+                        <button
+                            type="button"
+                            @click="$refs.importInput.click()"
+                            class="btn btn-sm bg-success/10 text-success hover:bg-success hover:text-white"
+                            :disabled="importing"
+                        >
+                            <template x-if="!importing">
+                                <span class="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Importar Planilha
+                                </span>
+                            </template>
+                            <template x-if="importing">
+                                <span class="flex items-center">
+                                    <svg class="animate-spin me-1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                    Importando...
+                                </span>
+                            </template>
+                        </button>
+                    </div>
+
+                    <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Nova Ocorrência
+                    </button>
+                </div>
             @endcan
         </div>
+        @error('importFile')
+            <div class="px-4 pt-3">
+                <div class="bg-danger/10 text-danger text-sm rounded px-4 py-2">{{ $message }}</div>
+            </div>
+        @enderror
         <div class="card-header">
             <div class="md:flex items-center md:space-y-0 space-y-4 gap-3 w-1/2">
                 <div class="relative w-3/5">
