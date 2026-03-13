@@ -22,33 +22,29 @@
             <h6 class="card-title">Gestão de Ocorrências</h6>
             @can('admin')
                 <div class="flex items-center gap-2">
-                    <div x-data="{ importing: false }">
+                    <div x-data>
                         <input
                             type="file"
                             x-ref="importInput"
                             wire:model="importFile"
                             accept=".xlsx,.xls,.csv"
                             class="hidden"
-                            @change="if ($event.target.files.length) { importing = true; $wire.importOcorrencias().then(() => { importing = false; $refs.importInput.value = ''; }); }"
                         />
                         <button
                             type="button"
                             @click="$refs.importInput.click()"
                             class="btn btn-sm bg-success/10 text-success hover:bg-success hover:text-white"
-                            :disabled="importing"
+                            wire:loading.attr="disabled"
+                            wire:target="importFile, importOcorrencias"
                         >
-                            <template x-if="!importing">
-                                <span class="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                    Importar Planilha
-                                </span>
-                            </template>
-                            <template x-if="importing">
-                                <span class="flex items-center">
-                                    <svg class="animate-spin me-1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                                    Importando...
-                                </span>
-                            </template>
+                            <span wire:loading.remove wire:target="importFile, importOcorrencias" class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Importar Planilha
+                            </span>
+                            <span wire:loading wire:target="importFile, importOcorrencias" class="flex items-center">
+                                <svg class="animate-spin me-1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                Importando...
+                            </span>
                         </button>
                     </div>
 
