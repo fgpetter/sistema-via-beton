@@ -21,10 +21,30 @@
         <div class="card-header">
             <h6 class="card-title">Gestão de Ocorrências</h6>
             @can('admin')
-                <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Nova Ocorrência
-                </button>
+                <div class="flex items-center gap-2">
+                    <input
+                        type="file"
+                        x-ref="importInput"
+                        wire:model="importFile"
+                        accept=".xlsx,.xls,.csv"
+                        class="hidden"
+                    />
+                    <button
+                        type="button"
+                        @click="$refs.importInput.click()"
+                        wire:loading.attr="disabled"
+                        wire:target="importFile"
+                        class="btn btn-sm bg-default-200 text-default-700 hover:bg-default-300"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span wire:loading.remove wire:target="importFile">Importar Planilha</span>
+                        <span wire:loading wire:target="importFile">Importando...</span>
+                    </button>
+                    <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Nova Ocorrência
+                    </button>
+                </div>
             @endcan
         </div>
         <div class="card-header">
@@ -58,8 +78,7 @@
                         <table class="min-w-full divide-y divide-default-200">
                             <thead class="bg-default-150">
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
-                                    <th class="px-3.5 py-3 text-start" scope="col">ID</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">OC</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Nº OC</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Status</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Categoria</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Título</th>
@@ -73,9 +92,8 @@
                             </thead>
                             <tbody>
                                 @forelse ($this->ocorrencias as $ocorrencia)
-                                    <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap {{ $ocorrencia->isEmergencial() ? 'bg-danger/10 border-l-4 border-l-danger' : '' }}">
-                                        <td class="px-3.5 py-3 text-primary">#{{ $ocorrencia->id }}</td>
-                                        <td class="px-3.5 py-3">{{ $ocorrencia->numero_ocorrencia ?? '—' }}</td>
+                                    <tr wire:key="ocorrencia-{{ $ocorrencia->numero_ocorrencia }}" class="text-default-800 font-normal text-sm whitespace-nowrap {{ $ocorrencia->isEmergencial() ? 'bg-danger/10 border-l-4 border-l-danger' : '' }}">
+                                        <td class="px-3.5 py-3 text-primary">{{ $ocorrencia->numero_ocorrencia }}</td>
                                         <td class="px-3.5 py-3">
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $ocorrencia->status->color() }}/10 text-{{ $ocorrencia->status->color() }} rounded">
                                                 {{ $ocorrencia->status->label() }}
@@ -122,19 +140,19 @@
                                                 @if ($ocorrencia->status === \App\Enums\OcorrenciaStatus::Revisar)
                                                     <button
                                                         type="button"
-                                                        wire:click="concluirRevisao({{ $ocorrencia->id }})"
+                                                        wire:click="concluirRevisao({{ $ocorrencia->numero_ocorrencia }})"
                                                         wire:confirm="Confirma a conclusão da revisão desta ocorrência?"
                                                         class="btn size-7.5 bg-success/10 hover:bg-success/20 text-success"
                                                         title="Concluir Revisão"
                                                         wire:loading.attr="disabled"
-                                                        wire:target="concluirRevisao({{ $ocorrencia->id }})"
+                                                        wire:target="concluirRevisao({{ $ocorrencia->numero_ocorrencia }})"
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                                     </button>
                                                 @endif
                                                 <button
                                                     type="button"
-                                                    @click="$wire.openEditModal({{ $ocorrencia->id }})"
+                                                    @click="$wire.openEditModal({{ $ocorrencia->numero_ocorrencia }})"
                                                     class="btn size-7.5 bg-default-200 hover:bg-primary/10 text-default-500 hover:text-primary"
                                                     title="Editar"
                                                 >
@@ -142,7 +160,7 @@
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    @click="$wire.confirmDelete({{ $ocorrencia->id }})"
+                                                    @click="$wire.confirmDelete({{ $ocorrencia->numero_ocorrencia }})"
                                                     class="btn size-7.5 bg-default-200 hover:bg-danger/10 text-default-500 hover:text-danger"
                                                     title="Excluir"
                                                 >
@@ -258,6 +276,21 @@
                         <div class="p-4 overflow-y-auto max-h-[70vh]">
                             <div class="space-y-4">
                                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                    <div>
+                                        <label for="numeroOcorrencia" class="block text-sm font-medium text-default-700 mb-1">Nº da Ocorrência</label>
+                                        <input
+                                            wire:model="form.numeroOcorrencia"
+                                            type="text"
+                                            id="numeroOcorrencia"
+                                            class="form-input w-full @error('form.numeroOcorrencia') border-danger @enderror {{ $form->editingId ? 'bg-default-100 cursor-not-allowed' : '' }}"
+                                            placeholder="Ex: 12345"
+                                            @readonly($form->editingId)
+                                        >
+                                        @error('form.numeroOcorrencia')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
                                     <div>
                                         <label for="status" class="block text-sm font-medium text-default-700 mb-1">Status</label>
                                         <select

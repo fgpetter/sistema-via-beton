@@ -17,7 +17,7 @@ class OcorrenciaImagem extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'ocorrencia_id',
+        'numero_ocorrencia',
         'tipo',
         'par',
         'path',
@@ -35,6 +35,6 @@ class OcorrenciaImagem extends Model
 
     public function ocorrencia(): BelongsTo
     {
-        return $this->belongsTo(Ocorrencia::class);
+        return $this->belongsTo(Ocorrencia::class, 'numero_ocorrencia', 'numero_ocorrencia');
     }
 }

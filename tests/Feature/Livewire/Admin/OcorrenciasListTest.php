@@ -76,6 +76,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '70001')
             ->set('form.titulo', 'Nova Ocorrência')
             ->set('form.status', OcorrenciaStatus::Andamento->value)
             ->set('form.abertura', '2026-02-18')
@@ -111,6 +112,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '70002')
             ->set('form.titulo', 'Ocorrência Mínima')
             ->set('form.status', OcorrenciaStatus::Andamento->value)
             ->set('form.abertura', '2026-02-18')
@@ -139,6 +141,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '70003')
             ->set('form.titulo', 'Ocorrência com Email')
             ->set('form.status', OcorrenciaStatus::Andamento->value)
             ->set('form.abertura', '2026-02-18')
@@ -153,7 +156,7 @@ class OcorrenciasListTest extends TestCase
         $this->assertEquals(now()->format('Y-m-d H:i'), $ocorrencia->email_enviado->format('Y-m-d H:i'));
 
         Mail::assertQueued(OcorrenciaCriada::class, function (OcorrenciaCriada $mail) use ($ocorrencia) {
-            return $mail->ocorrencia->id === $ocorrencia->id
+            return $mail->ocorrencia->numero_ocorrencia === $ocorrencia->numero_ocorrencia
                 && $mail->hasTo($this->prestador->email);
         });
     }
@@ -168,7 +171,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
-            ->call('openEditModal', $ocorrencia->id)
+            ->call('openEditModal', $ocorrencia->numero_ocorrencia)
             ->set('form.titulo', 'Editado')
             ->call('save')
             ->assertHasNoErrors();
@@ -183,6 +186,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '80001')
             ->set('form.titulo', '')
             ->set('form.status', OcorrenciaStatus::Andamento->value)
             ->set('form.abertura', '2026-02-18')
@@ -196,6 +200,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '80002')
             ->set('form.titulo', 'Teste')
             ->set('form.status', '')
             ->set('form.abertura', '2026-02-18')
@@ -209,6 +214,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '80003')
             ->set('form.titulo', 'Teste')
             ->set('form.status', OcorrenciaStatus::Andamento->value)
             ->set('form.abertura', '')
@@ -222,6 +228,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '80004')
             ->set('form.titulo', 'Teste')
             ->set('form.status', OcorrenciaStatus::Andamento->value)
             ->set('form.abertura', '2026-02-18')
@@ -235,6 +242,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '80005')
             ->set('form.titulo', 'Teste')
             ->set('form.status', 'invalido')
             ->set('form.abertura', '2026-02-18')
@@ -254,7 +262,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
-            ->call('openEditModal', $ocorrencia->id)
+            ->call('openEditModal', $ocorrencia->numero_ocorrencia)
             ->assertSet('form.titulo', 'Título Original')
             ->assertSet('form.status', OcorrenciaStatus::Andamento->value)
             ->set('form.titulo', 'Título Editado')
@@ -263,7 +271,7 @@ class OcorrenciasListTest extends TestCase
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencias', [
-            'id' => $ocorrencia->id,
+            'numero_ocorrencia' => $ocorrencia->numero_ocorrencia,
             'titulo' => 'Título Editado',
             'status' => OcorrenciaStatus::Concluido->value,
         ]);
@@ -275,13 +283,13 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
-            ->call('confirmDelete', $ocorrencia->id)
+            ->call('confirmDelete', $ocorrencia->numero_ocorrencia)
             ->assertSet('showDeleteModal', true)
-            ->assertSet('deletingId', $ocorrencia->id)
+            ->assertSet('deletingId', $ocorrencia->numero_ocorrencia)
             ->call('delete');
 
         $this->assertDatabaseMissing('ocorrencias', [
-            'id' => $ocorrencia->id,
+            'numero_ocorrencia' => $ocorrencia->numero_ocorrencia,
         ]);
     }
 
@@ -299,7 +307,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->prestador)
             ->test(OcorrenciasList::class)
-            ->call('openEditModal', $ocorrencia->id)
+            ->call('openEditModal', $ocorrencia->numero_ocorrencia)
             ->assertForbidden();
     }
 
@@ -309,7 +317,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->prestador)
             ->test(OcorrenciasList::class)
-            ->call('confirmDelete', $ocorrencia->id)
+            ->call('confirmDelete', $ocorrencia->numero_ocorrencia)
             ->assertForbidden();
     }
 
@@ -373,7 +381,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
-            ->call('confirmDelete', $ocorrencia->id)
+            ->call('confirmDelete', $ocorrencia->numero_ocorrencia)
             ->assertSet('showDeleteModal', true)
             ->call('closeDeleteModal')
             ->assertSet('showDeleteModal', false)
@@ -462,6 +470,7 @@ class OcorrenciasListTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
             ->call('openCreateModal')
+            ->set('form.numeroOcorrencia', '90001')
             ->set('form.titulo', 'Emergência Teste')
             ->set('form.status', OcorrenciaStatus::Aberto->value)
             ->set('form.abertura', '2026-03-06')
@@ -499,7 +508,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
-            ->call('concluirRevisao', $ocorrencia->id)
+            ->call('concluirRevisao', $ocorrencia->numero_ocorrencia)
             ->assertHasNoErrors();
 
         $ocorrencia->refresh();
@@ -513,7 +522,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
-            ->call('concluirRevisao', $ocorrencia->id)
+            ->call('concluirRevisao', $ocorrencia->numero_ocorrencia)
             ->assertForbidden();
     }
 
@@ -523,7 +532,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->prestador)
             ->test(OcorrenciasList::class)
-            ->call('concluirRevisao', $ocorrencia->id)
+            ->call('concluirRevisao', $ocorrencia->numero_ocorrencia)
             ->assertForbidden();
     }
 
@@ -533,7 +542,7 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
-            ->call('openEditModal', $ocorrencia->id)
+            ->call('openEditModal', $ocorrencia->numero_ocorrencia)
             ->set('form.status', OcorrenciaStatus::Concluido->value)
             ->call('save')
             ->assertHasNoErrors();

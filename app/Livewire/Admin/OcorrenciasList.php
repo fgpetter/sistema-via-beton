@@ -6,6 +6,7 @@ use App\Enums\OcorrenciaStatus;
 use App\Enums\PrazoNome;
 use App\Enums\TipoColaborador;
 use App\Enums\TipoImagemOcorrencia;
+use App\Imports\OcorrenciasImport;
 use App\Livewire\Admin\Forms\OcorrenciaForm;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
@@ -23,6 +24,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
 #[Layout('layouts.vertical')]
@@ -47,6 +49,8 @@ class OcorrenciasList extends Component
 
     public ?int $deletingId = null;
 
+    public $importFile;
+
     public $fotoUpload;
 
     public ?int $uploadingPar = null;
@@ -54,6 +58,38 @@ class OcorrenciasList extends Component
     public ?string $uploadingTipo = null;
 
     public int $totalPares = 1;
+
+    public function updatedImportFile(): void
+    {
+        if (! $this->importFile) {
+            return;
+        }
+
+        $this->ensureUserIsAuthorized();
+
+        $this->validate([
+            'importFile' => ['file', 'mimes:xlsx,xls,csv', 'max:10240'],
+        ]);
+
+        $import = new OcorrenciasImport;
+        Excel::import($import, $this->importFile->getRealPath());
+
+        $this->reset('importFile');
+
+        $imported = $import->getImportedCount();
+        $skipped = $import->getSkippedCount();
+
+        $toastOptions = [
+            'title' => "Importação concluída! {$imported} importada(s), {$skipped} ignorada(s).",
+            'showConfirmButton' => false,
+            'position' => 'top-end',
+            'timer' => 9000,
+        ];
+
+        $skipped > 0
+            ? $this->swalToastWarning($toastOptions)
+            : $this->swalToastSuccess($toastOptions);
+    }
 
     public function updatedSearch(): void
     {
@@ -216,7 +252,7 @@ class OcorrenciasList extends Component
         $path = $this->fotoUpload->store("ocorrencias/{$this->form->editingId}/{$tipo->value}", 'public');
 
         OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->form->editingId,
+            'numero_ocorrencia' => $this->form->editingId,
             'tipo' => $tipo,
             'par' => $this->uploadingPar,
             'path' => $path,
@@ -236,7 +272,7 @@ class OcorrenciasList extends Component
             return;
         }
 
-        $imagem = OcorrenciaImagem::where('ocorrencia_id', $this->form->editingId)
+        $imagem = OcorrenciaImagem::where('numero_ocorrencia', $this->form->editingId)
             ->findOrFail($imagemId);
 
         Storage::disk('public')->delete($imagem->path);

@@ -11,6 +11,8 @@ class OcorrenciaForm extends Form
 {
     public ?int $editingId = null;
 
+    public string $numeroOcorrencia = '';
+
     public string $status = '';
 
     public string $titulo = '';
@@ -35,6 +37,11 @@ class OcorrenciaForm extends Form
     public function rules(): array
     {
         return [
+            'numeroOcorrencia' => [
+                'required',
+                'integer',
+                Rule::unique('ocorrencias', 'numero_ocorrencia')->ignore($this->editingId, 'numero_ocorrencia'),
+            ],
             'status' => ['required', Rule::enum(OcorrenciaStatus::class)],
             'titulo' => ['required', 'string', 'max:255'],
             'descricao' => ['nullable', 'string'],
@@ -53,6 +60,9 @@ class OcorrenciaForm extends Form
     public function messages(): array
     {
         return [
+            'numeroOcorrencia.required' => 'O nº da ocorrência é obrigatório.',
+            'numeroOcorrencia.integer' => 'O nº da ocorrência deve ser um número inteiro.',
+            'numeroOcorrencia.unique' => 'Este nº de ocorrência já está cadastrado.',
             'status.required' => 'O status é obrigatório.',
             'status.enum' => 'O status selecionado é inválido.',
             'titulo.required' => 'O título é obrigatório.',
@@ -75,7 +85,8 @@ class OcorrenciaForm extends Form
 
     public function setFromOcorrencia(Ocorrencia $ocorrencia): void
     {
-        $this->editingId = $ocorrencia->id;
+        $this->editingId = $ocorrencia->numero_ocorrencia;
+        $this->numeroOcorrencia = (string) $ocorrencia->numero_ocorrencia;
         $this->status = $ocorrencia->status->value;
         $this->titulo = $ocorrencia->titulo;
         $this->descricao = $ocorrencia->descricao;
@@ -93,6 +104,7 @@ class OcorrenciaForm extends Form
     public function toData(): array
     {
         return [
+            'numero_ocorrencia' => (int) $this->numeroOcorrencia,
             'status' => $this->status,
             'titulo' => $this->titulo,
             'descricao' => $this->descricao,

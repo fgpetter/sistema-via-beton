@@ -19,7 +19,7 @@ class OcorrenciaCriada extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Nova Ocorrência #{$this->ocorrencia->id} - {$this->ocorrencia->titulo}",
+            subject: "Nova Ocorrência {$this->ocorrencia->numero_ocorrencia} - {$this->ocorrencia->titulo}",
         );
     }
 

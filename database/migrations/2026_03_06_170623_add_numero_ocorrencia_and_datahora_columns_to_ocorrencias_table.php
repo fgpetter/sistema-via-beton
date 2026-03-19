@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ocorrencias', function (Blueprint $table) {
-            $table->string('numero_ocorrencia')->nullable()->after('id');
+            $table->unsignedBigInteger('numero_ocorrencia')->nullable()->after('id');
             $table->dateTime('datahora_chegada')->nullable()->after('email_rat_enviado');
             $table->dateTime('datahora_saida')->nullable()->after('datahora_chegada');
         });

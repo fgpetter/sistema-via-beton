@@ -17,6 +17,10 @@ class Ocorrencia extends Model
 
     protected $table = 'ocorrencias';
 
+    protected $primaryKey = 'numero_ocorrencia';
+
+    public $incrementing = false;
+
     /**
      * @var list<string>
      */
@@ -85,7 +89,7 @@ class Ocorrencia extends Model
 
     public function imagens(): HasMany
     {
-        return $this->hasMany(OcorrenciaImagem::class);
+        return $this->hasMany(OcorrenciaImagem::class, 'numero_ocorrencia', 'numero_ocorrencia');
     }
 
     public function imagensAntes(): HasMany

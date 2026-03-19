@@ -40,7 +40,7 @@ class AtendimentoDetalheTest extends TestCase
     public function test_prestador_can_access_atendimento_page(): void
     {
         $response = $this->actingAs($this->prestador)
-            ->get(route('prestador.atendimento', $this->ocorrencia->id));
+            ->get(route('prestador.atendimento', $this->ocorrencia->numero_ocorrencia));
 
         $response->assertStatus(200);
         $response->assertSee('Detalhes do Atendimento');
@@ -53,14 +53,14 @@ class AtendimentoDetalheTest extends TestCase
         $outraOcorrencia = Ocorrencia::factory()->create(['colaborador_id' => $outroColaborador->id]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $outraOcorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $outraOcorrencia->numero_ocorrencia])
             ->assertForbidden();
     }
 
     public function test_prestador_can_see_ocorrencia_details(): void
     {
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->assertSee($this->ocorrencia->titulo)
             ->assertSee($this->ocorrencia->agencia);
     }
@@ -73,7 +73,7 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->assertSee('Iniciar Atendimento');
     }
 
@@ -87,7 +87,7 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->call('iniciarAtendimento')
             ->assertHasNoErrors();
 
@@ -99,7 +99,7 @@ class AtendimentoDetalheTest extends TestCase
     public function test_prestador_cannot_iniciar_atendimento_twice(): void
     {
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->call('iniciarAtendimento')
             ->assertForbidden();
     }
@@ -114,7 +114,7 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->call('iniciarAtendimento')
             ->assertHasNoErrors();
 
@@ -130,7 +130,7 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->call('iniciarAtendimento')
             ->assertForbidden();
     }
@@ -138,13 +138,13 @@ class AtendimentoDetalheTest extends TestCase
     public function test_prestador_can_save_comentarios(): void
     {
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->set('comentariosPrestador', 'Trabalho realizado com sucesso')
             ->call('salvarComentarios')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencias', [
-            'id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'comentarios_prestador' => 'Trabalho realizado com sucesso',
         ]);
     }
@@ -153,10 +153,11 @@ class AtendimentoDetalheTest extends TestCase
     {
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
+            'datahora_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->set('comentariosPrestador', 'Teste')
             ->call('salvarComentarios')
             ->assertForbidden();
@@ -167,14 +168,14 @@ class AtendimentoDetalheTest extends TestCase
         Storage::fake('public');
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->set('uploadingPar', 1)
             ->set('uploadingTipo', TipoImagemOcorrencia::Antes->value)
             ->set('fotoUpload', UploadedFile::fake()->image('antes1.jpg'))
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencia_imagens', [
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'tipo' => TipoImagemOcorrencia::Antes->value,
             'par' => 1,
         ]);
@@ -185,14 +186,14 @@ class AtendimentoDetalheTest extends TestCase
         Storage::fake('public');
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->set('uploadingPar', 1)
             ->set('uploadingTipo', TipoImagemOcorrencia::Depois->value)
             ->set('fotoUpload', UploadedFile::fake()->image('depois1.jpg'))
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencia_imagens', [
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'tipo' => TipoImagemOcorrencia::Depois->value,
             'par' => 1,
         ]);
@@ -203,7 +204,7 @@ class AtendimentoDetalheTest extends TestCase
         Storage::fake('public');
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->set('uploadingPar', 1)
             ->set('uploadingTipo', TipoImagemOcorrencia::Antes->value)
             ->set('fotoUpload', UploadedFile::fake()->image('antes1.jpg'))
@@ -215,9 +216,9 @@ class AtendimentoDetalheTest extends TestCase
             ->set('fotoUpload', UploadedFile::fake()->image('antes2.jpg'))
             ->assertHasNoErrors();
 
-        $this->assertEquals(3, OcorrenciaImagem::where('ocorrencia_id', $this->ocorrencia->id)->count());
+        $this->assertEquals(3, OcorrenciaImagem::where('numero_ocorrencia', $this->ocorrencia->numero_ocorrencia)->count());
         $this->assertDatabaseHas('ocorrencia_imagens', [
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'par' => 2,
             'tipo' => TipoImagemOcorrencia::Antes->value,
         ]);
@@ -228,14 +229,14 @@ class AtendimentoDetalheTest extends TestCase
         Storage::fake('public');
 
         $imagem = OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'tipo' => TipoImagemOcorrencia::Antes,
             'par' => 1,
             'path' => 'ocorrencias/test/antes/test.jpg',
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->call('removerImagem', $imagem->id);
 
         $this->assertDatabaseMissing('ocorrencia_imagens', ['id' => $imagem->id]);
@@ -246,7 +247,7 @@ class AtendimentoDetalheTest extends TestCase
         $this->freezeTime();
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->set('emailRat', 'contato@agencia.com')
             ->call('enviarEmail')
             ->assertHasNoErrors();
@@ -259,7 +260,7 @@ class AtendimentoDetalheTest extends TestCase
     public function test_enviar_email_requires_email(): void
     {
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->set('emailRat', null)
             ->call('enviarEmail')
             ->assertHasErrors(['emailRat']);
@@ -268,7 +269,7 @@ class AtendimentoDetalheTest extends TestCase
     public function test_enviar_email_validates_format(): void
     {
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->set('emailRat', 'email-invalido')
             ->call('enviarEmail')
             ->assertHasErrors(['emailRat']);
@@ -277,7 +278,7 @@ class AtendimentoDetalheTest extends TestCase
     public function test_prestador_cannot_concluir_without_requirements(): void
     {
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->call('concluir');
 
         $this->ocorrencia->refresh();
@@ -290,13 +291,13 @@ class AtendimentoDetalheTest extends TestCase
         Storage::fake('public');
 
         OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'tipo' => TipoImagemOcorrencia::Antes,
             'par' => 1,
             'path' => 'test/antes.jpg',
         ]);
         OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'tipo' => TipoImagemOcorrencia::Depois,
             'par' => 1,
             'path' => 'test/depois.jpg',
@@ -304,7 +305,7 @@ class AtendimentoDetalheTest extends TestCase
         $this->ocorrencia->update(['email_rat_enviado' => now()]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->call('concluir')
             ->assertHasNoErrors();
 
@@ -317,7 +318,7 @@ class AtendimentoDetalheTest extends TestCase
     public function test_prestador_cannot_concluir_without_antes_image(): void
     {
         OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'tipo' => TipoImagemOcorrencia::Depois,
             'par' => 1,
             'path' => 'test/depois.jpg',
@@ -325,7 +326,7 @@ class AtendimentoDetalheTest extends TestCase
         $this->ocorrencia->update(['email_rat_enviado' => now()]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->call('concluir');
 
         $this->ocorrencia->refresh();
@@ -335,20 +336,20 @@ class AtendimentoDetalheTest extends TestCase
     public function test_prestador_cannot_concluir_without_email_sent(): void
     {
         OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'tipo' => TipoImagemOcorrencia::Antes,
             'par' => 1,
             'path' => 'test/antes.jpg',
         ]);
         OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->ocorrencia->id,
+            'numero_ocorrencia' => $this->ocorrencia->numero_ocorrencia,
             'tipo' => TipoImagemOcorrencia::Depois,
             'par' => 1,
             'path' => 'test/depois.jpg',
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->numero_ocorrencia])
             ->call('concluir');
 
         $this->ocorrencia->refresh();
@@ -363,14 +364,14 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->call('concluir')
             ->assertForbidden();
     }
 
     public function test_guest_cannot_access_atendimento_page(): void
     {
-        $response = $this->get(route('prestador.atendimento', $this->ocorrencia->id));
+        $response = $this->get(route('prestador.atendimento', $this->ocorrencia->numero_ocorrencia));
 
         $response->assertRedirect(route('login'));
     }
@@ -382,7 +383,7 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->assertSee('Aguardando revisão do administrador');
     }
 
@@ -393,7 +394,7 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->assertSee('Esta ocorrência foi concluída');
     }
 
@@ -407,7 +408,7 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->assertSee('Revisado por:')
             ->assertSee('João Admin');
     }
@@ -420,7 +421,7 @@ class AtendimentoDetalheTest extends TestCase
         ]);
 
         Livewire::actingAs($this->prestador)
-            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->numero_ocorrencia])
             ->assertSee('Iniciar Atendimento')
             ->assertDontSee('Esta ocorrência foi concluída');
     }

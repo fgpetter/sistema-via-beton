@@ -115,7 +115,7 @@ class AtendimentoDetalhe extends Component
         $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
 
         OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->ocorrenciaId,
+            'numero_ocorrencia' => $this->ocorrenciaId,
             'tipo' => $tipo,
             'par' => $this->uploadingPar,
             'path' => $path,
@@ -131,7 +131,7 @@ class AtendimentoDetalhe extends Component
     {
         $this->ensureAtendimentoIniciado();
 
-        $imagem = OcorrenciaImagem::where('ocorrencia_id', $this->ocorrenciaId)
+        $imagem = OcorrenciaImagem::where('numero_ocorrencia', $this->ocorrenciaId)
             ->findOrFail($imagemId);
 
         Storage::disk('public')->delete($imagem->path);

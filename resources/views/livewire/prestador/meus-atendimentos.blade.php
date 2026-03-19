@@ -4,8 +4,8 @@
     <div class="space-y-4">
         @forelse ($this->ocorrencias as $ocorrencia)
             <a
-                wire:key="ocorrencia-{{ $ocorrencia->id }}"
-                href="{{ route('prestador.atendimento', $ocorrencia->id) }}"
+                wire:key="ocorrencia-{{ $ocorrencia->numero_ocorrencia }}"
+                href="{{ route('prestador.atendimento', $ocorrencia->numero_ocorrencia) }}"
                 class="block card hover:shadow-lg transition-shadow duration-200 {{ $ocorrencia->isEmergencial() ? 'border-l-4 border-l-danger bg-danger/5' : '' }}"
             >
                 <div class="card-body">

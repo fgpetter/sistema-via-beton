@@ -8,7 +8,7 @@ Uma nova ocorrência foi atribuída a você:
 <x-mail::table>
 | Campo       | Detalhe                                          |
 |:------------|:-------------------------------------------------|
-| **ID**      | #{{ $ocorrencia->id }}                           |
+| **Nº OC**   | {{ $ocorrencia->numero_ocorrencia }}              |
 | **Título**  | {{ $ocorrencia->titulo }}                        |
 | **Status**  | {{ $ocorrencia->status->label() }}               |
 | **Agência** | {{ $ocorrencia->agencia }}                       |
