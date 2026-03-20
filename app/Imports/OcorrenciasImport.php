@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Enums\OcorrenciaStatus;
+use App\Models\Endereco;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
 use Illuminate\Support\Collection;
@@ -19,6 +20,9 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
     /** @var Collection<string, int> */
     private Collection $prazosCache;
 
+    /** @var Collection<string, int> */
+    private Collection $enderecosCache;
+
     private int $importedCount = 0;
 
     private int $skippedCount = 0;
@@ -29,6 +33,9 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
     public function __construct()
     {
         $this->prazosCache = Prazo::pluck('id', 'nome');
+        $this->enderecosCache = Endereco::pluck('id', 'nome')->mapWithKeys(
+            fn ($id, $nome) => [mb_strtoupper($nome) => $id]
+        );
     }
 
     /**
@@ -60,6 +67,7 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             'descricao' => $this->cleanValue($row['descricao'] ?? null),
             'abertura' => $this->parseExcelDate($row['data_de_abertura'] ?? null) ?? now()->format('Y-m-d'),
             'agencia' => $agencia,
+            'endereco_id' => $this->findEnderecoId($agencia),
             'prazo_id' => $this->findPrazoId($row['categoria'] ?? null),
         ]);
 
@@ -160,5 +168,14 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
     private function idJaImportado(int $id): bool
     {
         return $this->idsImportados[$id] ?? false;
+    }
+
+    private function findEnderecoId(?string $agencia): ?int
+    {
+        if (! $agencia) {
+            return null;
+        }
+
+        return $this->enderecosCache[mb_strtoupper(trim($agencia))] ?? null;
     }
 }

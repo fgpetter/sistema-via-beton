@@ -70,7 +70,7 @@ class AtendimentoDetalhe extends Component
     #[Computed]
     public function ocorrencia(): Ocorrencia
     {
-        return Ocorrencia::with(['colaborador', 'imagens', 'imagensAntes', 'imagensDepois', 'concluidoPor'])
+        return Ocorrencia::with(['colaborador', 'imagens', 'imagensAntes', 'imagensDepois', 'concluidoPor', 'enderecoVinculado'])
             ->findOrFail($this->ocorrenciaId);
     }
 

@@ -127,7 +127,12 @@
                                         <td class="px-3.5 py-3">
                                             <h6 class="mb-0.5 font-semibold text-default-800">{{ $ocorrencia->titulo }}</h6>
                                         </td>
-                                        <td class="px-3.5 py-3">{{ $ocorrencia->agencia }}</td>
+                                        <td class="px-3.5 py-3">
+                                            {{ $ocorrencia->agencia }}
+                                            @if ($ocorrencia->enderecoVinculado)
+                                                <p class="text-xs text-default-400 mt-0.5">nº {{ $ocorrencia->enderecoVinculado->numero }} · {{ $ocorrencia->enderecoVinculado->fone ?: '—' }}</p>
+                                            @endif
+                                        </td>
                                         <td class="px-3.5 py-3">{{ $ocorrencia->colaborador?->nome_exibicao ?? '—' }}</td>
                                         <td class="px-3.5 py-3 text-center">
                                             @if ($ocorrencia->imagens_count > 0)
@@ -365,21 +370,30 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-1 gap-4">
-                                    <div>
-                                        <label for="endereco" class="block text-sm font-medium text-default-700 mb-1">Endereço</label>
-                                        <input
-                                            wire:model="form.endereco"
-                                            type="text"
-                                            id="endereco"
-                                            class="form-input w-full @error('endereco') border-danger @enderror"
-                                            placeholder="Endereço do local (opcional)"
-                                        >
-                                        @error('form.endereco')
-                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                        @enderror
+                                @if ($this->editingOcorrencia?->enderecoVinculado)
+                                    <div class="bg-default-50 border border-default-200 rounded p-3 space-y-1">
+                                        <span class="text-xs font-medium text-default-500 uppercase">Endereço Vinculado</span>
+                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                                            <div>
+                                                <span class="text-default-500">Agência nº:</span>
+                                                <strong class="text-default-800">{{ $this->editingOcorrencia->enderecoVinculado->numero }}</strong>
+                                            </div>
+                                            <div>
+                                                <span class="text-default-500">Endereço:</span>
+                                                <strong class="text-default-800">{{ $this->editingOcorrencia->enderecoVinculado->endereco }}{{ $this->editingOcorrencia->enderecoVinculado->cidade_estado ? ', ' . $this->editingOcorrencia->enderecoVinculado->cidade_estado : '' }}</strong>
+                                            </div>
+                                            <div>
+                                                <span class="text-default-500">Fone:</span>
+                                                <strong class="text-default-800">{{ $this->editingOcorrencia->enderecoVinculado->fone ?: '—' }}</strong>
+                                            </div>
+                                            <div>
+                                                <span class="text-default-500">Horário:</span>
+                                                <strong class="text-default-800">{{ $this->editingOcorrencia->enderecoVinculado->horario ?: '—' }}</strong>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
+
 
                                 <!-- Fotos (Collapse) - Disponível apenas na edição -->
                                 @if ($form->editingId)
