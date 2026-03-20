@@ -23,6 +23,7 @@ Contact: themesdesign.in@gmail.com
 
 /* ========= Preline UI ========= */
 @source "preline/dist/*.js";
+@source "../../vendor/livewire/livewire/src/Features/SupportPagination/views/*.blade.php";
 @import "preline/variants.css";
 
 

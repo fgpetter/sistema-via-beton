@@ -125,40 +125,7 @@
 
             @if ($this->enderecos->hasPages())
                 <div class="card-footer">
-                    <p class="text-default-500 text-sm">
-                        Exibindo <b>{{ $this->enderecos->firstItem() ?? 0 }}</b> a <b>{{ $this->enderecos->lastItem() ?? 0 }}</b> de <b>{{ $this->enderecos->total() }}</b> resultados
-                    </p>
-                    <nav aria-label="Pagination" class="flex items-center gap-2">
-                        @if ($this->enderecos->onFirstPage())
-                            <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
-                                Anterior
-                            </button>
-                        @else
-                            <button wire:click="previousPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                Anterior
-                            </button>
-                        @endif
-
-                        @foreach ($this->enderecos->getUrlRange(1, $this->enderecos->lastPage()) as $page => $url)
-                            @if ($page == $this->enderecos->currentPage())
-                                <button class="btn size-7.5 bg-primary text-white" type="button">{{ $page }}</button>
-                            @else
-                                <button wire:click="gotoPage({{ $page }})" class="btn size-7.5 bg-transparent border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                    {{ $page }}
-                                </button>
-                            @endif
-                        @endforeach
-
-                        @if ($this->enderecos->hasMorePages())
-                            <button wire:click="nextPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                Próximo
-                            </button>
-                        @else
-                            <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
-                                Próximo
-                            </button>
-                        @endif
-                    </nav>
+                    {{ $this->enderecos->links() }}
                 </div>
             @endif
         </div>

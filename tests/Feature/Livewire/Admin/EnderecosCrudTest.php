@@ -312,4 +312,21 @@ class EnderecosCrudTest extends TestCase
             ->assertSet('nome', '')
             ->assertSet('showModal', false);
     }
+
+    public function test_pagination_shows_compact_page_links(): void
+    {
+        Endereco::factory()->count(120)->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(EnderecosCrud::class)
+            ->call('gotoPage', 6)
+            ->assertSee('Anterior')
+            ->assertSee('Próximo')
+            ->assertSee('...')
+            ->assertSee('1')
+            ->assertSee('6')
+            ->assertSee('12')
+            ->assertDontSee('2')
+            ->assertDontSee('10');
+    }
 }

@@ -97,40 +97,7 @@
 
             @if ($this->prazos->hasPages())
                 <div class="card-footer">
-                    <p class="text-default-500 text-sm">
-                        Exibindo <b>{{ $this->prazos->firstItem() ?? 0 }}</b> a <b>{{ $this->prazos->lastItem() ?? 0 }}</b> de <b>{{ $this->prazos->total() }}</b> resultados
-                    </p>
-                    <nav aria-label="Pagination" class="flex items-center gap-2">
-                        @if ($this->prazos->onFirstPage())
-                            <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
-                                Anterior
-                            </button>
-                        @else
-                            <button wire:click="previousPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                Anterior
-                            </button>
-                        @endif
-
-                        @foreach ($this->prazos->getUrlRange(1, $this->prazos->lastPage()) as $page => $url)
-                            @if ($page == $this->prazos->currentPage())
-                                <button class="btn size-7.5 bg-primary text-white" type="button">{{ $page }}</button>
-                            @else
-                                <button wire:click="gotoPage({{ $page }})" class="btn size-7.5 bg-transparent border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                    {{ $page }}
-                                </button>
-                            @endif
-                        @endforeach
-
-                        @if ($this->prazos->hasMorePages())
-                            <button wire:click="nextPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                Próximo
-                            </button>
-                        @else
-                            <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
-                                Próximo
-                            </button>
-                        @endif
-                    </nav>
+                    {{ $this->prazos->links() }}
                 </div>
             @endif
         </div>

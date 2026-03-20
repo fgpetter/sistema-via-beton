@@ -200,40 +200,7 @@
             </div>
             @if ($this->ocorrencias->hasPages())
                 <div class="card-footer">
-                    <p class="text-default-500 text-sm">
-                        Exibindo <b>{{ $this->ocorrencias->firstItem() ?? 0 }}</b> a <b>{{ $this->ocorrencias->lastItem() ?? 0 }}</b> de <b>{{ $this->ocorrencias->total() }}</b> resultados
-                    </p>
-                    <nav aria-label="Pagination" class="flex items-center gap-2">
-                        @if ($this->ocorrencias->onFirstPage())
-                            <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="15 18 9 12 15 6"/></svg> Anterior
-                            </button>
-                        @else
-                            <button wire:click="previousPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="15 18 9 12 15 6"/></svg> Anterior
-                            </button>
-                        @endif
-
-                        @foreach ($this->ocorrencias->getUrlRange(1, $this->ocorrencias->lastPage()) as $page => $url)
-                            @if ($page == $this->ocorrencias->currentPage())
-                                <button class="btn size-7.5 bg-primary text-white" type="button">{{ $page }}</button>
-                            @else
-                                <button wire:click="gotoPage({{ $page }})" class="btn size-7.5 bg-transparent border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                    {{ $page }}
-                                </button>
-                            @endif
-                        @endforeach
-
-                        @if ($this->ocorrencias->hasMorePages())
-                            <button wire:click="nextPage" class="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10" type="button">
-                                Próximo <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-1"><polyline points="9 18 15 12 9 6"/></svg>
-                            </button>
-                        @else
-                            <button disabled class="btn btn-sm border bg-transparent border-default-200 text-default-400 cursor-not-allowed" type="button">
-                                Próximo <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-1"><polyline points="9 18 15 12 9 6"/></svg>
-                            </button>
-                        @endif
-                    </nav>
+                    {{ $this->ocorrencias->links() }}
                 </div>
             @endif
         </div>
