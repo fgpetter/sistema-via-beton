@@ -23,6 +23,9 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
 
     private int $skippedCount = 0;
 
+    /** @var array<int, bool> */
+    private array $idsImportados = [];
+
     public function __construct()
     {
         $this->prazosCache = Prazo::pluck('id', 'nome');
@@ -33,6 +36,7 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
      */
     public function model(array $row): ?Ocorrencia
     {
+        $id = $this->parseOcorrenciaId($row['no_da_ocorrencia'] ?? null);
         $titulo = $this->cleanValue($row['resumo'] ?? null);
         $agencia = $this->cleanValue($row['usuario_final_afetado'] ?? $row['agencia'] ?? null);
 
@@ -42,10 +46,15 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             return null;
         }
 
+        if ($id !== null && ($this->idJaImportado($id) || Ocorrencia::where('id', $id)->exists())) {
+            $this->skippedCount++;
+
+            return null;
+        }
+
         $this->importedCount++;
 
-        return new Ocorrencia([
-            'numero_ocorrencia' => $this->cleanValue($row['no_da_ocorrencia'] ?? null),
+        $ocorrencia = new Ocorrencia([
             'status' => $this->mapStatus($row['status'] ?? null),
             'titulo' => $titulo,
             'descricao' => $this->cleanValue($row['descricao'] ?? null),
@@ -53,6 +62,13 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             'agencia' => $agencia,
             'prazo_id' => $this->findPrazoId($row['categoria'] ?? null),
         ]);
+
+        if ($id !== null) {
+            $this->idsImportados[$id] = true;
+            $ocorrencia->id = $id;
+        }
+
+        return $ocorrencia;
     }
 
     public function isEmptyWhen(array $row): bool
@@ -128,5 +144,21 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
         );
 
         return $match;
+    }
+
+    private function parseOcorrenciaId(mixed $value): ?int
+    {
+        $id = $this->cleanValue($value);
+
+        if ($id === null || ! ctype_digit($id)) {
+            return null;
+        }
+
+        return (int) $id;
+    }
+
+    private function idJaImportado(int $id): bool
+    {
+        return $this->idsImportados[$id] ?? false;
     }
 }
