@@ -56,7 +56,7 @@ class OcorrenciasImportTest extends TestCase
         $this->assertDatabaseCount('ocorrencias', 2);
 
         $this->assertDatabaseHas('ocorrencias', [
-            'numero_ocorrencia' => '9498549',
+            'id' => 9498549,
             'titulo' => 'Infiltrações no teto',
             'agencia' => 'AG FORMIGUEIRO',
             'status' => OcorrenciaStatus::Andamento->value,
@@ -120,10 +120,10 @@ class OcorrenciasImportTest extends TestCase
         $import = new OcorrenciasImport;
         $import->import($this->testFilePath);
 
-        $this->assertDatabaseHas('ocorrencias', ['numero_ocorrencia' => '1', 'status' => OcorrenciaStatus::Andamento->value]);
-        $this->assertDatabaseHas('ocorrencias', ['numero_ocorrencia' => '2', 'status' => OcorrenciaStatus::Aberto->value]);
-        $this->assertDatabaseHas('ocorrencias', ['numero_ocorrencia' => '3', 'status' => OcorrenciaStatus::Aberto->value]);
-        $this->assertDatabaseHas('ocorrencias', ['numero_ocorrencia' => '4', 'status' => OcorrenciaStatus::Concluido->value]);
+        $this->assertDatabaseHas('ocorrencias', ['id' => 1, 'status' => OcorrenciaStatus::Andamento->value]);
+        $this->assertDatabaseHas('ocorrencias', ['id' => 2, 'status' => OcorrenciaStatus::Aberto->value]);
+        $this->assertDatabaseHas('ocorrencias', ['id' => 3, 'status' => OcorrenciaStatus::Aberto->value]);
+        $this->assertDatabaseHas('ocorrencias', ['id' => 4, 'status' => OcorrenciaStatus::Concluido->value]);
     }
 
     public function test_import_converts_excel_serial_dates(): void
@@ -138,7 +138,7 @@ class OcorrenciasImportTest extends TestCase
         $import->import($this->testFilePath);
 
         $this->assertDatabaseHas('ocorrencias', [
-            'numero_ocorrencia' => '1',
+            'id' => 1,
             'abertura' => '2026-03-01',
         ]);
     }
@@ -158,7 +158,7 @@ class OcorrenciasImportTest extends TestCase
         $import->import($this->testFilePath);
 
         $this->assertDatabaseHas('ocorrencias', [
-            'numero_ocorrencia' => '1',
+            'id' => 1,
             'prazo_id' => $prazo->id,
         ]);
     }
@@ -174,7 +174,7 @@ class OcorrenciasImportTest extends TestCase
         $import = new OcorrenciasImport;
         $import->import($this->testFilePath);
 
-        $ocorrencia = Ocorrencia::query()->where('numero_ocorrencia', '1')->first();
+        $ocorrencia = Ocorrencia::find(1);
 
         $this->assertNotNull($ocorrencia);
         $this->assertNull($ocorrencia->descricao);
@@ -227,8 +227,28 @@ class OcorrenciasImportTest extends TestCase
             ->set('importFile', $file);
 
         $this->assertDatabaseHas('ocorrencias', [
-            'numero_ocorrencia' => '9498549',
+            'id' => 9498549,
             'titulo' => 'Infiltrações no teto',
+        ]);
+    }
+
+    public function test_import_skips_duplicate_ids(): void
+    {
+        $this->createTestExcel([
+            ['123', 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG A', 'Titulo A', 'Descrição A'],
+            ['123', 'Concluído', Date::PHPToExcel(new \DateTime('2026-02-10')), '', 'AG B', 'Titulo B', 'Descrição B'],
+        ]);
+
+        $import = new OcorrenciasImport;
+        $import->import($this->testFilePath);
+
+        $this->assertEquals(1, $import->getImportedCount());
+        $this->assertEquals(1, $import->getSkippedCount());
+        $this->assertDatabaseCount('ocorrencias', 1);
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => 123,
+            'titulo' => 'Titulo A',
+            'agencia' => 'AG A',
         ]);
     }
 

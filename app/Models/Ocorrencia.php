@@ -21,7 +21,6 @@ class Ocorrencia extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'numero_ocorrencia',
         'status',
         'titulo',
         'descricao',

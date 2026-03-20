@@ -19,7 +19,6 @@ class OcorrenciaFactory extends Factory
     public function definition(): array
     {
         return [
-            'numero_ocorrencia' => fake()->optional(0.7)->numerify('OC-#####'),
             'status' => fake()->randomElement(OcorrenciaStatus::cases()),
             'titulo' => fake()->sentence(4),
             'descricao' => fake()->optional()->paragraph(),
