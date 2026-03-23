@@ -29,6 +29,8 @@ class OcorrenciaForm extends Form
 
     public ?string $comentarios = null;
 
+    public ?string $comentarios_prestador = null;
+
     /**
      * @return array<string, array<int, mixed>>
      */
@@ -85,6 +87,7 @@ class OcorrenciaForm extends Form
         $this->agencia = $ocorrencia->agencia;
         $this->endereco = $ocorrencia->endereco;
         $this->comentarios = $ocorrencia->comentarios;
+        $this->comentarios_prestador = $ocorrencia->comentarios_prestador;
     }
 
     /**

@@ -486,8 +486,22 @@
                                     </div>
                                 @endif
 
+                                @if ($form->comentarios_prestador && $form->comentarios_prestador !== '')
                                 <div>
-                                    <label for="comentarios" class="block text-sm font-medium text-default-700 mb-1">Comentários</label>
+                                    <label for="comentarios" class="block text-sm font-medium text-default-700 mb-1">Comentários do Prestador</label>
+                                    <textarea
+                                        wire:model="form.comentarios_prestador"
+                                        id="comentarios_prestador"
+                                        rows="3"
+                                        class="form-input w-full"
+                                        readonly
+                                    ></textarea>
+                                </div>
+
+                                @endif
+
+                                <div>
+                                    <label for="comentarios" class="block text-sm font-medium text-default-700 mb-1">Comentários Internos</label>
                                     <textarea
                                         wire:model="form.comentarios"
                                         id="comentarios"
