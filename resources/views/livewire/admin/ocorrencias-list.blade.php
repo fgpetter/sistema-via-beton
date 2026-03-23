@@ -88,7 +88,7 @@
             <div class="overflow-x-auto">
                 <div class="min-w-full inline-block align-middle">
                     <div class="overflow-hidden">
-                        <table class="min-w-full divide-y divide-default-200">
+                        <table class="table-fixed min-w-full divide-y divide-default-200">
                             <thead class="bg-default-150">
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
                                     <th class="px-3.5 py-3 text-start" scope="col">ID</th>
@@ -106,7 +106,9 @@
                             <tbody>
                                 @forelse ($this->ocorrencias as $ocorrencia)
                                     <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap {{ $ocorrencia->isEmergencial() ? 'bg-danger/10 border-l-4 border-l-danger' : '' }}">
-                                        <td class="px-3.5 py-3 text-primary">#{{ $ocorrencia->id }}</td>
+                                        <td class="px-3.5 py-3 text-primary cursor-pointer" @click="$wire.openEditModal({{ $ocorrencia->id }})">
+                                            #{{ $ocorrencia->id }}
+                                        </td>
                                         <td class="px-3.5 py-3">
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $ocorrencia->status->color() }}/10 text-{{ $ocorrencia->status->color() }} rounded">
                                                 {{ $ocorrencia->status->label() }}
@@ -124,16 +126,16 @@
                                                 <span class="text-default-600">{{ \App\Enums\PrazoNome::labelFor($ocorrencia->prazo?->nome) }}</span>
                                             @endif
                                         </td>
-                                        <td class="px-3.5 py-3">
-                                            <h6 class="mb-0.5 font-semibold text-default-800">{{ $ocorrencia->titulo }}</h6>
+                                        <td class="px-3.5 py-3 hs-tooltip [--placement:top] font-semibold">
+                                            {{ Illuminate\Support\Str::limit($ocorrencia->titulo, 30) }}
+                                            <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-default-900 text-xs font-medium text-white rounded" role="tooltip">
+                                                {{ $ocorrencia->titulo }}
+                                            </span>
                                         </td>
                                         <td class="px-3.5 py-3">
                                             {{ $ocorrencia->agencia }}
-                                            @if ($ocorrencia->enderecoVinculado)
-                                                <p class="text-xs text-default-400 mt-0.5">nº {{ $ocorrencia->enderecoVinculado->numero }} · {{ $ocorrencia->enderecoVinculado->fone ?: '—' }}</p>
-                                            @endif
                                         </td>
-                                        <td class="px-3.5 py-3">{{ $ocorrencia->colaborador?->nome_exibicao ?? '—' }}</td>
+                                        <td class="px-3.5 py-3">{{ Illuminate\Support\Str::limit($ocorrencia->colaborador?->nome_exibicao ?? '—', 30) }}</td>
                                         <td class="px-3.5 py-3 text-center">
                                             @if ($ocorrencia->imagens_count > 0)
                                                 <span class="inline-flex items-center gap-1 text-primary" title="{{ $ocorrencia->imagens_count }} foto(s)">
@@ -260,7 +262,7 @@
                     <form wire:submit="save">
                         <div class="p-4 overflow-y-auto max-h-[70vh]">
                             <div class="space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                         <label for="status" class="block text-sm font-medium text-default-700 mb-1">Status</label>
                                         <select
@@ -290,6 +292,23 @@
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
+                                    <div>
+                                        <label for="prazoId" class="block text-sm font-medium text-default-700 mb-1">Categoria</label>
+                                        <select
+                                            wire:model="form.prazoId"
+                                            id="prazoId"
+                                            class="form-input w-full @error('prazoId') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione uma categoria</option>
+                                            @foreach ($this->prazos as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.prazoId')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+    
                                 </div>
 
                                 <div>
@@ -316,23 +335,6 @@
                                         placeholder="Descrição detalhada (opcional)"
                                     ></textarea>
                                     @error('form.descricao')
-                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label for="prazoId" class="block text-sm font-medium text-default-700 mb-1">Categoria</label>
-                                    <select
-                                        wire:model="form.prazoId"
-                                        id="prazoId"
-                                        class="form-input w-full @error('prazoId') border-danger @enderror"
-                                    >
-                                        <option value="">Selecione uma categoria</option>
-                                        @foreach ($this->prazos as $id => $nome)
-                                            <option value="{{ $id }}">{{ $nome }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('form.prazoId')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>
