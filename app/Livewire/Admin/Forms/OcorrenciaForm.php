@@ -100,6 +100,7 @@ class OcorrenciaForm extends Form
             'colaborador_id' => $this->colaboradorId,
             'prazo_id' => $this->prazoId,
             'agencia' => $this->agencia,
+            'endereco_id' => Ocorrencia::resolverEnderecoId($this->agencia),
             'endereco' => $this->endereco,
             'comentarios' => $this->comentarios,
         ];

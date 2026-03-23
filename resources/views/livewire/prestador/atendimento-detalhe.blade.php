@@ -33,7 +33,37 @@
                     <p class="text-default-700 bg-default-50 p-3 rounded text-sm">{{ $this->ocorrencia->comentarios }}</p>
                 </div>
             @endif
-            @if ($this->ocorrencia->endereco)
+            @if ($this->ocorrencia->enderecoVinculado)
+                <div class="bg-default-50 rounded p-3 space-y-1">
+                    <span class="text-xs font-medium text-default-500 uppercase">Dados do Endereço</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                        @if ($this->ocorrencia->enderecoVinculado->numero)
+                            <div>
+                                <span class="text-default-500">Agência nº:</span>
+                                <strong class="text-default-800">{{ $this->ocorrencia->enderecoVinculado->numero }}</strong>
+                            </div>
+                        @endif
+                        @if ($this->ocorrencia->enderecoVinculado->endereco)
+                            <div>
+                                <span class="text-default-500">Endereço:</span>
+                                <strong class="text-default-800">{{ $this->ocorrencia->enderecoVinculado->endereco }}{{ $this->ocorrencia->enderecoVinculado->cidade_estado ? ', ' . $this->ocorrencia->enderecoVinculado->cidade_estado : '' }}</strong>
+                            </div>
+                        @endif
+                        @if ($this->ocorrencia->enderecoVinculado->fone)
+                            <div>
+                                <span class="text-default-500">Fone:</span>
+                                <strong class="text-default-800">{{ $this->ocorrencia->enderecoVinculado->fone }}</strong>
+                            </div>
+                        @endif
+                        @if ($this->ocorrencia->enderecoVinculado->horario)
+                            <div>
+                                <span class="text-default-500">Horário:</span>
+                                <strong class="text-default-800">{{ $this->ocorrencia->enderecoVinculado->horario }}</strong>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @elseif ($this->ocorrencia->endereco)
                 <div>
                     <span class="text-xs font-medium text-default-500 uppercase">Endereço</span>
                     <p class="text-default-800">{{ $this->ocorrencia->endereco }}</p>

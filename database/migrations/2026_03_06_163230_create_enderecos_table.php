@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('enderecos', function (Blueprint $table) {
             $table->id();
             $table->string('nome')->unique();
-            $table->string('tipo')->default(TipoEndereco::Agencia->value);
+            $table->string('tipo')->default(TipoEndereco::AGENCIA->value);
             $table->string('numero')->nullable();
             $table->string('horario')->nullable();
             $table->string('endereco')->nullable();

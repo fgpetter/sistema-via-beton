@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Ocorrencia extends Model
 {
@@ -28,6 +29,7 @@ class Ocorrencia extends Model
         'colaborador_id',
         'prazo_id',
         'agencia',
+        'endereco_id',
         'endereco',
         'email_enviado',
         'email_rat',
@@ -62,6 +64,24 @@ class Ocorrencia extends Model
     public function prazo(): BelongsTo
     {
         return $this->belongsTo(Prazo::class);
+    }
+
+    public function enderecoVinculado(): BelongsTo
+    {
+        return $this->belongsTo(Endereco::class, 'endereco_id');
+    }
+
+    public static function resolverEnderecoId(?string $agencia): ?int
+    {
+        if (! $agencia) {
+            return null;
+        }
+
+        $nome = Str::upper(trim($agencia));
+
+        return Endereco::query()
+            ->whereRaw('UPPER(nome) = ?', [$nome])
+            ->value('id');
     }
 
     public function isEmergencial(): bool

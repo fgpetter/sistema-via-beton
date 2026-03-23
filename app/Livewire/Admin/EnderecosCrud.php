@@ -123,7 +123,7 @@ class EnderecosCrud extends Component
     {
         $this->ensureUserIsAuthorized();
         $this->resetForm();
-        $this->tipo = TipoEndereco::Agencia->value;
+        $this->tipo = TipoEndereco::AGENCIA->value;
         $this->ativo = true;
         $this->showModal = true;
     }

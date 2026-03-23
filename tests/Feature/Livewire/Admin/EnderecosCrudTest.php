@@ -48,7 +48,7 @@ class EnderecosCrudTest extends TestCase
             ->test(EnderecosCrud::class)
             ->call('openCreateModal')
             ->set('nome', 'AG ACEGUA')
-            ->set('tipo', TipoEndereco::Agencia->value)
+            ->set('tipo', TipoEndereco::AGENCIA->value)
             ->set('numero', '1')
             ->set('horario', '08:00 às 17:00')
             ->set('endereco', 'Rua Principal, 123')
@@ -66,7 +66,7 @@ class EnderecosCrudTest extends TestCase
 
         $this->assertDatabaseHas('enderecos', [
             'nome' => 'AG ACEGUA',
-            'tipo' => TipoEndereco::Agencia->value,
+            'tipo' => TipoEndereco::AGENCIA->value,
             'numero' => '1',
             'horario' => '08:00 às 17:00',
             'endereco' => 'Rua Principal, 123',
@@ -82,13 +82,13 @@ class EnderecosCrudTest extends TestCase
             ->test(EnderecosCrud::class)
             ->call('openCreateModal')
             ->set('nome', 'AG TESTE')
-            ->set('tipo', TipoEndereco::Agencia->value)
+            ->set('tipo', TipoEndereco::AGENCIA->value)
             ->call('save')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('enderecos', [
             'nome' => 'AG TESTE',
-            'tipo' => TipoEndereco::Agencia->value,
+            'tipo' => TipoEndereco::AGENCIA->value,
             'ativo' => true,
         ]);
     }
@@ -97,7 +97,7 @@ class EnderecosCrudTest extends TestCase
     {
         $endereco = Endereco::factory()->create([
             'nome' => 'AG ANTIGO',
-            'tipo' => TipoEndereco::Agencia,
+            'tipo' => TipoEndereco::AGENCIA,
             'numero' => '1',
         ]);
 
@@ -138,7 +138,7 @@ class EnderecosCrudTest extends TestCase
             ->test(EnderecosCrud::class)
             ->call('openCreateModal')
             ->set('nome', '')
-            ->set('tipo', TipoEndereco::Agencia->value)
+            ->set('tipo', TipoEndereco::AGENCIA->value)
             ->call('save')
             ->assertHasErrors(['nome' => 'required']);
     }
@@ -151,7 +151,7 @@ class EnderecosCrudTest extends TestCase
             ->test(EnderecosCrud::class)
             ->call('openCreateModal')
             ->set('nome', 'AG DUPLICADO')
-            ->set('tipo', TipoEndereco::Agencia->value)
+            ->set('tipo', TipoEndereco::AGENCIA->value)
             ->call('save')
             ->assertHasErrors(['nome' => 'unique']);
     }
@@ -277,7 +277,7 @@ class EnderecosCrudTest extends TestCase
     {
         $endereco = Endereco::factory()->create([
             'nome' => 'AG TESTE',
-            'tipo' => TipoEndereco::Agencia,
+            'tipo' => TipoEndereco::AGENCIA,
             'numero' => '42',
             'horario' => '09:00 às 18:00',
             'endereco' => 'Rua Teste, 100',
@@ -291,7 +291,7 @@ class EnderecosCrudTest extends TestCase
             ->call('openEditModal', $endereco->id)
             ->assertSet('editingId', $endereco->id)
             ->assertSet('nome', 'AG TESTE')
-            ->assertSet('tipo', TipoEndereco::Agencia->value)
+            ->assertSet('tipo', TipoEndereco::AGENCIA->value)
             ->assertSet('numero', '42')
             ->assertSet('horario', '09:00 às 18:00')
             ->assertSet('endereco', 'Rua Teste, 100')

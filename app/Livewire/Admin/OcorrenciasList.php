@@ -80,7 +80,7 @@ class OcorrenciasList extends Component
     public function ocorrencias()
     {
         return Ocorrencia::query()
-            ->with(['colaborador', 'prazo', 'concluidoPor'])
+            ->with(['colaborador', 'prazo', 'concluidoPor', 'enderecoVinculado'])
             ->withCount('imagens')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -146,7 +146,7 @@ class OcorrenciasList extends Component
             return null;
         }
 
-        return Ocorrencia::with('imagens')->find($this->form->editingId);
+        return Ocorrencia::with(['imagens', 'enderecoVinculado'])->find($this->form->editingId);
     }
 
     #[Computed]

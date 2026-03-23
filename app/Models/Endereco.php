@@ -6,6 +6,7 @@ use App\Enums\TipoEndereco;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Endereco extends Model
 {
@@ -35,6 +36,11 @@ class Endereco extends Model
             'tipo' => TipoEndereco::class,
             'ativo' => 'boolean',
         ];
+    }
+
+    public function ocorrencias(): HasMany
+    {
+        return $this->hasMany(Ocorrencia::class, 'endereco_id');
     }
 
     public function scopeAtivo(Builder $query): Builder

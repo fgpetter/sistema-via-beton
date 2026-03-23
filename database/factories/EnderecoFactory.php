@@ -17,7 +17,7 @@ class EnderecoFactory extends Factory
     {
         return [
             'nome' => 'AG '.$this->faker->unique()->city(),
-            'tipo' => TipoEndereco::Agencia,
+            'tipo' => TipoEndereco::AGENCIA,
             'numero' => (string) $this->faker->numberBetween(1, 200),
             'horario' => '08:00 às 17:00',
             'endereco' => $this->faker->streetAddress(),
