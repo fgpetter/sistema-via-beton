@@ -161,7 +161,6 @@
                                                     <button
                                                         type="button"
                                                         wire:click="concluirRevisao({{ $ocorrencia->id }})"
-                                                        wire:confirm="Confirma a conclusão da revisão desta ocorrência?"
                                                         class="btn size-7.5 bg-success/10 hover:bg-success/20 text-success"
                                                         title="Concluir Revisão"
                                                         wire:loading.attr="disabled"
@@ -428,7 +427,6 @@
                                                                 <button
                                                                     type="button"
                                                                     wire:click="removerImagem({{ $fotos['antes']->id }})"
-                                                                    wire:confirm="Remover esta imagem?"
                                                                     class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 >
                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -452,7 +450,6 @@
                                                                 <button
                                                                     type="button"
                                                                     wire:click="removerImagem({{ $fotos['depois']->id }})"
-                                                                    wire:confirm="Remover esta imagem?"
                                                                     class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 >
                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>

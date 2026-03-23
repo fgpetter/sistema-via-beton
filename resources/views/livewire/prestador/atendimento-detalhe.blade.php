@@ -83,30 +83,32 @@
 
     @if (in_array($this->ocorrencia->status, [\App\Enums\OcorrenciaStatus::Aberto, \App\Enums\OcorrenciaStatus::Andamento]) && ! $this->ocorrencia->atendimentoIniciado())
 
-    <!-- Botão Iniciar Atendimento -->
-    <div class="card">
-        <div class="card-body">
-            <div class="flex flex-col items-center gap-4 py-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
-                    <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
-                </svg>
-                <p class="text-default-600 text-center max-w-sm">
-                    Clique no botão abaixo para registrar sua chegada e iniciar o atendimento.
-                </p>
-                <button
-                    type="button"
-                    wire:click="iniciarAtendimento"
-                    wire:confirm="Confirma o início do atendimento? A data e hora de chegada serão registradas."
-                    class="btn bg-primary text-white uppercase font-semibold text-lg px-8 py-3"
-                    wire:loading.attr="disabled"
-                    wire:target="iniciarAtendimento"
-                >
-                    <span wire:loading.remove wire:target="iniciarAtendimento">Iniciar Atendimento</span>
-                    <span wire:loading wire:target="iniciarAtendimento">Iniciando...</span>
-                </button>
+    @if ($this->ocorrencia->imagensAntes->count())
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="card-title text-sm uppercase text-default-600">Fotos (Antes)</h6>
+                <span class="py-0.5 px-2 text-xs font-semibold bg-default-200/60 text-default-600 rounded">{{ $this->ocorrencia->imagensAntes->count() }}</span>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-3 gap-2">
+                    @foreach ($this->ocorrencia->imagensAntes as $imagem)
+                        <img wire:key="img-antes-pre-{{ $imagem->id }}" src="{{ asset('storage/' . $imagem->path) }}" alt="Antes" class="w-full aspect-square object-cover rounded border border-default-200">
+                    @endforeach
+                </div>
             </div>
         </div>
-    </div>
+    @endif
+
+    <button
+        type="button"
+        wire:click="iniciarAtendimento"
+        class="btn bg-primary text-white uppercase font-semibold text-lg px-8 py-3 w-full"
+        wire:loading.attr="disabled"
+        wire:target="iniciarAtendimento"
+    >
+        <span wire:loading.remove wire:target="iniciarAtendimento">Iniciar Atendimento</span>
+        <span wire:loading wire:target="iniciarAtendimento">Iniciando...</span>
+    </button>
 
     @elseif ($this->ocorrencia->status === \App\Enums\OcorrenciaStatus::Andamento && $this->ocorrencia->atendimentoIniciado())
 
@@ -144,7 +146,6 @@
                                     <button
                                         type="button"
                                         wire:click="removerImagem({{ $fotos['antes']->id }})"
-                                        wire:confirm="Remover esta imagem?"
                                         class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -168,7 +169,6 @@
                                     <button
                                         type="button"
                                         wire:click="removerImagem({{ $fotos['depois']->id }})"
-                                        wire:confirm="Remover esta imagem?"
                                         class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -255,7 +255,6 @@
     <button
         type="button"
         wire:click="concluir"
-        wire:confirm="Confirma a conclusão do atendimento? A data e hora de saída serão registradas."
         class="btn bg-success text-white uppercase font-semibold"
         wire:loading.attr="disabled"
         wire:target="concluir"
