@@ -17,6 +17,9 @@ class BuildRatPdfDataFromOcorrencia
 
         $ocorrencia->loadMissing(['prazo', 'colaborador', 'enderecoVinculado']);
 
+        $timezoneApp = (string) config('app.timezone');
+        $datahoraSaidaPdf = ($ocorrencia->datahora_saida ?? $geradoEm)->copy()->timezone($timezoneApp);
+
         $prazo = $ocorrencia->prazo;
         $prazoAtendimento = '';
         if ($prazo !== null) {
@@ -57,8 +60,8 @@ class BuildRatPdfDataFromOcorrencia
             'item_descricao_servico' => $itemDescricao,
             'situacao_codigo' => '',
             'observacoes' => '',
-            'datahora_chegada' => $ocorrencia->datahora_chegada?->format('d/m/Y - H:i') ?? '',
-            'datahora_saida' => $geradoEm->format('d/m/Y - H:i'),
+            'datahora_chegada' => $ocorrencia->datahora_chegada?->copy()->timezone($timezoneApp)->format('d/m/Y - H:i') ?? '',
+            'datahora_saida' => $datahoraSaidaPdf->format('d/m/Y - H:i'),
             'prazo_atendimento_rodape' => $prazoAtendimento,
             'identificacao_representante' => (string) ($ocorrencia->colaborador?->nome ?? ''),
             'assinatura_representante' => '',

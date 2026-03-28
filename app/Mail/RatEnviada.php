@@ -40,7 +40,9 @@ class RatEnviada extends Mailable implements ShouldQueue
     {
         return [
             Attachment::fromData(
-                fn (): string => app(RenderRatPdfFromOcorrencia::class)($this->ocorrencia, now()),
+                fn (): string => app(RenderRatPdfFromOcorrencia::class)(
+                    $this->ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado'])
+                ),
                 'RAT-'.$this->ocorrencia->id.'.pdf'
             )->withMime('application/pdf'),
         ];

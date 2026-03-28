@@ -12,6 +12,7 @@ use App\Models\Ocorrencia;
 use App\Models\Prazo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -71,5 +72,24 @@ class EnviarRatTest extends TestCase
         $dados = $build($ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']));
 
         $this->assertSame('Sim', $dados['emergencial']);
+    }
+
+    public function test_rat_pdf_datahora_saida_usa_registro_da_ocorrencia_e_fuso_configurado(): void
+    {
+        config(['app.timezone' => 'America/Sao_Paulo']);
+
+        $prestador = User::factory()->prestador()->create();
+        $colaborador = Colaborador::factory()->create(['user_id' => $prestador->id]);
+        $saida = Carbon::parse('2026-03-28 16:30:59', 'America/Sao_Paulo');
+        $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
+            'colaborador_id' => $colaborador->id,
+            'datahora_saida' => $saida,
+        ]);
+
+        $geradoEmUtc = Carbon::parse('2026-03-28 19:31:00', 'UTC');
+        $build = app(BuildRatPdfDataFromOcorrencia::class);
+        $dados = $build($ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']), $geradoEmUtc);
+
+        $this->assertSame('28/03/2026 - 16:30', $dados['datahora_saida']);
     }
 }
