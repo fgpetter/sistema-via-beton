@@ -19,20 +19,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            AdminColaboradorSeeder::class,
             PrazoSeeder::class,
         ]);
-
-        $prestadores = User::factory()->prestador()->count(5)->create();
-        $colaboradores = $prestadores->map(fn (User $prestador) => Colaborador::factory()->create([
-            'user_id' => $prestador->id,
-            'nome' => $prestador->name,
-        ]));
-
-        foreach ($colaboradores as $colaborador) {
-            Ocorrencia::factory()->count(2)->create([
-                'colaborador_id' => $colaborador->id,
-            ]);
-        }
     }
 }
