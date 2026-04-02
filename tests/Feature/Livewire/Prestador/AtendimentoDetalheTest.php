@@ -247,6 +247,7 @@ class AtendimentoDetalheTest extends TestCase
     {
         $this->freezeTime();
         Mail::fake();
+        Storage::fake('public');
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
@@ -257,6 +258,15 @@ class AtendimentoDetalheTest extends TestCase
         $this->ocorrencia->refresh();
         $this->assertEquals('contato@agencia.com', $this->ocorrencia->email_rat);
         $this->assertNotNull($this->ocorrencia->email_rat_enviado);
+        $this->assertNotNull($this->ocorrencia->rat_pdf_path);
+        $this->assertTrue(
+            Storage::disk('public')->exists($this->ocorrencia->rat_pdf_path),
+            'O PDF da RAT deve ser salvo em storage/app/public/ocorrencias.'
+        );
+        $this->assertStringStartsWith(
+            '%PDF',
+            Storage::disk('public')->get($this->ocorrencia->rat_pdf_path)
+        );
 
         Mail::assertQueued(RatEnviada::class, function (RatEnviada $mail): bool {
             $attachments = $mail->attachments();

@@ -11,6 +11,7 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
 
 class RatEnviada extends Mailable implements ShouldQueue
 {
@@ -38,12 +39,21 @@ class RatEnviada extends Mailable implements ShouldQueue
      */
     public function attachments(): array
     {
+        $ocorrencia = $this->ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']);
+        $path = $ocorrencia->rat_pdf_path;
+
+        if ($path !== null && Storage::disk('public')->exists($path)) {
+            return [
+                Attachment::fromStorageDisk('public', $path)
+                    ->as('RAT-'.$ocorrencia->id.'.pdf')
+                    ->withMime('application/pdf'),
+            ];
+        }
+
         return [
             Attachment::fromData(
-                fn (): string => app(RenderRatPdfFromOcorrencia::class)(
-                    $this->ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado'])
-                ),
-                'RAT-'.$this->ocorrencia->id.'.pdf'
+                fn (): string => app(RenderRatPdfFromOcorrencia::class)($ocorrencia),
+                'RAT-'.$ocorrencia->id.'.pdf'
             )->withMime('application/pdf'),
         ];
     }

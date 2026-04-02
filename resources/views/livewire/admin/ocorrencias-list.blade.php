@@ -396,6 +396,24 @@
                                     </div>
                                 @endif
 
+                                @if ($form->editingId && $this->editingOcorrencia?->email_rat_enviado && $this->editingOcorrencia?->rat_pdf_path)
+                                    <div class="bg-green-50 border border-green-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div>
+                                            <span class="text-xs font-medium text-default-500 uppercase">RAT enviada por e-mail</span>
+                                            <p class="text-sm text-default-700">
+                                                Enviada em {{ $this->editingOcorrencia->email_rat_enviado->format('d/m/Y H:i') }}
+                                            </p>
+                                        </div>
+                                        <a
+                                            href="{{ route('admin.ocorrencias.rat-pdf', $this->editingOcorrencia) }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
+                                        >
+                                            Visualizar PDF da RAT
+                                        </a>
+                                    </div>
+                                @endif
 
                                 <!-- Fotos (Collapse) - Disponível apenas na edição -->
                                 @if ($form->editingId)

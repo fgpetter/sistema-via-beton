@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Prestador;
 
+use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\TipoImagemOcorrencia;
 use App\Mail\RatEnviada;
@@ -161,8 +162,17 @@ class AtendimentoDetalhe extends Component
             return;
         }
 
-        $ocorrencia = $this->ocorrencia;
-        $ocorrencia->update(['email_rat' => $this->emailRat, 'email_rat_enviado' => now()]);
+        $ocorrencia = $this->ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']);
+        $pdfBytes = app(RenderRatPdfFromOcorrencia::class)($ocorrencia);
+
+        $relativePath = 'ocorrencias/'.$ocorrencia->id.'/rat/RAT-'.$ocorrencia->id.'.pdf';
+        Storage::disk('public')->put($relativePath, $pdfBytes);
+
+        $ocorrencia->update([
+            'email_rat' => $this->emailRat,
+            'email_rat_enviado' => now(),
+            'rat_pdf_path' => $relativePath,
+        ]);
 
         Mail::to($this->emailRat)->send(new RatEnviada($ocorrencia->fresh(['colaborador', 'prazo', 'enderecoVinculado'])));
 
