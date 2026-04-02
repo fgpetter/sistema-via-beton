@@ -331,7 +331,7 @@
                                         wire:model="form.descricao"
                                         id="descricao"
                                         rows="3"
-                                        class="form-input w-full @error('descricao') border-danger @enderror"
+                                        class="form-textarea rounded-md border-gray-300 w-full @error('descricao') border-danger @enderror"
                                         placeholder="Descrição detalhada (opcional)"
                                     ></textarea>
                                     @error('form.descricao')
@@ -493,7 +493,7 @@
                                         wire:model="form.comentarios_prestador"
                                         id="comentarios_prestador"
                                         rows="3"
-                                        class="form-input w-full"
+                                        class="form-textarea rounded-md border-gray-300 w-full"
                                         readonly
                                     ></textarea>
                                 </div>
@@ -506,7 +506,7 @@
                                         wire:model="form.comentarios"
                                         id="comentarios"
                                         rows="3"
-                                        class="form-input w-full @error('comentarios') border-danger @enderror"
+                                        class="form-textarea rounded-md border-gray-300 w-full @error('comentarios') border-danger @enderror"
                                         placeholder="Comentários adicionais (opcional)"
                                     ></textarea>
                                     @error('form.comentarios')
