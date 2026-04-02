@@ -8,14 +8,10 @@
     <div
         class="bg-cover bg-no-repeat bg-center bg-[url('/images/login-bg.jpg')] dark:bg-[url('/images/login-bg.jpg')] min-h-screen flex justify-center items-center">
         <div class="relative">
-            <div class="bg-card/95 rounded-lg w-2/3 mx-auto">
+            <div class="bg-card/95 rounded-lg w-4/5 sm:w-2/3 mx-auto">
                 <div class="grid lg:grid-cols-12 grid-cols-1 items-center gap-0">
                     <div class="lg:col-span-5">
                         <div class="text-center px-10 py-12">
-                            {{-- <div class="text-center">
-                                <h4 class="mb-3 text-xl font-semibold text-purple-500">Welcome Back !</h4>
-                                <p class="text-base text-default-500">Sign in to continue to Tailwick. </p>
-                            </div> --}}
                             <!-- form -->
                             <form action="/login" method="POST" class="text-left w-full mt-10">
                                 @csrf
