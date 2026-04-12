@@ -24,6 +24,9 @@ class RatEnviada extends Mailable implements ShouldQueue
     {
         return new Envelope(
             subject: 'RAT #'.$this->ocorrencia->id.' - '.$this->ocorrencia->titulo,
+            replyTo: [
+                new Address('fabio@vbeton.com.br'),
+            ],
         );
     }
 

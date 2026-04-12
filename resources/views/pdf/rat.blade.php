@@ -5,7 +5,7 @@
     <style>
         * { box-sizing: border-box; }
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: sans-serif;
             font-size: 8pt;
             color: #000;
             margin: 0;
@@ -16,7 +16,6 @@
             font-size: 12pt;
             font-weight: bold;
             margin: 0 0 14px 0;
-            color: #c45c26;
         }
         table.rat {
             width: 100%;
