@@ -3,6 +3,7 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
+use App\Livewire\Admin\OcorrenciaFotoGaleria;
 use App\Livewire\Admin\OcorrenciasList;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
@@ -560,5 +561,17 @@ class OcorrenciasListTest extends TestCase
             ->call('openEditModal', $ocorrencia->id)
             ->assertSee('Visualizar PDF da RAT')
             ->assertSee(route('admin.ocorrencias.rat-pdf', $ocorrencia), false);
+    }
+
+    public function test_edit_modal_includes_ocorrencia_foto_galeria_component(): void
+    {
+        Livewire::withoutLazyLoading();
+
+        $ocorrencia = Ocorrencia::factory()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSeeLivewire(OcorrenciaFotoGaleria::class);
     }
 }

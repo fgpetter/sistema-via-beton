@@ -5,18 +5,15 @@ namespace App\Livewire\Admin;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\PrazoNome;
 use App\Enums\TipoColaborador;
-use App\Enums\TipoImagemOcorrencia;
 use App\Imports\OcorrenciasImport;
 use App\Livewire\Admin\Forms\OcorrenciaForm;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
-use App\Models\OcorrenciaImagem;
 use App\Models\Prazo;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -50,14 +47,6 @@ class OcorrenciasList extends Component
     public ?int $deletingId = null;
 
     public $importFile;
-
-    public $fotoUpload;
-
-    public ?int $uploadingPar = null;
-
-    public ?string $uploadingTipo = null;
-
-    public int $totalPares = 1;
 
     public function updatedImportFile(): void
     {
@@ -146,33 +135,21 @@ class OcorrenciasList extends Component
             return null;
         }
 
-        return Ocorrencia::with(['imagens', 'enderecoVinculado'])->find($this->form->editingId);
-    }
-
-    #[Computed]
-    public function editingFotoPares(): array
-    {
-        if (! $this->editingOcorrencia) {
-            return [];
-        }
-
-        return $this->editingOcorrencia->fotoPares($this->totalPares);
+        return Ocorrencia::with('enderecoVinculado')->find($this->form->editingId);
     }
 
     public function openCreateModal(): void
     {
         $this->ensureUserIsAuthorized();
         $this->form->setForCreate();
-        $this->totalPares = 1;
         $this->showModal = true;
     }
 
     public function openEditModal(int $ocorrenciaId): void
     {
         $this->ensureUserIsAuthorized();
-        $ocorrencia = Ocorrencia::with('imagens')->findOrFail($ocorrenciaId);
+        $ocorrencia = Ocorrencia::findOrFail($ocorrenciaId);
         $this->form->setFromOcorrencia($ocorrencia);
-        $this->totalPares = max(1, (int) $ocorrencia->imagens->max('par'));
         $this->showModal = true;
     }
 
@@ -209,53 +186,6 @@ class OcorrenciasList extends Component
             'position' => 'top-end',
             'timer' => 2000,
         ]);
-    }
-
-    public function adicionarPar(): void
-    {
-        $this->ensureUserIsAuthorized();
-        $this->totalPares++;
-    }
-
-    public function updatedFotoUpload(): void
-    {
-        if (! $this->fotoUpload || $this->uploadingPar === null || ! $this->uploadingTipo || ! $this->form->editingId) {
-            return;
-        }
-
-        $this->ensureUserIsAuthorized();
-        $this->validate(['fotoUpload' => ['image', 'max:5120']]);
-
-        $tipo = TipoImagemOcorrencia::from($this->uploadingTipo);
-        $path = $this->fotoUpload->store("ocorrencias/{$this->form->editingId}/{$tipo->value}", 'public');
-
-        OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->form->editingId,
-            'tipo' => $tipo,
-            'par' => $this->uploadingPar,
-            'path' => $path,
-        ]);
-
-        $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
-        unset($this->editingOcorrencia, $this->editingFotoPares);
-
-        $this->swalToastSuccess(['title' => 'Foto enviada!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
-    }
-
-    public function removerImagem(int $imagemId): void
-    {
-        $this->ensureUserIsAuthorized();
-
-        if (! $this->form->editingId) {
-            return;
-        }
-
-        $imagem = OcorrenciaImagem::where('ocorrencia_id', $this->form->editingId)
-            ->findOrFail($imagemId);
-
-        Storage::disk('public')->delete($imagem->path);
-        $imagem->delete();
-        unset($this->editingOcorrencia, $this->editingFotoPares);
     }
 
     public function concluirRevisao(int $ocorrenciaId): void
@@ -343,9 +273,7 @@ class OcorrenciasList extends Component
     {
         $this->showModal = false;
         $this->form->reset();
-        $this->totalPares = 1;
-        $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
-        unset($this->editingOcorrencia, $this->editingFotoPares);
+        unset($this->editingOcorrencia);
     }
 
     public function closeDeleteModal(): void
