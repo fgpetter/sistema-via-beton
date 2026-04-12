@@ -1,6 +1,5 @@
 <div
     x-data="{
-        showModal: @entangle('showModal'),
         showDeleteModal: @entangle('showDeleteModal'),
         columns: {
             status: true,
@@ -11,10 +10,6 @@
         }
     }"
     x-init="
-        $watch('showModal', value => {
-            if (value) document.body.classList.add('overflow-hidden');
-            else document.body.classList.remove('overflow-hidden');
-        });
         $watch('showDeleteModal', value => {
             if (value) document.body.classList.add('overflow-hidden');
             else document.body.classList.remove('overflow-hidden');
@@ -55,7 +50,7 @@
                         </button>
                     </div>
 
-                    <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
+                    <button @click="$dispatch('open-create-modal')" class="btn btn-sm bg-primary text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Nova Ocorrência
                     </button>
@@ -141,7 +136,7 @@
                             <tbody>
                                 @forelse ($this->ocorrencias as $ocorrencia)
                                     <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap {{ $ocorrencia->isEmergencial() ? 'bg-danger/10 border-l-4 border-l-danger' : '' }}">
-                                        <td class="px-3.5 py-3 text-primary cursor-pointer" @click="$wire.openEditModal({{ $ocorrencia->id }})">
+                                        <td class="px-3.5 py-3 text-primary cursor-pointer" @click="$dispatch('open-edit-modal', {id: {{ $ocorrencia->id }}})">
                                             #{{ $ocorrencia->id }}
                                         </td>
                                         <td x-show="columns.status" class="px-3.5 py-3">
@@ -200,7 +195,7 @@
                                             <div class="flex items-center gap-2">
                                                 <button
                                                     type="button"
-                                                    @click="$wire.openEditModal({{ $ocorrencia->id }})"
+                                                    @click="$dispatch('open-edit-modal', {id: {{ $ocorrencia->id }}})"
                                                     class="btn size-7.5 bg-default-200 hover:bg-primary/10 text-default-500 hover:text-primary"
                                                     title="Editar"
                                                 >
@@ -245,7 +240,7 @@
     </div>
 
     <!-- Modal Criar/Editar Ocorrência -->
-    @include('livewire.admin.partials.modal-ocorrencia')
+    <livewire:admin.ocorrencia-modal wire:key="ocorrencia-modal" />
 
     <!-- Modal Confirmar Exclusão -->
     @include('livewire.admin.partials.modal-confirmar-exclusao')
