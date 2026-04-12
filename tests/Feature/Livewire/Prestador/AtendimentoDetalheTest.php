@@ -5,6 +5,7 @@ namespace Tests\Feature\Livewire\Prestador;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\TipoImagemOcorrencia;
 use App\Livewire\Prestador\AtendimentoDetalhe;
+use App\Livewire\Prestador\AtendimentoFotoGaleriaReadonly;
 use App\Mail\RatEnviada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
@@ -155,6 +156,7 @@ class AtendimentoDetalheTest extends TestCase
     {
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
+            'datahora_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -413,6 +415,52 @@ class AtendimentoDetalheTest extends TestCase
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
             ->assertSee('Aguardando revisão do administrador');
+    }
+
+    public function test_foto_galeria_readonly_aborta_sem_permissao_na_ocorrencia(): void
+    {
+        Livewire::withoutLazyLoading();
+
+        $outroPrestador = User::factory()->prestador()->create();
+        $outroColaborador = Colaborador::factory()->create(['user_id' => $outroPrestador->id]);
+        $outraOcorrencia = Ocorrencia::factory()->revisar()->create([
+            'colaborador_id' => $outroColaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoFotoGaleriaReadonly::class, [
+                'ocorrenciaId' => $outraOcorrencia->id,
+                'collapseId' => 'revisar',
+                'wireKeyPrefix' => 'par-gallery-revisar',
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_prestador_sees_fotos_collapse_par_pares_when_revisar(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
+            'path' => 'test/antes.jpg',
+        ]);
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Depois,
+            'par' => 1,
+            'path' => 'test/depois.jpg',
+        ]);
+
+        Livewire::withoutLazyLoading();
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->assertSee('id="hs-fotos-revisar-toggle"', false)
+            ->assertSee('par-gallery-revisar-1', false);
     }
 
     public function test_prestador_sees_concluida_message(): void
