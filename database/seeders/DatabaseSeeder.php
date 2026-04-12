@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Colaborador;
-use App\Models\Ocorrencia;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
