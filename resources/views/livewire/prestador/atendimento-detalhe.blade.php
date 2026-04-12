@@ -1,3 +1,7 @@
+@php
+    use App\Enums\OcorrenciaStatus;
+@endphp
+
 <div>
     @include('layouts.partials/page-title', ['subtitle' => 'Atendimentos', 'title' => 'Detalhes do Atendimento'])
 
@@ -75,77 +79,33 @@
         </div>
     </div>
 
-    @if (in_array($this->ocorrencia->status, [\App\Enums\OcorrenciaStatus::Aberto, \App\Enums\OcorrenciaStatus::Andamento]) && ! $this->ocorrencia->atendimentoIniciado())
+    @if (in_array($this->ocorrencia->status, [OcorrenciaStatus::Aberto, OcorrenciaStatus::Andamento]) && ! $this->ocorrencia->atendimentoIniciado())
 
         <!-- Fotos - Somente Leitura antes de iniciar -->
         @if ($this->ocorrencia->imagens->count())
-            <!-- Fotos (Collapse) - Somente Leitura antes de iniciar -->
-            <div class="card my-4">
-                <button
-                    type="button"
-                    class="hs-collapse-toggle card-header w-full flex justify-between items-center cursor-pointer"
-                    id="hs-fotos-antes-inicio-toggle"
-                    aria-controls="hs-fotos-antes-inicio-content"
-                    aria-expanded="true"
-                    data-hs-collapse="#hs-fotos-antes-inicio-content"
-                >
-                    <h6 class="card-title text-sm uppercase text-default-600 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                        Fotos
-                    </h6>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hs-collapse-open:hidden"><polyline points="6 9 12 15 18 9"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hs-collapse-open:block hidden"><polyline points="18 15 12 9 6 15"/></svg>
-                </button>
-                <div
-                    id="hs-fotos-antes-inicio-content"
-                    class="hs-collapse w-full overflow-hidden transition-[height] duration-300 mt-4"
-                    aria-labelledby="hs-fotos-antes-inicio-toggle"
-                >
-                    <div class="card-body pt-0 space-y-3">
-                        @foreach ($this->ocorrencia->fotoPares() as $par => $fotos)
-                            <div wire:key="par-gallery-antes-inicio-{{ $par }}" class="grid grid-cols-2 gap-3">
-                                @if ($fotos['antes'])
-                                    <div class="relative aspect-square">
-                                        <img src="{{ asset('storage/' . $fotos['antes']->path) }}" alt="Antes" class="w-full h-full object-cover rounded border border-default-200">
-                                        <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Antes</span>
-                                    </div>
-                                @else
-                                    <div class="aspect-square bg-default-100 rounded flex items-center justify-center">
-                                        <span class="text-xs text-default-400 uppercase">Antes</span>
-                                    </div>
-                                @endif
-                                @if ($fotos['depois'])
-                                    <div class="relative aspect-square">
-                                        <img src="{{ asset('storage/' . $fotos['depois']->path) }}" alt="Depois" class="w-full h-full object-cover rounded border border-default-200">
-                                        <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Depois</span>
-                                    </div>
-                                @else
-                                    <div class="aspect-square bg-default-100 rounded flex items-center justify-center">
-                                        <span class="text-xs text-default-400 uppercase">Depois</span>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
+            <livewire:prestador.atendimento-foto-galeria-readonly
+                lazy
+                :ocorrencia-id="$this->ocorrenciaId"
+                collapse-id="antes-inicio"
+                wire-key-prefix="par-gallery-antes-inicio"
+                card-class="card my-4"
+                collapse-panel-class="hs-collapse w-full overflow-hidden transition-[height] duration-300 mt-4"
+                wire:key="fotos-readonly-antes-inicio-{{ $this->ocorrenciaId }}"
+            />
         @endif
 
         <!-- Botão Iniciar Atendimento -->
         <div class="w-full flex justify-center">
-            <button
-                type="button"
+            <x-loading-btn
                 wire:click="iniciarAtendimento"
+                wireTarget="iniciarAtendimento"
+                buttonText="Iniciar Atendimento"
+                pendingText="Iniciando..."
                 class="btn bg-primary text-white uppercase font-semibold text-lg px-8 py-3"
-                wire:loading.attr="disabled"
-                wire:target="iniciarAtendimento"
-            >
-                <span wire:loading.remove wire:target="iniciarAtendimento">Iniciar Atendimento</span>
-                <span wire:loading wire:target="iniciarAtendimento">Iniciando...</span>
-            </button>
+            />
         </div>
-        
-    @elseif ($this->ocorrencia->status === \App\Enums\OcorrenciaStatus::Andamento && $this->ocorrencia->atendimentoIniciado())
+
+    @elseif ($this->ocorrencia->status === OcorrenciaStatus::Andamento && $this->ocorrencia->atendimentoIniciado())
 
         <!-- Fotos (Collapse) -->
         <div class="card mb-4" x-data>
@@ -169,58 +129,54 @@
                 class="hs-collapse w-full overflow-hidden transition-[height] duration-300"
                 aria-labelledby="hs-fotos-prestador-toggle"
             >
-                <div class="card-body pt-0">
-                    <div class="space-y-3 mt-4">
-                        @foreach ($this->fotoPares as $par => $fotos)
-                            <div wire:key="par-{{ $par }}" class="grid grid-cols-2 gap-3">
-                                <!-- ANTES -->
-                                @if ($fotos['antes'])
-                                    <div class="relative group aspect-square">
-                                        <img src="{{ asset('storage/' . $fotos['antes']->path) }}" alt="Antes" class="w-full h-full object-cover rounded border border-default-200">
-                                        <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Antes</span>
-                                        <button
-                                            type="button"
-                                            wire:click="removerImagem({{ $fotos['antes']->id }})"
-                                            class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                        </button>
-                                    </div>
-                                @else
-                                    <div
-                                        @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'antes'; $nextTick(() => $refs.fotoInput.click())"
-                                        class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                <div class="card-body pt-0 space-y-3 mt-4">
+                    @foreach ($this->fotoPares as $par => $fotos)
+                        <div wire:key="par-{{ $par }}" class="grid grid-cols-2 gap-3">
+                            @if ($fotos['antes'])
+                                <div class="relative group aspect-square">
+                                    <img src="{{ asset('storage/' . $fotos['antes']->path) }}" alt="Antes" class="w-full h-full object-cover rounded border border-default-200">
+                                    <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Antes</span>
+                                    <button
+                                        type="button"
+                                        wire:click="removerImagem({{ $fotos['antes']->id }})"
+                                        class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                        <span class="text-xs text-default-400 mt-1 uppercase font-medium">Antes</span>
-                                    </div>
-                                @endif
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </button>
+                                </div>
+                            @else
+                                <div
+                                    @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'antes'; $nextTick(() => $refs.fotoInput.click())"
+                                    class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                    <span class="text-xs text-default-400 mt-1 uppercase font-medium">Antes</span>
+                                </div>
+                            @endif
 
-                                <!-- DEPOIS -->
-                                @if ($fotos['depois'])
-                                    <div class="relative group aspect-square">
-                                        <img src="{{ asset('storage/' . $fotos['depois']->path) }}" alt="Depois" class="w-full h-full object-cover rounded border border-default-200">
-                                        <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Depois</span>
-                                        <button
-                                            type="button"
-                                            wire:click="removerImagem({{ $fotos['depois']->id }})"
-                                            class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                        </button>
-                                    </div>
-                                @else
-                                    <div
-                                        @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'depois'; $nextTick(() => $refs.fotoInput.click())"
-                                        class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                            @if ($fotos['depois'])
+                                <div class="relative group aspect-square">
+                                    <img src="{{ asset('storage/' . $fotos['depois']->path) }}" alt="Depois" class="w-full h-full object-cover rounded border border-default-200">
+                                    <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Depois</span>
+                                    <button
+                                        type="button"
+                                        wire:click="removerImagem({{ $fotos['depois']->id }})"
+                                        class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                        <span class="text-xs text-default-400 mt-1 uppercase font-medium">Depois</span>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </button>
+                                </div>
+                            @else
+                                <div
+                                    @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'depois'; $nextTick(() => $refs.fotoInput.click())"
+                                    class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                    <span class="text-xs text-default-400 mt-1 uppercase font-medium">Depois</span>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
 
                     <div wire:loading wire:target="fotoUpload" class="text-sm text-primary text-center py-2">
                         Carregando imagem...
@@ -229,7 +185,7 @@
                     <button
                         type="button"
                         wire:click="adicionarPar"
-                        class="btn w-full mt-3 border-2 border-dashed border-default-300 text-default-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+                        class="btn w-full border-2 border-dashed border-default-300 text-default-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Adicionar Foto
@@ -240,7 +196,6 @@
             </div>
         </div>
 
-        <!-- Comentários do Prestador -->
         <div class="card mb-4">
             <div class="card-header">
                 <h6 class="card-title text-sm">Comentários do Atendimento</h6>
@@ -254,15 +209,17 @@
                         placeholder="Observações sobre o atendimento realizado..."
                     ></textarea>
                     @error('comentariosPrestador') <p class="text-sm text-danger mb-2">{{ $message }}</p> @enderror
-                    <button type="submit" class="btn btn-sm bg-default-200 text-default-700 hover:bg-default-300" wire:loading.attr="disabled" wire:target="salvarComentarios">
-                        <span wire:loading.remove wire:target="salvarComentarios">Salvar Comentários</span>
-                        <span wire:loading wire:target="salvarComentarios">Salvando...</span>
-                    </button>
+                    <x-loading-btn
+                        type="submit"
+                        wireTarget="salvarComentarios"
+                        buttonText="Salvar Comentários"
+                        pendingText="Salvando..."
+                        class="btn btn-sm bg-default-200 text-default-700 hover:bg-default-300"
+                    />
                 </form>
             </div>
         </div>
 
-        <!-- E-mail RAT -->
         <div class="flex items-end gap-2 mb-4">
             <div class="flex-1">
                 <input
@@ -274,32 +231,24 @@
                 >
                 @error('emailRat') <p class="mt-1 text-sm text-danger">{{ $message }}</p> @enderror
             </div>
-            <button
-                type="button"
+            <x-loading-btn
                 wire:click="enviarEmail"
+                wireTarget="enviarEmail"
+                buttonText="Enviar"
+                pendingText="Enviando..."
                 class="btn bg-primary text-white shrink-0 uppercase font-semibold"
-                wire:loading.attr="disabled"
-                wire:target="enviarEmail"
-            >
-                <span wire:loading.remove wire:target="enviarEmail">Enviar</span>
-                <span wire:loading wire:target="enviarEmail">Enviando...</span>
-            </button>
+            />
         </div>
 
-        <!-- Concluir -->
-
         <div class="w-full flex justify-center">
-            <button
-                type="button"
+            <x-loading-btn
                 wire:click="concluir"
+                wireTarget="concluir"
+                buttonText="Concluir Atendimento"
+                pendingText="Concluindo..."
                 class="btn bg-success text-white uppercase font-semibold text-lg px-8 py-3"
-                wire:loading.attr="disabled"
-                wire:target="concluir"
-                @if (! $this->ocorrencia->podeConcluir()) disabled @endif
-            >
-                <span wire:loading.remove wire:target="concluir">Concluir Atendimento</span>
-                <span wire:loading wire:target="concluir">Concluindo...</span>
-            </button>
+                :is-disabled="! $this->ocorrencia->podeConcluir()"
+            />
         </div>
 
         @if (! $this->ocorrencia->podeConcluir())
@@ -308,9 +257,8 @@
             </p>
         @endif
 
-    @elseif ($this->ocorrencia->status === \App\Enums\OcorrenciaStatus::Revisar)
+    @elseif ($this->ocorrencia->status === OcorrenciaStatus::Revisar)
 
-        <!-- Ocorrência em revisão -->
         <div class="card mb-4">
             <div class="card-body">
                 <div class="flex flex-col items-center gap-3 py-4">
@@ -320,23 +268,22 @@
             </div>
         </div>
 
-        @if ($this->ocorrencia->imagensAntes->count() || $this->ocorrencia->imagensDepois->count())
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                @include('livewire.prestador.partials.image-gallery-card', ['label' => 'Antes', 'imagens' => $this->ocorrencia->imagensAntes])
-                @include('livewire.prestador.partials.image-gallery-card', ['label' => 'Depois', 'imagens' => $this->ocorrencia->imagensDepois])
-            </div>
+        @if ($this->ocorrencia->imagens->count())
+            <livewire:prestador.atendimento-foto-galeria-readonly
+                lazy
+                :ocorrencia-id="$this->ocorrenciaId"
+                collapse-id="revisar"
+                wire-key-prefix="par-gallery-revisar"
+                wire:key="fotos-readonly-revisar-{{ $this->ocorrenciaId }}"
+            />
         @endif
 
         @if ($this->ocorrencia->comentarios_prestador)
-            <div class="card mb-4">
-                <div class="card-header"><h6 class="card-title text-sm">Comentários do Atendimento</h6></div>
-                <div class="card-body"><p class="text-default-700">{{ $this->ocorrencia->comentarios_prestador }}</p></div>
-            </div>
+            <x-comentarios-atendimento :comentarios="$this->ocorrencia->comentarios_prestador" />
         @endif
 
-    @elseif ($this->ocorrencia->status === \App\Enums\OcorrenciaStatus::Concluido)
+    @elseif ($this->ocorrencia->status === OcorrenciaStatus::Concluido)
 
-        <!-- Ocorrência concluída -->
         <div class="card mb-4">
             <div class="card-body">
                 <div class="flex flex-col items-center gap-3 py-4">
@@ -350,63 +297,17 @@
         </div>
 
         @if ($this->ocorrencia->imagens->count())
-            <!-- Fotos (Collapse) - Somente Leitura -->
-            <div class="card mb-4">
-                <button
-                    type="button"
-                    class="hs-collapse-toggle card-header w-full flex justify-between items-center cursor-pointer"
-                    id="hs-fotos-concluida-toggle"
-                    aria-controls="hs-fotos-concluida-content"
-                    aria-expanded="true"
-                    data-hs-collapse="#hs-fotos-concluida-content"
-                >
-                    <h6 class="card-title text-sm uppercase text-default-600 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                        Fotos
-                    </h6>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hs-collapse-open:hidden"><polyline points="6 9 12 15 18 9"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hs-collapse-open:block hidden"><polyline points="18 15 12 9 6 15"/></svg>
-                </button>
-                <div
-                    id="hs-fotos-concluida-content"
-                    class="hs-collapse w-full overflow-hidden transition-[height] duration-300"
-                    aria-labelledby="hs-fotos-concluida-toggle"
-                >
-                    <div class="card-body pt-0 space-y-3">
-                        @foreach ($this->ocorrencia->fotoPares() as $par => $fotos)
-                            <div wire:key="par-gallery-{{ $par }}" class="grid grid-cols-2 gap-3">
-                                @if ($fotos['antes'])
-                                    <div class="relative aspect-square">
-                                        <img src="{{ asset('storage/' . $fotos['antes']->path) }}" alt="Antes" class="w-full h-full object-cover rounded border border-default-200">
-                                        <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Antes</span>
-                                    </div>
-                                @else
-                                    <div class="aspect-square bg-default-100 rounded flex items-center justify-center">
-                                        <span class="text-xs text-default-400 uppercase">Antes</span>
-                                    </div>
-                                @endif
-                                @if ($fotos['depois'])
-                                    <div class="relative aspect-square">
-                                        <img src="{{ asset('storage/' . $fotos['depois']->path) }}" alt="Depois" class="w-full h-full object-cover rounded border border-default-200">
-                                        <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Depois</span>
-                                    </div>
-                                @else
-                                    <div class="aspect-square bg-default-100 rounded flex items-center justify-center">
-                                        <span class="text-xs text-default-400 uppercase">Depois</span>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
+            <livewire:prestador.atendimento-foto-galeria-readonly
+                lazy
+                :ocorrencia-id="$this->ocorrenciaId"
+                collapse-id="concluida"
+                wire-key-prefix="par-gallery"
+                wire:key="fotos-readonly-concluida-{{ $this->ocorrenciaId }}"
+            />
         @endif
 
         @if ($this->ocorrencia->comentarios_prestador)
-            <div class="card mb-4">
-                <div class="card-header"><h6 class="card-title text-sm">Comentários do Atendimento</h6></div>
-                <div class="card-body"><p class="text-default-700">{{ $this->ocorrencia->comentarios_prestador }}</p></div>
-            </div>
+            <x-comentarios-atendimento :comentarios="$this->ocorrencia->comentarios_prestador" />
         @endif
 
     @endif
