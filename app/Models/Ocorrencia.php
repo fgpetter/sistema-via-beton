@@ -26,6 +26,9 @@ class Ocorrencia extends Model
         'titulo',
         'descricao',
         'abertura',
+        'violacao_projetada',
+        'contrato',
+        'prioridade',
         'colaborador_id',
         'prazo_id',
         'agencia',
@@ -50,6 +53,7 @@ class Ocorrencia extends Model
         return [
             'status' => OcorrenciaStatus::class,
             'abertura' => 'date',
+            'violacao_projetada' => 'datetime',
             'email_enviado' => 'datetime',
             'email_rat_enviado' => 'datetime',
             'datahora_chegada' => 'datetime',

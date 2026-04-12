@@ -180,6 +180,40 @@ class OcorrenciasImportTest extends TestCase
         $this->assertNull($ocorrencia->descricao);
         $this->assertEquals(now()->format('Y-m-d'), $ocorrencia->abertura->format('Y-m-d'));
         $this->assertNull($ocorrencia->prazo_id);
+        $this->assertNull($ocorrencia->violacao_projetada);
+        $this->assertNull($ocorrencia->contrato);
+        $this->assertNull($ocorrencia->prioridade);
+    }
+
+    public function test_import_maps_violacao_contrato_prioridade(): void
+    {
+        $violacaoExcel = Date::PHPToExcel(new \DateTime('2026-06-01 14:30:00'));
+
+        $this->createTestExcel([
+            [
+                '1',
+                '',
+                Date::PHPToExcel(new \DateTime('2026-01-15')),
+                '',
+                'AG A',
+                'Titulo',
+                'Desc',
+                $violacaoExcel,
+                'VIA BETON - Sureg Fronteira',
+                'Alta',
+            ],
+        ]);
+
+        $import = new OcorrenciasImport;
+        $import->import($this->testFilePath);
+
+        $ocorrencia = Ocorrencia::find(1);
+
+        $this->assertNotNull($ocorrencia);
+        $this->assertSame('0100557/2025', $ocorrencia->contrato);
+        $this->assertSame('Alta', $ocorrencia->prioridade);
+        $this->assertNotNull($ocorrencia->violacao_projetada);
+        $this->assertSame('2026-06-01 14:30:00', $ocorrencia->violacao_projetada->format('Y-m-d H:i:s'));
     }
 
     public function test_livewire_import_requires_admin(): void
@@ -263,14 +297,19 @@ class OcorrenciasImportTest extends TestCase
         $headers = [
             'Nº da ocorrência', 'Status', 'Data de abertura', 'Categoria',
             'Usuário final afetado', 'Resumo', 'Descricao',
+            'Violação Projetada', 'Grupo Solucionador', 'Prioridade',
         ];
 
         foreach ($headers as $col => $header) {
             $sheet->setCellValue([$col + 1, 1], $header);
         }
 
+        $columnCount = count($headers);
+
         foreach ($rows as $rowIndex => $row) {
-            foreach ($row as $col => $value) {
+            $padded = array_pad(array_values($row), $columnCount, null);
+
+            foreach ($padded as $col => $value) {
                 $sheet->setCellValue([$col + 1, $rowIndex + 2], $value);
             }
         }

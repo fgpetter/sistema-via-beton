@@ -164,8 +164,8 @@
             <td class="lbl">Assinatura do representante da contratada</td>
         </tr>
         <tr>
-            <td class="val">{{ $dados['datahora_chegada'] }}</td>
-            <td class="val">{{ $dados['datahora_saida'] }}</td>
+            <td class="val"><br><br></td>
+            <td class="val"><br><br></td>
             <td class="val">{{ $dados['prazo_atendimento_rodape'] }}</td>
             <td class="val">{{ $dados['identificacao_representante'] }}</td>
             <td class="val">{{ $dados['assinatura_representante'] }}</td>

@@ -209,6 +209,8 @@ class OcorrenciasList extends Component
             'position' => 'top-end',
             'timer' => 2000,
         ]);
+
+        $this->closeModal();
     }
 
     public function confirmDelete(int $ocorrenciaId): void

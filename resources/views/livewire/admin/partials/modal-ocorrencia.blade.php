@@ -244,6 +244,18 @@
                             >
                                 Cancelar
                             </button>
+                            @if ($form->editingId && $form->status === \App\Enums\OcorrenciaStatus::Revisar->value)
+                                <button
+                                    type="button"
+                                    wire:click="concluirRevisao({{ $form->editingId }})"
+                                    class="btn bg-success text-white hover:bg-success/90"
+                                    wire:loading.attr="disabled"
+                                    wire:target="concluirRevisao"
+                                >
+                                    <span wire:loading.remove wire:target="concluirRevisao">Revisado</span>
+                                    <span wire:loading wire:target="concluirRevisao">Salvando...</span>
+                                </button>
+                            @endif
                             <button
                                 type="submit"
                                 class="btn bg-primary text-white hover:bg-primary/90"

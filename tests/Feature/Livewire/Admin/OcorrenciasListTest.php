@@ -501,8 +501,11 @@ class OcorrenciasListTest extends TestCase
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSet('showModal', true)
             ->call('concluirRevisao', $ocorrencia->id)
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            ->assertSet('showModal', false);
 
         $ocorrencia->refresh();
         $this->assertEquals(OcorrenciaStatus::Concluido, $ocorrencia->status);
@@ -573,5 +576,22 @@ class OcorrenciasListTest extends TestCase
             ->test(OcorrenciasList::class)
             ->call('openEditModal', $ocorrencia->id)
             ->assertSeeLivewire(OcorrenciaFotoGaleria::class);
+    }
+
+    public function test_list_shows_prioridade_and_violacao_projetada_columns(): void
+    {
+        $violacao = now()->addDay()->startOfMinute();
+
+        $ocorrencia = Ocorrencia::factory()->create([
+            'prioridade' => 'Alta',
+            'violacao_projetada' => $violacao,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->assertSee('Prioridade')
+            ->assertSee('Violação Projetada')
+            ->assertSee('Alta')
+            ->assertSee($violacao->format('d/m/Y H:i'));
     }
 }

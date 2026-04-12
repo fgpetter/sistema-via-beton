@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Enums\ContratoSolucionador;
 use App\Enums\OcorrenciaStatus;
 use App\Models\Endereco;
 use App\Models\Ocorrencia;
@@ -66,6 +67,9 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             'titulo' => $titulo,
             'descricao' => $this->cleanValue($row['descricao'] ?? null),
             'abertura' => $this->parseExcelDate($row['data_de_abertura'] ?? null) ?? now()->format('Y-m-d'),
+            'violacao_projetada' => $this->parseExcelDatetime($row['violacao_projetada'] ?? null),
+            'contrato' => $this->resolveContrato($row['grupo_solucionador'] ?? null),
+            'prioridade' => $this->cleanValue($row['prioridade'] ?? null),
             'agencia' => $agencia,
             'endereco_id' => $this->findEnderecoId($agencia),
             'prazo_id' => $this->findPrazoId($row['categoria'] ?? null),
@@ -133,6 +137,34 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
         }
 
         return date('Y-m-d', strtotime((string) $value)) ?: null;
+    }
+
+    private function parseExcelDatetime(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return Date::excelToDateTimeObject((float) $value)->format('Y-m-d H:i:s');
+        }
+
+        $timestamp = strtotime((string) $value);
+
+        return $timestamp !== false ? date('Y-m-d H:i:s', $timestamp) : null;
+    }
+
+    private function resolveContrato(mixed $grupo): ?string
+    {
+        $grupo = $this->cleanValue($grupo);
+
+        if ($grupo === null) {
+            return null;
+        }
+
+        $contrato = ContratoSolucionador::fromGrupoSolucionador($grupo);
+
+        return $contrato?->value;
     }
 
     private function findPrazoId(?string $categoria): ?int

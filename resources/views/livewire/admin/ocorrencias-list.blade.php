@@ -1,7 +1,14 @@
 <div
     x-data="{
         showModal: @entangle('showModal'),
-        showDeleteModal: @entangle('showDeleteModal')
+        showDeleteModal: @entangle('showDeleteModal'),
+        columns: {
+            status: true,
+            categoria: true,
+            violacao: true,
+            prioridade: true,
+            abertura: true
+        }
     }"
     x-init="
         $watch('showModal', value => {
@@ -61,8 +68,8 @@
             </div>
         @enderror
         <div class="card-header">
-            <div class="md:flex items-center md:space-y-0 space-y-4 gap-3 w-1/2">
-                <div class="relative w-3/5">
+            <div class="flex flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center w-full">
+                <div class="relative w-full max-w-md">
                     <input
                         wire:model.live.debounce.300ms="search"
                         class="form-input form-input-sm ps-9"
@@ -74,13 +81,39 @@
                     </div>
                 </div>
 
-                <div class="relative w-2/5">
-                    <select wire:model.live="statusFilter" class="form-input form-input-sm">
-                        <option value="">Todos os status</option>
-                        @foreach ($this->statuses as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center flex-1 min-w-0">
+                    <div class="relative w-full sm:w-48 shrink-0">
+                        <select wire:model.live="statusFilter" class="form-input form-input-sm w-full">
+                            <option value="">Todos os status</option>
+                            @foreach ($this->statuses as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-default-600">
+                        <span class="text-default-500 shrink-0">Colunas:</span>
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" x-model="columns.status" class="rounded border-default-300 text-primary focus:ring-primary/30 size-3.5">
+                            <span>Status</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" x-model="columns.categoria" class="rounded border-default-300 text-primary focus:ring-primary/30 size-3.5">
+                            <span>Categoria</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" x-model="columns.violacao" class="rounded border-default-300 text-primary focus:ring-primary/30 size-3.5">
+                            <span>Violação</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" x-model="columns.prioridade" class="rounded border-default-300 text-primary focus:ring-primary/30 size-3.5">
+                            <span>Prioridade</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" x-model="columns.abertura" class="rounded border-default-300 text-primary focus:ring-primary/30 size-3.5">
+                            <span>Abertura</span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,13 +125,15 @@
                             <thead class="bg-default-150">
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
                                     <th class="px-3.5 py-3 text-start" scope="col">ID</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Status</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Categoria</th>
+                                    <th x-show="columns.status" class="px-3.5 py-3 text-start" scope="col">Status</th>
+                                    <th x-show="columns.prioridade" class="px-3.5 py-3 text-start" scope="col">Prioridade</th>
+                                    <th x-show="columns.categoria" class="px-3.5 py-3 text-start" scope="col">Categoria</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Título</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Agência</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Responsável</th>
                                     <th class="px-3.5 py-3 text-center" scope="col">Fotos</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Abertura</th>
+                                    <th x-show="columns.abertura" class="px-3.5 py-3 text-start" scope="col">Abertura</th>
+                                    <th x-show="columns.violacao" class="px-3.5 py-3 text-start" scope="col">Violação Projetada</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">RAT enviada</th>
                                     @can('admin') <th class="px-3.5 py-3 text-start" scope="col">Ações</th> @endcan
                                 </tr>
@@ -109,7 +144,7 @@
                                         <td class="px-3.5 py-3 text-primary cursor-pointer" @click="$wire.openEditModal({{ $ocorrencia->id }})">
                                             #{{ $ocorrencia->id }}
                                         </td>
-                                        <td class="px-3.5 py-3">
+                                        <td x-show="columns.status" class="px-3.5 py-3">
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $ocorrencia->status->color() }}/10 text-{{ $ocorrencia->status->color() }} rounded">
                                                 {{ $ocorrencia->status->label() }}
                                             </span>
@@ -117,7 +152,10 @@
                                                 <p class="text-xs text-default-400 mt-0.5">por {{ $ocorrencia->concluidoPor->name }}</p>
                                             @endif
                                         </td>
-                                        <td class="px-3.5 py-3">
+                                        <td x-show="columns.prioridade" class="px-3.5 py-3 text-default-600">
+                                            {{ $ocorrencia->prioridade ?? '—' }}
+                                        </td>
+                                        <td x-show="columns.categoria" class="px-3.5 py-3">
                                             @if ($ocorrencia->isEmergencial())
                                                 <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-bold bg-danger/15 text-danger rounded">
                                                     {{ \App\Enums\PrazoNome::labelFor($ocorrencia->prazo?->nome) }}
@@ -146,7 +184,10 @@
                                                 <span class="text-default-300">—</span>
                                             @endif
                                         </td>
-                                        <td class="px-3.5 py-3">{{ $ocorrencia->abertura->format('d/m/Y') }}</td>
+                                        <td x-show="columns.abertura" class="px-3.5 py-3">{{ $ocorrencia->abertura->format('d/m/Y') }}</td>
+                                        <td x-show="columns.violacao" class="px-3.5 py-3 text-default-600">
+                                            {{ $ocorrencia->violacao_projetada?->format('d/m/Y H:i') ?? '—' }}
+                                        </td>
                                         <td class="px-3.5 py-3">
                                             @if ($ocorrencia->email_enviado)
                                                 <span class="text-success">{{ $ocorrencia->email_enviado->format('d/m/Y H:i') }}</span>
@@ -157,18 +198,6 @@
                                         @can('admin')
                                         <td class="px-3.5 py-3">
                                             <div class="flex items-center gap-2">
-                                                @if ($ocorrencia->status === \App\Enums\OcorrenciaStatus::Revisar)
-                                                    <button
-                                                        type="button"
-                                                        wire:click="concluirRevisao({{ $ocorrencia->id }})"
-                                                        class="btn size-7.5 bg-success/10 hover:bg-success/20 text-success"
-                                                        title="Concluir Revisão"
-                                                        wire:loading.attr="disabled"
-                                                        wire:target="concluirRevisao({{ $ocorrencia->id }})"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                                    </button>
-                                                @endif
                                                 <button
                                                     type="button"
                                                     @click="$wire.openEditModal({{ $ocorrencia->id }})"
@@ -191,7 +220,10 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ auth()->user()?->isAdmin() ? 10 : 9 }}" class="px-3.5 py-8 text-center text-default-500">
+                                        <td
+                                            x-bind:colspan="6 + {{ auth()->user()?->isAdmin() ? 1 : 0 }} + (columns.status ? 1 : 0) + (columns.categoria ? 1 : 0) + (columns.violacao ? 1 : 0) + (columns.prioridade ? 1 : 0) + (columns.abertura ? 1 : 0)"
+                                            class="px-3.5 py-8 text-center text-default-500"
+                                        >
                                             <div class="flex flex-col items-center gap-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                                                 <p>Nenhuma ocorrência encontrada.</p>
