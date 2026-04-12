@@ -5,12 +5,14 @@ namespace Tests\Feature\Livewire\Prestador;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\TipoImagemOcorrencia;
 use App\Livewire\Prestador\AtendimentoDetalhe;
+use App\Mail\RatEnviada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -244,6 +246,8 @@ class AtendimentoDetalheTest extends TestCase
     public function test_prestador_can_enviar_email(): void
     {
         $this->freezeTime();
+        Mail::fake();
+        Storage::fake('public');
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
@@ -254,24 +258,49 @@ class AtendimentoDetalheTest extends TestCase
         $this->ocorrencia->refresh();
         $this->assertEquals('contato@agencia.com', $this->ocorrencia->email_rat);
         $this->assertNotNull($this->ocorrencia->email_rat_enviado);
+        $this->assertNotNull($this->ocorrencia->rat_pdf_path);
+        $this->assertTrue(
+            Storage::disk('public')->exists($this->ocorrencia->rat_pdf_path),
+            'O PDF da RAT deve ser salvo em storage/app/public/ocorrencias.'
+        );
+        $this->assertStringStartsWith(
+            '%PDF',
+            Storage::disk('public')->get($this->ocorrencia->rat_pdf_path)
+        );
+
+        Mail::assertQueued(RatEnviada::class, function (RatEnviada $mail): bool {
+            $attachments = $mail->attachments();
+
+            return $mail->hasTo('contato@agencia.com')
+                && count($attachments) === 1
+                && $attachments[0]->as === 'RAT-'.$this->ocorrencia->id.'.pdf';
+        });
     }
 
     public function test_enviar_email_requires_email(): void
     {
+        Mail::fake();
+
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
             ->set('emailRat', null)
             ->call('enviarEmail')
             ->assertHasErrors(['emailRat']);
+
+        Mail::assertNothingSent();
     }
 
     public function test_enviar_email_validates_format(): void
     {
+        Mail::fake();
+
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
             ->set('emailRat', 'email-invalido')
             ->call('enviarEmail')
             ->assertHasErrors(['emailRat']);
+
+        Mail::assertNothingSent();
     }
 
     public function test_prestador_cannot_concluir_without_requirements(): void

@@ -11,6 +11,7 @@ use App\Models\Prazo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use SweetAlert2\Laravel\Swal;
 use Tests\TestCase;
@@ -541,5 +542,23 @@ class OcorrenciasListTest extends TestCase
         $ocorrencia->refresh();
         $this->assertEquals(OcorrenciaStatus::Concluido, $ocorrencia->status);
         $this->assertEquals($this->admin->id, $ocorrencia->concluido_por);
+    }
+
+    public function test_edit_modal_shows_link_to_rat_pdf_when_enviada_and_stored(): void
+    {
+        Storage::fake('public');
+
+        $ocorrencia = Ocorrencia::factory()->create([
+            'email_rat_enviado' => now(),
+        ]);
+        $path = 'ocorrencias/'.$ocorrencia->id.'/rat/RAT-'.$ocorrencia->id.'.pdf';
+        Storage::disk('public')->put($path, '%PDF-1.4 test');
+        $ocorrencia->update(['rat_pdf_path' => $path]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSee('Visualizar PDF da RAT')
+            ->assertSee(route('admin.ocorrencias.rat-pdf', $ocorrencia), false);
     }
 }

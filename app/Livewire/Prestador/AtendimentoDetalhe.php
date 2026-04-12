@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Prestador;
 
+use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\TipoImagemOcorrencia;
+use App\Mail\RatEnviada;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -70,7 +73,7 @@ class AtendimentoDetalhe extends Component
     #[Computed]
     public function ocorrencia(): Ocorrencia
     {
-        return Ocorrencia::with(['colaborador', 'imagens', 'imagensAntes', 'imagensDepois', 'concluidoPor', 'enderecoVinculado'])
+        return Ocorrencia::with(['colaborador', 'prazo', 'imagens', 'imagensAntes', 'imagensDepois', 'concluidoPor', 'enderecoVinculado'])
             ->findOrFail($this->ocorrenciaId);
     }
 
@@ -159,10 +162,23 @@ class AtendimentoDetalhe extends Component
             return;
         }
 
-        $this->ocorrencia->update(['email_rat' => $this->emailRat, 'email_rat_enviado' => now()]);
+        $ocorrencia = $this->ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']);
+        $pdfBytes = app(RenderRatPdfFromOcorrencia::class)($ocorrencia);
+
+        $relativePath = 'ocorrencias/'.$ocorrencia->id.'/rat/RAT-'.$ocorrencia->id.'.pdf';
+        Storage::disk('public')->put($relativePath, $pdfBytes);
+
+        $ocorrencia->update([
+            'email_rat' => $this->emailRat,
+            'email_rat_enviado' => now(),
+            'rat_pdf_path' => $relativePath,
+        ]);
+
+        Mail::to($this->emailRat)->send(new RatEnviada($ocorrencia->fresh(['colaborador', 'prazo', 'enderecoVinculado'])));
+
         unset($this->ocorrencia);
 
-        $this->swalToastSuccess(['title' => 'E-mail registrado com sucesso!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(['title' => 'RAT enviada por e-mail com sucesso!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
     }
 
     public function concluir(): void

@@ -5,18 +5,16 @@
 @endsection
 
 @section('content')
-    <div
-        class="bg-cover bg-center bg-no-repeat bg-[url('/images/login-bg.jpg')] dark:bg-[url('/images/login-bg.jpg')] min-h-screen flex justify-center items-center">
+    <div class="bg-cover bg-center bg-no-repeat 
+        bg-[url('/images/login-bg.jpg')] dark:bg-[url('/images/login-bg.jpg')] 
+        min-h-screen flex justify-center items-center">
         <div class="relative">
-            <div class="bg-card/95 rounded-lg w-2/3 mx-auto">
+            <div class="bg-card/95 rounded-lg w-4/5 sm:w-2/3 mx-auto">
                 <div class="grid lg:grid-cols-12 grid-cols-1 items-center gap-0">
                     <div class="lg:col-span-5">
                         <div class="text-center px-10 py-12">
                             <div class="mt-8">
                                 <h4 class="mb-2 text-primary text-xl font-semibold">Criar uma nova senha</h4>
-                                {{-- <p class="text-base mb-8 text-default-500">
-                                    Crie uma nova senha para sua conta
-                                </p> --}}
                             </div>
                             <form action="/reset-password" method="POST">
                                 @csrf

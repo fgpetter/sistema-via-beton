@@ -34,6 +34,7 @@ class Ocorrencia extends Model
         'email_enviado',
         'email_rat',
         'email_rat_enviado',
+        'rat_pdf_path',
         'datahora_chegada',
         'datahora_saida',
         'comentarios',

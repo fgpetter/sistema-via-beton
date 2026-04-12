@@ -330,7 +330,7 @@
                                         wire:model="form.descricao"
                                         id="descricao"
                                         rows="3"
-                                        class="form-input w-full @error('descricao') border-danger @enderror"
+                                        class="form-textarea rounded-md border-gray-300 w-full @error('descricao') border-danger @enderror"
                                         placeholder="Descrição detalhada (opcional)"
                                     ></textarea>
                                     @error('form.descricao')
@@ -395,6 +395,24 @@
                                     </div>
                                 @endif
 
+                                @if ($form->editingId && $this->editingOcorrencia?->email_rat_enviado && $this->editingOcorrencia?->rat_pdf_path)
+                                    <div class="bg-green-50 border border-green-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div>
+                                            <span class="text-xs font-medium text-default-500 uppercase">RAT enviada por e-mail</span>
+                                            <p class="text-sm text-default-700">
+                                                Enviada em {{ $this->editingOcorrencia->email_rat_enviado->format('d/m/Y H:i') }}
+                                            </p>
+                                        </div>
+                                        <a
+                                            href="{{ route('admin.ocorrencias.rat-pdf', $this->editingOcorrencia) }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
+                                        >
+                                            Visualizar PDF da RAT
+                                        </a>
+                                    </div>
+                                @endif
 
                                 <!-- Fotos (Collapse) - Disponível apenas na edição -->
                                 @if ($form->editingId)
@@ -490,7 +508,7 @@
                                         wire:model="form.comentarios_prestador"
                                         id="comentarios_prestador"
                                         rows="3"
-                                        class="form-input w-full"
+                                        class="form-textarea rounded-md border-gray-300 w-full"
                                         readonly
                                     ></textarea>
                                 </div>
@@ -503,7 +521,7 @@
                                         wire:model="form.comentarios"
                                         id="comentarios"
                                         rows="3"
-                                        class="form-input w-full @error('comentarios') border-danger @enderror"
+                                        class="form-textarea rounded-md border-gray-300 w-full @error('comentarios') border-danger @enderror"
                                         placeholder="Comentários adicionais (opcional)"
                                     ></textarea>
                                     @error('form.comentarios')
