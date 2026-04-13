@@ -63,24 +63,32 @@
             </div>
         @enderror
         <div class="card-header">
-            <div class="flex flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center w-full">
-                <div class="relative w-full max-w-md">
-                    <input
-                        wire:model.live.debounce.300ms="search"
-                        class="form-input form-input-sm ps-9"
-                        placeholder="Buscar por título, agência ou responsável"
-                        type="text"
-                    />
-                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-500"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </div>
-                </div>
-
+            <div class="flex flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center xl:my-3 w-full">
                 <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center flex-1 min-w-0">
+                    <div class="relative w-full max-w-md">
+                        <input
+                            wire:model.live.debounce.300ms="search"
+                            class="form-input form-input-sm ps-9"
+                            placeholder="Buscar por título, agência ou responsável"
+                            type="text"
+                        />
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-500"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+                    </div>
                     <div class="relative w-full sm:w-48 shrink-0">
                         <select wire:model.live="statusFilter" class="form-input form-input-sm w-full">
                             <option value="">Todos os status</option>
                             @foreach ($this->statuses as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="relative w-full sm:w-48 shrink-0">
+                        <select wire:model.live="priorityFilter" class="form-input form-input-sm w-full">
+                            <option value="">Todas as prioridades</option>
+                            @foreach ($this->priorities as $value => $label)
                                 <option value="{{ $value }}">{{ $label }}</option>
                             @endforeach
                         </select>

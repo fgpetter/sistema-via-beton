@@ -132,6 +132,24 @@ class OcorrenciasListTest extends TestCase
             ->assertDontSee('Concluída');
     }
 
+    public function test_priority_filter_works(): void
+    {
+        Ocorrencia::factory()->create([
+            'prioridade' => 'Alta',
+            'titulo' => 'Ocorrência Alta',
+        ]);
+        Ocorrencia::factory()->create([
+            'prioridade' => 'Baixa',
+            'titulo' => 'Ocorrência Baixa',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('priorityFilter', 'Alta')
+            ->assertSee('Ocorrência Alta')
+            ->assertDontSee('Ocorrência Baixa');
+    }
+
     public function test_close_delete_modal_resets_state(): void
     {
         $ocorrencia = Ocorrencia::factory()->create();

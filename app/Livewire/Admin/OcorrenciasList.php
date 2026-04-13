@@ -32,6 +32,9 @@ class OcorrenciasList extends Component
     #[Url(as: 'status')]
     public string $statusFilter = '';
 
+    #[Url(as: 'prioridade')]
+    public string $priorityFilter = '';
+
     public bool $showDeleteModal = false;
 
     public ?int $deletingId = null;
@@ -51,6 +54,11 @@ class OcorrenciasList extends Component
     }
 
     public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPriorityFilter(): void
     {
         $this->resetPage();
     }
@@ -80,6 +88,9 @@ class OcorrenciasList extends Component
                     $query->status($status);
                 }
             })
+            ->when($this->priorityFilter, function ($query) {
+                $query->where('prioridade', $this->priorityFilter);
+            })
             ->emergenciaisFirst()
             ->orderByDesc('abertura')
             ->paginate(10);
@@ -89,6 +100,18 @@ class OcorrenciasList extends Component
     public function statuses(): array
     {
         return OcorrenciaStatus::options();
+    }
+
+    #[Computed]
+    public function priorities(): array
+    {
+        return Ocorrencia::query()
+            ->whereNotNull('prioridade')
+            ->where('prioridade', '!=', '')
+            ->orderBy('prioridade')
+            ->distinct()
+            ->pluck('prioridade', 'prioridade')
+            ->toArray();
     }
 
     #[On('ocorrencia-saved')]
