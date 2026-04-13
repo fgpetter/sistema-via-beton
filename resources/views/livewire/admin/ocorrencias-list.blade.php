@@ -192,8 +192,8 @@
                                             {{ $ocorrencia->violacao_projetada?->format('d/m/Y H:i') ?? '—' }}
                                         </td>
                                         <td class="px-3.5 py-3">
-                                            @if ($ocorrencia->email_enviado)
-                                                <span class="text-success">{{ $ocorrencia->email_enviado->format('d/m/Y H:i') }}</span>
+                                            @if ($ocorrencia->email_rat_enviado)
+                                                <span class="text-success">{{ $ocorrencia->email_rat_enviado->format('d/m/Y H:i') }}</span>
                                             @else
                                                 <span class="text-default-400">—</span>
                                             @endif
