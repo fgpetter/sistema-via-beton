@@ -5,6 +5,7 @@ namespace App\Livewire\Prestador;
 use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\TipoImagemOcorrencia;
+use App\Jobs\ProcessarImagemOcorrencia;
 use App\Mail\RatEnviada;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
@@ -117,12 +118,14 @@ class AtendimentoDetalhe extends Component
         $tipo = TipoImagemOcorrencia::from($this->uploadingTipo);
         $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
 
-        OcorrenciaImagem::create([
+        $imagem = OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrenciaId,
             'tipo' => $tipo,
             'par' => $this->uploadingPar,
             'path' => $path,
         ]);
+
+        ProcessarImagemOcorrencia::dispatch($imagem);
 
         $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
         unset($this->ocorrencia, $this->fotoPares);

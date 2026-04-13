@@ -21,6 +21,7 @@ class OcorrenciaImagem extends Model
         'tipo',
         'par',
         'path',
+        'legenda',
     ];
 
     /**

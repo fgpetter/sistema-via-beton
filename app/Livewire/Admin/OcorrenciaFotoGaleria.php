@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\TipoImagemOcorrencia;
+use App\Jobs\ProcessarImagemOcorrencia;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
 use App\Models\User;
@@ -93,17 +94,33 @@ HTML;
         $tipo = TipoImagemOcorrencia::from($this->uploadingTipo);
         $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
 
-        OcorrenciaImagem::create([
+        $imagem = OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrenciaId,
             'tipo' => $tipo,
             'par' => $this->uploadingPar,
             'path' => $path,
         ]);
 
+        ProcessarImagemOcorrencia::dispatch($imagem);
+
         $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
         unset($this->ocorrencia, $this->fotoPares);
 
         $this->swalToastSuccess(['title' => 'Foto enviada!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+    }
+
+    public function salvarLegenda(int $imagemId, string $legenda): void
+    {
+        $this->ensureUserIsAuthorized();
+
+        $imagem = OcorrenciaImagem::query()
+            ->where('id', $imagemId)
+            ->where('ocorrencia_id', $this->ocorrenciaId)
+            ->firstOrFail();
+
+        $imagem->update(['legenda' => $legenda]);
+
+        unset($this->ocorrencia, $this->fotoPares);
     }
 
     public function removerImagem(int $imagemId): void

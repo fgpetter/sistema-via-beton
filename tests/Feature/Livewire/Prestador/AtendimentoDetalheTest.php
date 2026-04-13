@@ -4,6 +4,7 @@ namespace Tests\Feature\Livewire\Prestador;
 
 use App\Enums\OcorrenciaStatus;
 use App\Enums\TipoImagemOcorrencia;
+use App\Jobs\ProcessarImagemOcorrencia;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Livewire\Prestador\AtendimentoFotoGaleriaReadonly;
 use App\Mail\RatEnviada;
@@ -14,6 +15,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -169,6 +171,7 @@ class AtendimentoDetalheTest extends TestCase
     public function test_prestador_can_upload_foto_antes(): void
     {
         Storage::fake('public');
+        Queue::fake();
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
@@ -182,11 +185,14 @@ class AtendimentoDetalheTest extends TestCase
             'tipo' => TipoImagemOcorrencia::Antes->value,
             'par' => 1,
         ]);
+
+        Queue::assertPushed(ProcessarImagemOcorrencia::class);
     }
 
     public function test_prestador_can_upload_foto_depois(): void
     {
         Storage::fake('public');
+        Queue::fake();
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
@@ -200,11 +206,14 @@ class AtendimentoDetalheTest extends TestCase
             'tipo' => TipoImagemOcorrencia::Depois->value,
             'par' => 1,
         ]);
+
+        Queue::assertPushed(ProcessarImagemOcorrencia::class);
     }
 
     public function test_prestador_can_upload_multiple_pairs(): void
     {
         Storage::fake('public');
+        Queue::fake();
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
@@ -225,6 +234,7 @@ class AtendimentoDetalheTest extends TestCase
             'par' => 2,
             'tipo' => TipoImagemOcorrencia::Antes->value,
         ]);
+        Queue::assertPushed(ProcessarImagemOcorrencia::class, 3);
     }
 
     public function test_prestador_can_remove_image(): void

@@ -3,12 +3,14 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\TipoImagemOcorrencia;
+use App\Jobs\ProcessarImagemOcorrencia;
 use App\Livewire\Admin\OcorrenciaFotoGaleria;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -41,6 +43,7 @@ class OcorrenciaFotoGaleriaTest extends TestCase
     public function test_admin_can_upload_foto_antes(): void
     {
         Storage::fake('public');
+        Queue::fake();
 
         $ocorrencia = Ocorrencia::factory()->create();
 
@@ -56,6 +59,8 @@ class OcorrenciaFotoGaleriaTest extends TestCase
             'tipo' => TipoImagemOcorrencia::Antes->value,
             'par' => 1,
         ]);
+
+        Queue::assertPushed(ProcessarImagemOcorrencia::class);
     }
 
     public function test_admin_can_remover_imagem(): void
@@ -89,5 +94,71 @@ class OcorrenciaFotoGaleriaTest extends TestCase
             ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
             ->call('adicionarPar')
             ->assertSet('totalPares', 2);
+    }
+
+    public function test_admin_can_salvar_legenda(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create();
+        $imagem = OcorrenciaImagem::create([
+            'ocorrencia_id' => $ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
+            'path' => 'test/antes.jpg',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->call('salvarLegenda', $imagem->id, 'Fachada danificada')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencia_imagens', [
+            'id' => $imagem->id,
+            'legenda' => 'Fachada danificada',
+        ]);
+    }
+
+    public function test_admin_cannot_salvar_legenda_de_outra_ocorrencia(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create();
+        $outraOcorrencia = Ocorrencia::factory()->create();
+        $imagem = OcorrenciaImagem::create([
+            'ocorrencia_id' => $outraOcorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
+            'path' => 'test/antes.jpg',
+        ]);
+
+        $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->call('salvarLegenda', $imagem->id, 'Legenda indevida');
+    }
+
+    public function test_processar_imagem_reduz_e_salva_como_jpg(): void
+    {
+        Storage::fake('public');
+
+        $ocorrencia = Ocorrencia::factory()->create();
+        $fakeImage = UploadedFile::fake()->image('foto.png', 2000, 1500);
+        $path = $fakeImage->storeAs('ocorrencias/'.$ocorrencia->id.'/antes', 'foto.png', 'public');
+
+        $imagem = OcorrenciaImagem::create([
+            'ocorrencia_id' => $ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
+            'path' => $path,
+        ]);
+
+        (new ProcessarImagemOcorrencia($imagem))->handle();
+
+        $expectedPath = 'ocorrencias/'.$ocorrencia->id.'/antes/foto.jpg';
+        Storage::disk('public')->assertExists($expectedPath);
+        Storage::disk('public')->assertMissing('ocorrencias/'.$ocorrencia->id.'/antes/foto.png');
+
+        $this->assertDatabaseHas('ocorrencia_imagens', [
+            'id' => $imagem->id,
+            'path' => $expectedPath,
+        ]);
     }
 }

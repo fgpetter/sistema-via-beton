@@ -20,16 +20,25 @@
             @foreach ($this->fotoPares as $par => $fotos)
                 <div wire:key="admin-foto-par-{{ $par }}" class="grid grid-cols-2 gap-3">
                     @if ($fotos['antes'])
-                        <div class="relative group aspect-square">
-                            <img src="{{ asset('storage/' . $fotos['antes']->path) }}" alt="Antes" class="w-full h-full object-cover rounded border border-default-200">
-                            <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Antes</span>
-                            <button
-                                type="button"
-                                wire:click="removerImagem({{ $fotos['antes']->id }})"
-                                class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        <div>
+                            <div class="relative group aspect-square">
+                                <img src="{{ asset('storage/' . $fotos['antes']->path) }}" alt="Antes" class="w-full h-full object-cover rounded border border-default-200">
+                                <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Antes</span>
+                                <button
+                                    type="button"
+                                    wire:click="removerImagem({{ $fotos['antes']->id }})"
+                                    class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                            </div>
+                            <input
+                                type="text"
+                                value="{{ $fotos['antes']->legenda ?? '' }}"
+                                @blur="$wire.salvarLegenda({{ $fotos['antes']->id }}, $event.target.value)"
+                                placeholder="Legenda..."
+                                class="w-full mt-1 text-xs border border-default-200 rounded px-2 py-1 focus:outline-none focus:border-primary"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
                         </div>
                     @else
                         <div
@@ -42,16 +51,25 @@
                     @endif
 
                     @if ($fotos['depois'])
-                        <div class="relative group aspect-square">
-                            <img src="{{ asset('storage/' . $fotos['depois']->path) }}" alt="Depois" class="w-full h-full object-cover rounded border border-default-200">
-                            <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Depois</span>
-                            <button
-                                type="button"
-                                wire:click="removerImagem({{ $fotos['depois']->id }})"
-                                class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        <div>
+                            <div class="relative group aspect-square">
+                                <img src="{{ asset('storage/' . $fotos['depois']->path) }}" alt="Depois" class="w-full h-full object-cover rounded border border-default-200">
+                                <span class="absolute bottom-1 left-1 py-0.5 px-1.5 text-[10px] font-semibold uppercase bg-black/60 text-white rounded">Depois</span>
+                                <button
+                                    type="button"
+                                    wire:click="removerImagem({{ $fotos['depois']->id }})"
+                                    class="absolute top-1 right-1 size-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                            </div>
+                            <input
+                                type="text"
+                                value="{{ $fotos['depois']->legenda ?? '' }}"
+                                @blur="$wire.salvarLegenda({{ $fotos['depois']->id }}, $event.target.value)"
+                                placeholder="Legenda..."
+                                class="w-full mt-1 text-xs border border-default-200 rounded px-2 py-1 focus:outline-none focus:border-primary"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
                         </div>
                     @else
                         <div class="aspect-square border-2 border-dashed border-default-200 rounded flex flex-col items-center justify-center bg-default-50">
