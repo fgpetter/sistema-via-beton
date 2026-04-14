@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\TipoEndereco;
 use App\Imports\OcorrenciasImport;
-use App\Livewire\Admin\OcorrenciasList;
+use App\Livewire\Admin\OcorrenciaModal;
 use App\Models\Endereco;
 use App\Models\Ocorrencia;
 use App\Models\User;
@@ -228,7 +228,7 @@ class EnderecoOcorrenciaRelacionamentoTest extends TestCase
         ]);
 
         Livewire::actingAs($this->admin)
-            ->test(OcorrenciasList::class)
+            ->test(OcorrenciaModal::class)
             ->call('openCreateModal')
             ->set('form.titulo', 'Ocorrência de teste')
             ->set('form.agencia', 'AG TESTE LIVEWIRE')
@@ -245,7 +245,7 @@ class EnderecoOcorrenciaRelacionamentoTest extends TestCase
     public function test_livewire_save_deixa_endereco_id_null_quando_agencia_nao_encontrada(): void
     {
         Livewire::actingAs($this->admin)
-            ->test(OcorrenciasList::class)
+            ->test(OcorrenciaModal::class)
             ->call('openCreateModal')
             ->set('form.titulo', 'Ocorrência sem endereco')
             ->set('form.agencia', 'AG NAO EXISTE')

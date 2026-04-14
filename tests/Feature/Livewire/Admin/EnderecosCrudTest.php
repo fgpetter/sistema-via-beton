@@ -315,7 +315,7 @@ class EnderecosCrudTest extends TestCase
 
     public function test_pagination_shows_compact_page_links(): void
     {
-        Endereco::factory()->count(120)->create();
+        Endereco::factory()->count(200)->create();
 
         Livewire::actingAs($this->admin)
             ->test(EnderecosCrud::class)
@@ -325,8 +325,8 @@ class EnderecosCrudTest extends TestCase
             ->assertSee('...')
             ->assertSee('1')
             ->assertSee('6')
-            ->assertSee('12')
-            ->assertDontSee('2')
-            ->assertDontSee('10');
+            ->assertSee('20')
+            ->assertDontSeeHtml('aria-label="Ir para página 11"')
+            ->assertDontSeeHtml('aria-label="Ir para página 12"');
     }
 }
