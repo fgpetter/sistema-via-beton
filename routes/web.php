@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DownloadRatPdfController;
+use App\Http\Controllers\Admin\DownloadRelatorioAtendimentoPdfController;
 use App\Http\Controllers\RoutingController;
 use App\Http\Middleware\RedirectPrestadorDashboard;
 use App\Livewire\Admin\OcorrenciasList;
@@ -21,6 +22,7 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
         Route::view('/colaboradores', 'admin.colaboradores')->name('admin.colaboradores')->can('admin');
         Route::get('/ocorrencias', OcorrenciasList::class)->name('admin.ocorrencias')->can('admin');
         Route::get('/ocorrencias/{ocorrencia}/rat-pdf', DownloadRatPdfController::class)->name('admin.ocorrencias.rat-pdf')->can('admin');
+        Route::get('/ocorrencias/{ocorrencia}/relatorio-atendimento-pdf', DownloadRelatorioAtendimentoPdfController::class)->name('admin.ocorrencias.relatorio-atendimento-pdf')->can('admin');
         Route::view('/enderecos', 'admin.enderecos')->name('admin.enderecos')->can('admin');
         Route::view('/configuracoes-sistema', 'admin.configuracoes-sistema')->name('admin.configuracoes-sistema')->can('admin');
     });

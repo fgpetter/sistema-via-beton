@@ -186,24 +186,43 @@
                                     </div>
                                 @endif
 
-                                @if ($form->editingId && $this->editingOcorrencia?->email_rat_enviado && $this->editingOcorrencia?->rat_pdf_path)
-                                    <div class="bg-green-50 border border-green-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                        <div>
-                                            <span class="text-xs font-medium text-default-500 uppercase">RAT enviada por e-mail</span>
-                                            <p class="text-sm text-default-700">
-                                                Enviada em {{ $this->editingOcorrencia->email_rat_enviado->format('d/m/Y H:i') }}
-                                            </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    @if ($form->editingId && $this->editingOcorrencia?->email_rat_enviado && $this->editingOcorrencia?->rat_pdf_path)
+                                        <div class="bg-green-50 border border-green-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <div>
+                                                <span class="text-xs font-medium text-default-500 uppercase">RAT enviada por e-mail</span>
+                                                <p class="text-sm text-default-700">
+                                                    Enviada em {{ $this->editingOcorrencia->email_rat_enviado->format('d/m/Y H:i') }}
+                                                </p>
+                                            </div>
+                                            <a
+                                                href="{{ route('admin.ocorrencias.rat-pdf', $this->editingOcorrencia) }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
+                                            >
+                                                Visualizar PDF da RAT
+                                            </a>
                                         </div>
-                                        <a
-                                            href="{{ route('admin.ocorrencias.rat-pdf', $this->editingOcorrencia) }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
-                                        >
-                                            Visualizar PDF da RAT
-                                        </a>
-                                    </div>
-                                @endif
+                                    @endif
+
+                                    @if ($this->editingOcorrencia && ($this->editingOcorrencia->status === \App\Enums\OcorrenciaStatus::Revisar || $this->editingOcorrencia->status === \App\Enums\OcorrenciaStatus::Concluido))
+                                        <div class="bg-blue-50 border border-blue-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <div>
+                                                <span class="text-xs font-medium text-default-500 uppercase">Relatório Técnico Fotográfico</span>
+                                            </div>
+                                            <a
+                                                href="{{ route('admin.ocorrencias.relatorio-atendimento-pdf', $this->editingOcorrencia) }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
+                                            >
+                                                Baixar Relatório
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                           
 
                                 @if ($form->editingId)
                                     <livewire:admin.ocorrencia-foto-galeria
