@@ -102,7 +102,7 @@ class OcorrenciaModal extends Component
             if ($data['status'] === OcorrenciaStatus::Concluido->value && $ocorrencia->status !== OcorrenciaStatus::Concluido) {
                 $data['concluido_por'] = auth()->id();
             }
-
+            $data['relatorio_pdf_path'] = null;
             $ocorrencia->update($data);
         } else {
             $ocorrencia = Ocorrencia::create($this->form->toData());
