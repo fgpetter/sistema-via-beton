@@ -108,7 +108,23 @@
     @elseif ($this->ocorrencia->status === OcorrenciaStatus::Andamento && $this->ocorrencia->atendimentoIniciado())
 
         <!-- Fotos (Collapse) -->
-        <div class="card mb-4" x-data>
+        <div
+            class="card mb-4"
+            x-data="{
+                isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.screen.width <= 1024),
+                triggerFoto(par, tipo) {
+                    $wire.uploadingPar = par;
+                    $wire.uploadingTipo = tipo;
+                    const input = $refs.fotoInput;
+                    if (this.isMobile) {
+                        input.setAttribute('capture', 'environment');
+                    } else {
+                        input.removeAttribute('capture');
+                    }
+                    $nextTick(() => input.click());
+                }
+            }"
+        >
             <button
                 type="button"
                 class="hs-collapse-toggle card-header w-full flex justify-between items-center cursor-pointer"
@@ -146,7 +162,7 @@
                                 </div>
                             @else
                                 <div
-                                    @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'antes'; $nextTick(() => $refs.fotoInput.click())"
+                                    @click="triggerFoto({{ $par }}, 'antes')"
                                     class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
@@ -168,7 +184,7 @@
                                 </div>
                             @else
                                 <div
-                                    @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'depois'; $nextTick(() => $refs.fotoInput.click())"
+                                    @click="triggerFoto({{ $par }}, 'depois')"
                                     class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
