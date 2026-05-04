@@ -139,6 +139,29 @@ class OcorrenciasListTest extends TestCase
             ->assertDontSee('Concluída');
     }
 
+    public function test_aberto_andamento_status_filter_shows_aberto_and_andamento_only(): void
+    {
+        Ocorrencia::factory()->create([
+            'status' => OcorrenciaStatus::Aberto,
+            'titulo' => 'Ocorrência aberta',
+        ]);
+        Ocorrencia::factory()->create([
+            'status' => OcorrenciaStatus::Andamento,
+            'titulo' => 'Ocorrência em andamento',
+        ]);
+        Ocorrencia::factory()->create([
+            'status' => OcorrenciaStatus::Concluido,
+            'titulo' => 'Ocorrência concluída',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('statusFilter', OcorrenciasList::STATUS_FILTER_ABERTO_ANDAMENTO)
+            ->assertSee('Ocorrência aberta')
+            ->assertSee('Ocorrência em andamento')
+            ->assertDontSee('Ocorrência concluída');
+    }
+
     public function test_priority_filter_works(): void
     {
         Ocorrencia::factory()->create([

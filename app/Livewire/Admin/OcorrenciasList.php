@@ -27,6 +27,11 @@ class OcorrenciasList extends Component
     use WithPagination;
     use WithSweetAlert;
 
+    /**
+     * Valor sintético do filtro de status na URL somente para esse filtro sem afetar OcorrenciaStatus enum.
+     */
+    public const STATUS_FILTER_ABERTO_ANDAMENTO = 'aberto_andamento';
+
     #[Url(as: 'busca')]
     public string $search = '';
 
@@ -162,6 +167,15 @@ class OcorrenciasList extends Component
                 });
             })
             ->when($this->statusFilter, function ($query) {
+                if ($this->statusFilter === self::STATUS_FILTER_ABERTO_ANDAMENTO) {
+                    $query->whereIn('status', [
+                        OcorrenciaStatus::Aberto,
+                        OcorrenciaStatus::Andamento,
+                    ]);
+
+                    return;
+                }
+
                 $status = OcorrenciaStatus::tryFrom($this->statusFilter);
                 if ($status) {
                     $query->status($status);
@@ -178,7 +192,10 @@ class OcorrenciasList extends Component
     #[Computed]
     public function statuses(): array
     {
-        return OcorrenciaStatus::options();
+        return array_merge(
+            [self::STATUS_FILTER_ABERTO_ANDAMENTO => 'Aberto/Andamento'],
+            OcorrenciaStatus::options(),
+        );
     }
 
     #[Computed]
