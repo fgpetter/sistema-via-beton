@@ -36,7 +36,7 @@ class OcorrenciasList extends Component
     public string $search = '';
 
     #[Url(as: 'status')]
-    public string $statusFilter = '';
+    public string $statusFilter = self::STATUS_FILTER_ABERTO_ANDAMENTO;
 
     #[Url(as: 'prioridade')]
     public string $priorityFilter = '';

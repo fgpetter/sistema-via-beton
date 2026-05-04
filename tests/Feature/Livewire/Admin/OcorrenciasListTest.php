@@ -63,6 +63,7 @@ class OcorrenciasListTest extends TestCase
         $ocorrencia = Ocorrencia::factory()->create([
             'colaborador_id' => $colaborador->id,
             'titulo' => 'Ocorrência de Teste',
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -99,8 +100,14 @@ class OcorrenciasListTest extends TestCase
 
     public function test_search_filters_by_titulo(): void
     {
-        Ocorrencia::factory()->create(['titulo' => 'Problema no servidor']);
-        Ocorrencia::factory()->create(['titulo' => 'Erro na rede']);
+        Ocorrencia::factory()->create([
+            'titulo' => 'Problema no servidor',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+        Ocorrencia::factory()->create([
+            'titulo' => 'Erro na rede',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
@@ -111,8 +118,16 @@ class OcorrenciasListTest extends TestCase
 
     public function test_search_filters_by_agencia(): void
     {
-        Ocorrencia::factory()->create(['agencia' => 'Agência Central', 'titulo' => 'Ocorrência A']);
-        Ocorrencia::factory()->create(['agencia' => 'Agência Norte', 'titulo' => 'Ocorrência B']);
+        Ocorrencia::factory()->create([
+            'agencia' => 'Agência Central',
+            'titulo' => 'Ocorrência A',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+        Ocorrencia::factory()->create([
+            'agencia' => 'Agência Norte',
+            'titulo' => 'Ocorrência B',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciasList::class)
@@ -137,6 +152,24 @@ class OcorrenciasListTest extends TestCase
             ->set('statusFilter', OcorrenciaStatus::Andamento->value)
             ->assertSee('Em andamento')
             ->assertDontSee('Concluída');
+    }
+
+    public function test_default_status_filter_is_aberto_andamento(): void
+    {
+        Ocorrencia::factory()->create([
+            'status' => OcorrenciaStatus::Aberto,
+            'titulo' => 'Visível na lista padrão',
+        ]);
+        Ocorrencia::factory()->create([
+            'status' => OcorrenciaStatus::Concluido,
+            'titulo' => 'Oculto na lista padrão',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->assertSet('statusFilter', OcorrenciasList::STATUS_FILTER_ABERTO_ANDAMENTO)
+            ->assertSee('Visível na lista padrão')
+            ->assertDontSee('Oculto na lista padrão');
     }
 
     public function test_aberto_andamento_status_filter_shows_aberto_and_andamento_only(): void
@@ -167,10 +200,12 @@ class OcorrenciasListTest extends TestCase
         Ocorrencia::factory()->create([
             'prioridade' => 'Alta',
             'titulo' => 'Ocorrência Alta',
+            'status' => OcorrenciaStatus::Aberto,
         ]);
         Ocorrencia::factory()->create([
             'prioridade' => 'Baixa',
             'titulo' => 'Ocorrência Baixa',
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -208,11 +243,13 @@ class OcorrenciasListTest extends TestCase
             'prazo_id' => $prazoNormal->id,
             'titulo' => 'Ocorrência Normal',
             'abertura' => now(),
+            'status' => OcorrenciaStatus::Aberto,
         ]);
         Ocorrencia::factory()->create([
             'prazo_id' => $prazoEmergencial->id,
             'titulo' => 'Ocorrência Emergencial',
             'abertura' => now()->subDays(5),
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         $html = Livewire::actingAs($this->admin)
@@ -237,6 +274,7 @@ class OcorrenciasListTest extends TestCase
         Ocorrencia::factory()->create([
             'prazo_id' => $prazoEmergencial->id,
             'titulo' => 'Ocorrência Emergencial',
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -255,6 +293,7 @@ class OcorrenciasListTest extends TestCase
         Ocorrencia::factory()->create([
             'prazo_id' => $prazoNormal->id,
             'titulo' => 'Ocorrência Normal',
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -273,6 +312,7 @@ class OcorrenciasListTest extends TestCase
         Ocorrencia::factory()->create([
             'prazo_id' => $prazo->id,
             'titulo' => 'Ocorrência Vistoria',
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -287,6 +327,7 @@ class OcorrenciasListTest extends TestCase
         $ocorrencia = Ocorrencia::factory()->create([
             'prioridade' => 'Alta',
             'violacao_projetada' => $violacao,
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -317,6 +358,7 @@ class OcorrenciasListTest extends TestCase
         $ocorrencia = Ocorrencia::factory()->create([
             'prazo_id' => $this->prazoNaoEmergencial->id,
             'ordem_prestador' => null,
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -334,6 +376,7 @@ class OcorrenciasListTest extends TestCase
         $ocorrencia = Ocorrencia::factory()->create([
             'prazo_id' => $this->prazoNaoEmergencial->id,
             'ordem_prestador' => 8,
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -351,6 +394,7 @@ class OcorrenciasListTest extends TestCase
         $ocorrencia = Ocorrencia::factory()->create([
             'prazo_id' => $this->prazoNaoEmergencial->id,
             'ordem_prestador' => 5,
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->admin)
@@ -369,6 +413,7 @@ class OcorrenciasListTest extends TestCase
         $ocorrencia = Ocorrencia::factory()->create([
             'prazo_id' => $this->prazoNaoEmergencial->id,
             'ordem_prestador' => null,
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -382,6 +427,7 @@ class OcorrenciasListTest extends TestCase
         $emergencial = Ocorrencia::factory()->emergencial()->create([
             'ordem_prestador' => 3,
             'titulo' => 'Ocorrência emergencial ordem oculta',
+            'status' => OcorrenciaStatus::Aberto,
         ]);
 
         $html = Livewire::actingAs($this->admin)
