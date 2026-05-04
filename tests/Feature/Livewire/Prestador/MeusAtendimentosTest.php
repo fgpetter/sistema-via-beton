@@ -38,6 +38,7 @@ class MeusAtendimentosTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Meus Atendimentos');
+        $response->assertSee('Ver concluídos');
     }
 
     public function test_guest_cannot_access_atendimentos_page(): void
@@ -52,11 +53,11 @@ class MeusAtendimentosTest extends TestCase
         $outroPrestador = User::factory()->prestador()->create();
         $outroColaborador = Colaborador::factory()->create(['user_id' => $outroPrestador->id]);
 
-        Ocorrencia::factory()->create([
+        Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
             'titulo' => 'Minha Ocorrência',
         ]);
-        Ocorrencia::factory()->create([
+        Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $outroColaborador->id,
             'titulo' => 'Ocorrência do Outro',
         ]);
@@ -71,7 +72,7 @@ class MeusAtendimentosTest extends TestCase
     {
         Livewire::actingAs($this->prestador)
             ->test(MeusAtendimentos::class)
-            ->assertSee('Nenhum atendimento designado a você.');
+            ->assertSee('Nenhum atendimento em aberto.');
     }
 
     public function test_prestador_sees_ocorrencia_details_in_card(): void
@@ -101,42 +102,42 @@ class MeusAtendimentosTest extends TestCase
             ['prazo_valor' => 6, 'prazo_unidade' => PrazoUnidade::Hora->value]
         );
 
-        Ocorrencia::factory()->create([
+        Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
             'prazo_id' => $prazoNormal->id,
             'titulo' => 'LOCK-ord-2',
             'ordem_prestador' => 2,
             'abertura' => '2024-01-15',
         ]);
-        Ocorrencia::factory()->create([
+        Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
             'prazo_id' => $prazoNormal->id,
             'titulo' => 'LOCK-ord-1',
             'ordem_prestador' => 1,
             'abertura' => '2024-01-10',
         ]);
-        Ocorrencia::factory()->create([
+        Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
             'prazo_id' => $prazoNormal->id,
             'titulo' => 'LOCK-sem-ordem',
             'ordem_prestador' => null,
             'abertura' => '2024-02-01',
         ]);
-        Ocorrencia::factory()->create([
+        Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
             'prazo_id' => $prazoNormal->id,
             'titulo' => 'LOCK-empate-a',
             'ordem_prestador' => 3,
             'abertura' => '2024-03-01',
         ]);
-        Ocorrencia::factory()->create([
+        Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
             'prazo_id' => $prazoNormal->id,
             'titulo' => 'LOCK-empate-b',
             'ordem_prestador' => 3,
             'abertura' => '2024-04-01',
         ]);
-        Ocorrencia::factory()->create([
+        Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
             'prazo_id' => $prazoEmergencial->id,
             'titulo' => 'LOCK-prazo-urgente-topo',
@@ -165,5 +166,70 @@ class MeusAtendimentosTest extends TestCase
             ->assertSee('LOCK-prazo-urgente-topo')
             ->assertSee('LOCK-ord-1')
             ->assertSee('LOCK-sem-ordem');
+    }
+
+    public function test_visualizacao_padrao_oculta_ocorrencias_concluidas(): void
+    {
+        Ocorrencia::factory()->concluida()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'titulo' => 'Somente Concluída',
+        ]);
+        Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'titulo' => 'Em Andamento Visível',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(MeusAtendimentos::class)
+            ->assertSee('Em Andamento Visível')
+            ->assertDontSee('Somente Concluída')
+            ->assertSet('mostrarConcluidos', false);
+    }
+
+    public function test_prestador_alterna_para_listar_somente_concluidas(): void
+    {
+        Ocorrencia::factory()->concluida()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'titulo' => 'Encerrada',
+        ]);
+        Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'titulo' => 'Ainda Aberta',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(MeusAtendimentos::class)
+            ->call('alternarVisaoAtendimentos')
+            ->assertSet('mostrarConcluidos', true)
+            ->assertSee('Encerrada')
+            ->assertDontSee('Ainda Aberta')
+            ->assertSee('Ver em aberto');
+    }
+
+    public function test_mensagem_vazia_quando_so_existem_concluidas_na_visualizacao_padrao(): void
+    {
+        Ocorrencia::factory()->concluida()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'titulo' => 'Única Concluída',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(MeusAtendimentos::class)
+            ->assertSee('Nenhum atendimento em aberto.')
+            ->assertDontSee('Única Concluída');
+    }
+
+    public function test_mensagem_vazia_na_visualizacao_de_concluidos_sem_itens(): void
+    {
+        Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'titulo' => 'Somente Aberta',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(MeusAtendimentos::class)
+            ->call('alternarVisaoAtendimentos')
+            ->assertSee('Nenhum atendimento concluído.')
+            ->assertDontSee('Somente Aberta');
     }
 }

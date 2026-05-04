@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Prestador;
 
+use App\Enums\OcorrenciaStatus;
 use App\Models\Ocorrencia;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -14,6 +15,13 @@ use Livewire\Component;
 #[Title('Meus Atendimentos')]
 class MeusAtendimentos extends Component
 {
+    public bool $mostrarConcluidos = false;
+
+    public function alternarVisaoAtendimentos(): void
+    {
+        $this->mostrarConcluidos = ! $this->mostrarConcluidos;
+    }
+
     #[Computed]
     public function ocorrencias()
     {
@@ -25,11 +33,17 @@ class MeusAtendimentos extends Component
             return collect();
         }
 
-        return Ocorrencia::query()
+        $query = Ocorrencia::query()
             ->with('prazo')
-            ->where('colaborador_id', $colaborador->id)
-            ->ordemListaPrestador()
-            ->get();
+            ->where('colaborador_id', $colaborador->id);
+
+        if ($this->mostrarConcluidos) {
+            $query->where('status', OcorrenciaStatus::Concluido);
+        } else {
+            $query->where('status', '!=', OcorrenciaStatus::Concluido);
+        }
+
+        return $query->ordemListaPrestador()->get();
     }
 
     public function render(): View
