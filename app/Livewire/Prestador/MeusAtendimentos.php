@@ -28,8 +28,7 @@ class MeusAtendimentos extends Component
         return Ocorrencia::query()
             ->with('prazo')
             ->where('colaborador_id', $colaborador->id)
-            ->emergenciaisFirst()
-            ->orderByDesc('abertura')
+            ->ordemListaPrestador()
             ->get();
     }
 

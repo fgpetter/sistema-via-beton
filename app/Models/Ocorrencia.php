@@ -29,6 +29,7 @@ class Ocorrencia extends Model
         'violacao_projetada',
         'contrato',
         'prioridade',
+        'ordem_prestador',
         'colaborador_id',
         'prazo_id',
         'agencia',
@@ -59,6 +60,7 @@ class Ocorrencia extends Model
             'email_rat_enviado' => 'datetime',
             'datahora_chegada' => 'datetime',
             'datahora_saida' => 'datetime',
+            'ordem_prestador' => 'integer',
         ];
     }
 
@@ -101,6 +103,19 @@ class Ocorrencia extends Model
             'EXISTS (SELECT 1 FROM prazos WHERE prazos.id = ocorrencias.prazo_id AND prazos.nome = ?) DESC',
             [Prazo::EMERGENCIAL]
         );
+    }
+
+    /**
+     * Ordenação da lista de atendimentos do prestador: emergenciais primeiro; depois
+     * ordem manual crescente; sem ordem por último; empate por data de abertura (mais recente primeiro).
+     */
+    public function scopeOrdemListaPrestador(Builder $query): Builder
+    {
+        return $query
+            ->emergenciaisFirst()
+            ->orderByRaw('(ordem_prestador IS NULL)')
+            ->orderBy('ordem_prestador')
+            ->orderByDesc('abertura');
     }
 
     public function concluidoPor(): BelongsTo

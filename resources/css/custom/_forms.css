@@ -22,6 +22,18 @@ _forms.scss
     @apply h-7.5 text-xs;
 }
 
+/* Oculta setas nativas de inputs numéricos (Chrome, Safari, Edge, Firefox). */
+.form-input-number-no-spin::-webkit-inner-spin-button,
+.form-input-number-no-spin::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.form-input-number-no-spin[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 textarea.form-input {
     @apply p-3 !h-auto;
 }

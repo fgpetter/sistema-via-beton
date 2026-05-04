@@ -36,6 +36,7 @@ class OcorrenciaFactory extends Factory
             'datahora_chegada' => fake()->optional(0.4)->dateTimeBetween('-3 months', 'now'),
             'datahora_saida' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
             'comentarios' => fake()->optional()->paragraph(),
+            'ordem_prestador' => null,
         ];
     }
 

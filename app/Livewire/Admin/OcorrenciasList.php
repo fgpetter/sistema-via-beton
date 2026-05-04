@@ -7,6 +7,7 @@ use App\Imports\OcorrenciasImport;
 use App\Models\Ocorrencia;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -41,6 +42,13 @@ class OcorrenciasList extends Component
 
     public $importFile;
 
+    /**
+     * Valores exibidos nos inputs de ordenação por ID de ocorrência (chave string).
+     *
+     * @var array<string, int|string|null>
+     */
+    public array $ordemPrestadorInputs = [];
+
     public function updatedImportFile(): void
     {
         if ($this->importFile) {
@@ -61,6 +69,77 @@ class OcorrenciasList extends Component
     public function updatedPriorityFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function rendering(): void
+    {
+        foreach ($this->ocorrencias as $ocorrencia) {
+            if ($ocorrencia->isEmergencial()) {
+                continue;
+            }
+            $id = (string) $ocorrencia->id;
+            if (! array_key_exists($id, $this->ordemPrestadorInputs)) {
+                $this->ordemPrestadorInputs[$id] = $ocorrencia->ordem_prestador;
+            }
+        }
+    }
+
+    public function updatedOrdemPrestadorInputs(mixed $value, ?string $key): void
+    {
+        if ($key === null) {
+            return;
+        }
+
+        $this->ensureUserIsAuthorized();
+
+        $ocorrenciaId = (int) $key;
+
+        $ocorrencia = Ocorrencia::query()->whereKey($ocorrenciaId)->with('prazo')->first();
+        if (! $ocorrencia) {
+            $this->addError('ordemPrestadorInputs.'.$key, 'Ocorrência não encontrada.');
+
+            return;
+        }
+
+        if ($ocorrencia->isEmergencial()) {
+            $this->resetErrorBag('ordemPrestadorInputs.'.$key);
+            $this->ordemPrestadorInputs[$key] = $ocorrencia->ordem_prestador;
+
+            return;
+        }
+
+        $raw = $value;
+        if ($raw === '' || $raw === null) {
+            $normalized = null;
+        } else {
+            $validator = Validator::make(
+                ['ordem' => $raw],
+                [
+                    'ordem' => ['regex:/^\d{1,2}$/', 'integer', 'min:0', 'max:99'],
+                ],
+                [
+                    'ordem.regex' => 'Informe no máximo 2 dígitos (0 a 99).',
+                    'ordem.integer' => 'Informe um número inteiro entre 0 e 99.',
+                    'ordem.min' => 'O valor deve estar entre 0 e 99.',
+                    'ordem.max' => 'O valor deve estar entre 0 e 99.',
+                ]
+            );
+
+            if ($validator->fails()) {
+                $this->addError('ordemPrestadorInputs.'.$key, (string) $validator->errors()->first('ordem'));
+                $this->ordemPrestadorInputs[$key] = Ocorrencia::query()->whereKey($ocorrenciaId)->value('ordem_prestador');
+
+                return;
+            }
+
+            $normalized = (int) $raw;
+        }
+
+        $ocorrencia->update(['ordem_prestador' => $normalized]);
+
+        $this->resetErrorBag('ordemPrestadorInputs.'.$key);
+        $this->ordemPrestadorInputs[$key] = $normalized;
+        unset($this->ocorrencias);
     }
 
     #[Computed]
@@ -119,6 +198,7 @@ class OcorrenciasList extends Component
     {
         $this->resetPage();
         unset($this->ocorrencias);
+        $this->ordemPrestadorInputs = [];
     }
 
     public function confirmDelete(int $ocorrenciaId): void
@@ -136,8 +216,11 @@ class OcorrenciasList extends Component
             return;
         }
 
-        Ocorrencia::findOrFail($this->deletingId)->delete();
+        $deletedId = $this->deletingId;
 
+        Ocorrencia::findOrFail($deletedId)->delete();
+
+        unset($this->ordemPrestadorInputs[(string) $deletedId], $this->ocorrencias);
         $this->swalToastWarning([
             'title' => 'Excluído com sucesso!',
             'showConfirmButton' => false,

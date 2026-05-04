@@ -3,9 +3,11 @@
 namespace Tests\Feature\Livewire\Prestador;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\PrazoUnidade;
 use App\Livewire\Prestador\MeusAtendimentos;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
+use App\Models\Prazo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -86,5 +88,82 @@ class MeusAtendimentosTest extends TestCase
             ->assertSee('Tomada Quebrada')
             ->assertSee('Agência Rio Claro')
             ->assertSee('Em Andamento');
+    }
+
+    public function test_prestador_ocorrencias_are_ordered_by_ordem_prestador_then_abertura_with_emergenciais_first(): void
+    {
+        $prazoNormal = Prazo::query()->firstOrCreate(
+            ['nome' => 'Engenharia.Inspeção'],
+            ['prazo_valor' => 5, 'prazo_unidade' => PrazoUnidade::Dia->value]
+        );
+        $prazoEmergencial = Prazo::query()->firstOrCreate(
+            ['nome' => Prazo::EMERGENCIAL],
+            ['prazo_valor' => 6, 'prazo_unidade' => PrazoUnidade::Hora->value]
+        );
+
+        Ocorrencia::factory()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'prazo_id' => $prazoNormal->id,
+            'titulo' => 'LOCK-ord-2',
+            'ordem_prestador' => 2,
+            'abertura' => '2024-01-15',
+        ]);
+        Ocorrencia::factory()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'prazo_id' => $prazoNormal->id,
+            'titulo' => 'LOCK-ord-1',
+            'ordem_prestador' => 1,
+            'abertura' => '2024-01-10',
+        ]);
+        Ocorrencia::factory()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'prazo_id' => $prazoNormal->id,
+            'titulo' => 'LOCK-sem-ordem',
+            'ordem_prestador' => null,
+            'abertura' => '2024-02-01',
+        ]);
+        Ocorrencia::factory()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'prazo_id' => $prazoNormal->id,
+            'titulo' => 'LOCK-empate-a',
+            'ordem_prestador' => 3,
+            'abertura' => '2024-03-01',
+        ]);
+        Ocorrencia::factory()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'prazo_id' => $prazoNormal->id,
+            'titulo' => 'LOCK-empate-b',
+            'ordem_prestador' => 3,
+            'abertura' => '2024-04-01',
+        ]);
+        Ocorrencia::factory()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'prazo_id' => $prazoEmergencial->id,
+            'titulo' => 'LOCK-prazo-urgente-topo',
+            'ordem_prestador' => 99,
+            'abertura' => '2024-01-01',
+        ]);
+
+        $orderedTitles = Ocorrencia::query()
+            ->where('colaborador_id', $this->colaborador->id)
+            ->with('prazo')
+            ->ordemListaPrestador()
+            ->pluck('titulo')
+            ->all();
+
+        $this->assertSame([
+            'LOCK-prazo-urgente-topo',
+            'LOCK-ord-1',
+            'LOCK-ord-2',
+            'LOCK-empate-b',
+            'LOCK-empate-a',
+            'LOCK-sem-ordem',
+        ], $orderedTitles);
+
+        Livewire::actingAs($this->prestador)
+            ->test(MeusAtendimentos::class)
+            ->assertSee('LOCK-prazo-urgente-topo')
+            ->assertSee('LOCK-ord-1')
+            ->assertSee('LOCK-sem-ordem');
     }
 }

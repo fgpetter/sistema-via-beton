@@ -127,6 +127,7 @@
                         <table class="table-fixed min-w-full divide-y divide-default-200">
                             <thead class="bg-default-150">
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
+                                    <th class="px-3.5 py-3 text-center w-24" scope="col">Ordem</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">ID</th>
                                     <th x-show="columns.status" class="px-3.5 py-3 text-start" scope="col">Status</th>
                                     <th x-show="columns.prioridade" class="px-3.5 py-3 text-start" scope="col">Prioridade</th>
@@ -144,6 +145,32 @@
                             <tbody>
                                 @forelse ($this->ocorrencias as $ocorrencia)
                                     <tr wire:key="ocorrencia-{{ $ocorrencia->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap {{ $ocorrencia->isEmergencial() ? 'bg-danger/10 border-l-4 border-l-danger' : '' }}">
+                                        <td class="px-3.5 py-3 text-center align-middle">
+                                            @can('admin')
+                                                @if ($ocorrencia->isEmergencial())
+                                                    <span class="text-default-400">—</span>
+                                                @else
+                                                    <div class="flex flex-col items-center gap-1">
+                                                        <input
+                                                            type="text"
+                                                            maxlength="2"
+                                                            inputmode="numeric"
+                                                            pattern="[0-9]*"
+                                                            autocomplete="off"
+                                                            autocorrect="off"
+                                                            spellcheck="false"
+                                                            class="form-input form-input-sm w-16 text-center"
+                                                            wire:model.live.debounce.500ms="ordemPrestadorInputs.{{ $ocorrencia->id }}"
+                                                        />
+                                                        @error('ordemPrestadorInputs.'.$ocorrencia->id)
+                                                            <span class="text-xs text-danger whitespace-normal max-w-[10rem]">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <span class="text-default-400">{{ $ocorrencia->ordem_prestador ?? '—' }}</span>
+                                            @endcan
+                                        </td>
                                         <td class="px-3.5 py-3 text-primary cursor-pointer" @click="$dispatch('open-edit-modal', {id: {{ $ocorrencia->id }}})">
                                             #{{ $ocorrencia->id }}
                                         </td>
@@ -224,7 +251,7 @@
                                 @empty
                                     <tr>
                                         <td
-                                            x-bind:colspan="6 + {{ auth()->user()?->isAdmin() ? 1 : 0 }} + (columns.status ? 1 : 0) + (columns.categoria ? 1 : 0) + (columns.violacao ? 1 : 0) + (columns.prioridade ? 1 : 0) + (columns.abertura ? 1 : 0)"
+                                            x-bind:colspan="7 + {{ auth()->user()?->isAdmin() ? 1 : 0 }} + (columns.status ? 1 : 0) + (columns.categoria ? 1 : 0) + (columns.violacao ? 1 : 0) + (columns.prioridade ? 1 : 0) + (columns.abertura ? 1 : 0)"
                                             class="px-3.5 py-8 text-center text-default-500"
                                         >
                                             <div class="flex flex-col items-center gap-2">

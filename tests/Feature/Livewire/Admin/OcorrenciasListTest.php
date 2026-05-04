@@ -3,6 +3,7 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\PrazoUnidade;
 use App\Livewire\Admin\OcorrenciasList;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
@@ -20,12 +21,18 @@ class OcorrenciasListTest extends TestCase
 
     private User $prestador;
 
+    private Prazo $prazoNaoEmergencial;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->admin = User::factory()->admin()->create();
         $this->prestador = User::factory()->prestador()->create();
+        $this->prazoNaoEmergencial = Prazo::query()->firstOrCreate(
+            ['nome' => 'Engenharia.Inspeção'],
+            ['prazo_valor' => 5, 'prazo_unidade' => PrazoUnidade::Dia->value]
+        );
     }
 
     public function test_admin_can_access_ocorrencias_page(): void
@@ -273,5 +280,104 @@ class OcorrenciasListTest extends TestCase
             ->test(OcorrenciasList::class)
             ->dispatch('ocorrencia-saved')
             ->assertOk();
+    }
+
+    public function test_list_shows_ordem_column(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->assertSee('Ordem');
+    }
+
+    public function test_admin_can_update_ordem_prestador(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'prazo_id' => $this->prazoNaoEmergencial->id,
+            'ordem_prestador' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('ordemPrestadorInputs.'.$ocorrencia->id, 42);
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $ocorrencia->id,
+            'ordem_prestador' => 42,
+        ]);
+    }
+
+    public function test_admin_can_clear_ordem_prestador_to_null(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'prazo_id' => $this->prazoNaoEmergencial->id,
+            'ordem_prestador' => 8,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('ordemPrestadorInputs.'.$ocorrencia->id, '');
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $ocorrencia->id,
+            'ordem_prestador' => null,
+        ]);
+    }
+
+    public function test_admin_cannot_set_ordem_out_of_range(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'prazo_id' => $this->prazoNaoEmergencial->id,
+            'ordem_prestador' => 5,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('ordemPrestadorInputs.'.$ocorrencia->id, 100)
+            ->assertHasErrors('ordemPrestadorInputs.'.$ocorrencia->id);
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $ocorrencia->id,
+            'ordem_prestador' => 5,
+        ]);
+    }
+
+    public function test_non_admin_cannot_update_ordem_prestador(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'prazo_id' => $this->prazoNaoEmergencial->id,
+            'ordem_prestador' => null,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(OcorrenciasList::class)
+            ->set('ordemPrestadorInputs.'.$ocorrencia->id, 1)
+            ->assertForbidden();
+    }
+
+    public function test_ordem_input_is_hidden_for_emergencial_ocorrencia(): void
+    {
+        $emergencial = Ocorrencia::factory()->emergencial()->create([
+            'ordem_prestador' => 3,
+            'titulo' => 'Ocorrência emergencial ordem oculta',
+        ]);
+
+        $html = Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->html();
+
+        $this->assertStringNotContainsString(
+            'wire:model.live.debounce.500ms="ordemPrestadorInputs.'.$emergencial->id.'"',
+            $html
+        );
+        $this->assertStringContainsString('Ocorrência emergencial ordem oculta', $html);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('ordemPrestadorInputs.'.$emergencial->id, 99);
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $emergencial->id,
+            'ordem_prestador' => 3,
+        ]);
     }
 }
