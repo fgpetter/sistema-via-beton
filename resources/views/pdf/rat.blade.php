@@ -145,12 +145,8 @@
             <td class="lbl" colspan="5">Observações:</td>
         </tr>
         <tr>
-            <td class="obs-box val {{ trim((string) ($dados['observacoes'] ?? '')) === '' ? 'obs-box--empty' : '' }}" colspan="5">
-                @if (trim((string) ($dados['observacoes'] ?? '')) !== '')
-                    {{ $dados['observacoes'] }}
-                @else
-                    &nbsp;
-                @endif
+            <td class="obs-box val {{ trim((string) ($dados['comentarios_prestador'] ?? '')) === '' ? 'obs-box--empty' : '' }}" colspan="5"
+                >@if (trim((string) ($dados['comentarios_prestador'] ?? '')) !== ''){{ $dados['comentarios_prestador'] }}@else&nbsp;@endif
             </td>
         </tr>
     </table>
