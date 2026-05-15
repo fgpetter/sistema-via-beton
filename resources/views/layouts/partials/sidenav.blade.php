@@ -59,6 +59,12 @@
                             </a>
                         </li>
                         <li class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('admin.preventivas') ? 'active' : '' }}" href="{{ route('admin.preventivas') }}">
+                                <span class="menu-icon"><i data-lucide="shield-check"></i></span>
+                                <div class="menu-text">Preventivas</div>
+                            </a>
+                        </li>
+                        <li class="menu-item">
                             <a class="menu-link {{ request()->routeIs('admin.enderecos') ? 'active' : '' }}" href="{{ route('admin.enderecos') }}">
                                 <span class="menu-icon"><i data-lucide="map-pin"></i></span>
                                 <div class="menu-text">Endereços</div>
