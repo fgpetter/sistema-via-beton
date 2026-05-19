@@ -92,7 +92,7 @@
             <td class="cabecalho-titulo">
                 RELATÓRIO TÉCNICO FOTOGRÁFICO
             </td>
-            <td class="cabecalho-logo col-20" style="text-align: right;">
+            <td class="cabecalho-logo col-20">
                 @php $vbLogo = public_path('images/viabeton_logo.png'); @endphp
                 @if (file_exists($vbLogo))
                     <img src="{{ $vbLogo }}" style="max-height:40px; max-width:100%;">
