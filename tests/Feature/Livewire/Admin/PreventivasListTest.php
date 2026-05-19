@@ -195,28 +195,31 @@ class PreventivasListTest extends TestCase
             ->assertOk();
     }
 
-    public function test_list_shows_pdf_links_for_concluido_status(): void
-    {
-        $preventiva = Preventiva::factory()->create([
-            'status' => PreventivaStatus::Concluido,
-        ]);
-
-        Livewire::actingAs($this->admin)
-            ->test(PreventivasList::class)
-            ->assertSee('Relatório de Vistoria')
-            ->assertSee('Relatório Executivo');
-    }
-
-    public function test_list_does_not_show_pdf_links_for_aberto_status(): void
+    public function test_list_shows_pdf_links_when_relatorios_disponiveis(): void
     {
         $preventiva = Preventiva::factory()->create([
             'status' => PreventivaStatus::Aberto,
+            'descricao' => 'Descrição da preventiva',
+        ]);
+        $preventiva->imagens()->create(['path' => 'test/foto.jpg']);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivasList::class)
+            ->assertSee('Relatório Técnico Fotográfico', false)
+            ->assertSee('Relatório Executivo');
+    }
+
+    public function test_list_does_not_show_pdf_links_when_relatorios_indisponiveis(): void
+    {
+        Preventiva::factory()->create([
+            'status' => PreventivaStatus::Aberto,
+            'descricao' => null,
         ]);
 
         Livewire::actingAs($this->admin)
             ->test(PreventivasList::class)
-            ->assertDontSee('Relatório de Vistoria')
-            ->assertDontSee('Relatório Executivo');
+            ->assertDontSee('title="Relatório Técnico Fotográfico"', false)
+            ->assertDontSee('title="Relatório Executivo"', false);
     }
 
     public function test_list_shows_recusadas_count_badge(): void

@@ -171,7 +171,7 @@
                                 @endif
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    @if ($this->editingPreventiva && $this->editingPreventiva->status === \App\Enums\PreventivaStatus::Concluido)
+                                    @if ($this->editingPreventiva && $this->editingPreventiva->relatoriosDisponiveis())
                                         <div class="bg-blue-50 border border-blue-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                             <div>
                                                 <span class="text-xs font-medium text-default-500 uppercase">Relatório Técnico Fotográfico</span>
@@ -182,7 +182,20 @@
                                                 rel="noopener noreferrer"
                                                 class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
                                             >
-                                                Baixar Vistoria
+                                                Baixar relatório
+                                            </a>
+                                        </div>
+                                        <div class="bg-blue-50 border border-blue-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <div>
+                                                <span class="text-xs font-medium text-default-500 uppercase">Relatório Executivo</span>
+                                            </div>
+                                            <a
+                                                href="{{ route('admin.preventivas.relatorio-executivo-pdf', $this->editingPreventiva) }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
+                                            >
+                                                Baixar relatório
                                             </a>
                                         </div>
                                     @endif

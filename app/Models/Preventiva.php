@@ -96,6 +96,12 @@ class Preventiva extends Model
         return $this->datahora_chegada !== null;
     }
 
+    public function relatoriosDisponiveis(): bool
+    {
+        return filled(trim((string) $this->descricao))
+            && $this->imagens()->exists();
+    }
+
     public function scopeStatus(\Illuminate\Database\Eloquent\Builder $query, PreventivaStatus $status): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('status', $status);

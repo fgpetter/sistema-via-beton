@@ -25,23 +25,19 @@ class DownloadRelatorioExecutivoPdfTest extends TestCase
 
     public function test_admin_can_download_relatorio_executivo_pdf(): void
     {
-        $preventiva = Preventiva::factory()->create([
-            'status' => PreventivaStatus::Concluido,
-        ]);
+        $preventiva = $this->createPreventivaElegivel();
 
         $response = $this->actingAs($this->admin)
             ->get(route('admin.preventivas.relatorio-executivo-pdf', $preventiva));
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'application/pdf');
+        Storage::disk('public')->assertMissing('preventivas/'.$preventiva->id.'/executivo/RelatorioExecutivo-'.$preventiva->id.'.pdf');
     }
 
     public function test_relatorio_executivo_excludes_recusadas(): void
     {
-        $preventiva = Preventiva::factory()->create([
-            'status' => PreventivaStatus::Concluido,
-        ]);
-        $preventiva->imagens()->create(['path' => 'test/aceita.jpg', 'recusada' => false]);
+        $preventiva = $this->createPreventivaElegivel();
         $preventiva->imagens()->create(['path' => 'test/recusada.jpg', 'recusada' => true]);
 
         $response = $this->actingAs($this->admin)
@@ -51,25 +47,35 @@ class DownloadRelatorioExecutivoPdfTest extends TestCase
         $response->assertHeader('Content-Type', 'application/pdf');
     }
 
-    public function test_relatorio_executivo_without_imagens_returns_pdf(): void
+    public function test_relatorio_executivo_returns_404_without_imagens(): void
     {
         $preventiva = Preventiva::factory()->create([
-            'status' => PreventivaStatus::Concluido,
+            'descricao' => 'Descrição da preventiva',
         ]);
 
         $response = $this->actingAs($this->admin)
             ->get(route('admin.preventivas.relatorio-executivo-pdf', $preventiva));
 
-        $response->assertStatus(200);
-        $response->assertHeader('Content-Type', 'application/pdf');
+        $response->assertStatus(404);
+    }
+
+    public function test_relatorio_executivo_returns_404_without_descricao(): void
+    {
+        $preventiva = Preventiva::factory()->create([
+            'descricao' => null,
+        ]);
+        $preventiva->imagens()->create(['path' => 'test/foto.jpg']);
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('admin.preventivas.relatorio-executivo-pdf', $preventiva));
+
+        $response->assertStatus(404);
     }
 
     public function test_non_admin_cannot_download_relatorio_executivo_pdf(): void
     {
         $prestador = User::factory()->prestador()->create();
-        $preventiva = Preventiva::factory()->create([
-            'status' => PreventivaStatus::Concluido,
-        ]);
+        $preventiva = $this->createPreventivaElegivel();
 
         $response = $this->actingAs($prestador)
             ->get(route('admin.preventivas.relatorio-executivo-pdf', $preventiva));
@@ -79,12 +85,21 @@ class DownloadRelatorioExecutivoPdfTest extends TestCase
 
     public function test_guest_cannot_download_relatorio_executivo_pdf(): void
     {
-        $preventiva = Preventiva::factory()->create([
-            'status' => PreventivaStatus::Concluido,
-        ]);
+        $preventiva = $this->createPreventivaElegivel();
 
         $response = $this->get(route('admin.preventivas.relatorio-executivo-pdf', $preventiva));
 
         $response->assertRedirect(route('login'));
+    }
+
+    private function createPreventivaElegivel(): Preventiva
+    {
+        $preventiva = Preventiva::factory()->create([
+            'status' => PreventivaStatus::Aberto,
+            'descricao' => 'Descrição da preventiva',
+        ]);
+        $preventiva->imagens()->create(['path' => 'test/foto.jpg']);
+
+        return $preventiva;
     }
 }

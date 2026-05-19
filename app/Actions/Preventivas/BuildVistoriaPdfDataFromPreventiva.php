@@ -16,6 +16,7 @@ class BuildVistoriaPdfDataFromPreventiva
      *   responsavel_engenharia_banrisul: string,
      *   codigo_nome_local: string,
      *   endereco: string,
+     *   titulo_relatorio: string,
      *   imagens: array<int, array{src: string, legenda: string, recusada: bool}>,
      *   incluirRecusadas: true,
      * }
@@ -53,6 +54,7 @@ class BuildVistoriaPdfDataFromPreventiva
             'responsavel_engenharia_banrisul' => '',
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
+            'titulo_relatorio' => 'RELATÓRIO TÉCNICO FOTOGRÁFICO',
             'imagens' => $imagens,
             'incluirRecusadas' => true,
         ];

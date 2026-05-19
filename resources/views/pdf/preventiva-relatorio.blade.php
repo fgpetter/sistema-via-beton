@@ -101,7 +101,7 @@
                 @endif
             </td>
             <td class="cabecalho-titulo">
-                RELATÓRIO TÉCNICO FOTOGRÁFICO
+                {{ $dados['titulo_relatorio'] }}
             </td>
             <td class="cabecalho-logo col-20" style="text-align: right;">
                 @php $vbLogo = public_path('images/viabeton_logo.png'); @endphp

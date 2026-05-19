@@ -16,13 +16,14 @@ class BuildRelatorioExecutivoPdfDataFromPreventiva
      *   responsavel_engenharia_banrisul: string,
      *   codigo_nome_local: string,
      *   endereco: string,
+     *   titulo_relatorio: string,
      *   imagens: array<int, array{src: string, legenda: string, recusada: bool}>,
      *   incluirRecusadas: false,
      * }
      */
     public function __invoke(Preventiva $preventiva): array
     {
-        $preventiva->loadMissing(['enderecoVinculado', 'imagens']);
+        $preventiva->loadMissing(['enderecoVinculado', 'imagensAceitas']);
 
         $endereco = $preventiva->enderecoVinculado;
         $codigoNomeLocal = '';
@@ -53,6 +54,7 @@ class BuildRelatorioExecutivoPdfDataFromPreventiva
             'responsavel_engenharia_banrisul' => '',
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
+            'titulo_relatorio' => 'RELATÓRIO EXECUTIVO',
             'imagens' => $imagens,
             'incluirRecusadas' => false,
         ];
