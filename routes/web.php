@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DownloadRelatorioAtendimentoPdfController;
 use App\Http\Controllers\RoutingController;
 use App\Http\Middleware\RedirectPrestadorDashboard;
 use App\Livewire\Admin\OcorrenciasList;
+use App\Livewire\Admin\PreventivasList;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Livewire\Prestador\MeusAtendimentos;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,9 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
         Route::get('/ocorrencias', OcorrenciasList::class)->name('admin.ocorrencias')->can('admin');
         Route::get('/ocorrencias/{ocorrencia}/rat-pdf', DownloadRatPdfController::class)->name('admin.ocorrencias.rat-pdf')->can('admin');
         Route::get('/ocorrencias/{ocorrencia}/relatorio-atendimento-pdf', DownloadRelatorioAtendimentoPdfController::class)->name('admin.ocorrencias.relatorio-atendimento-pdf')->can('admin');
+        Route::get('/preventivas', PreventivasList::class)->name('admin.preventivas')->can('admin');
+        Route::get('/preventivas/{preventiva}/vistoria-pdf', App\Http\Controllers\Admin\DownloadVistoriaPdfController::class)->name('admin.preventivas.vistoria-pdf')->can('admin');
+        Route::get('/preventivas/{preventiva}/relatorio-executivo-pdf', App\Http\Controllers\Admin\DownloadRelatorioExecutivoPdfController::class)->name('admin.preventivas.relatorio-executivo-pdf')->can('admin');
         Route::view('/enderecos', 'admin.enderecos')->name('admin.enderecos')->can('admin');
         Route::view('/configuracoes-sistema', 'admin.configuracoes-sistema')->name('admin.configuracoes-sistema')->can('admin');
     });

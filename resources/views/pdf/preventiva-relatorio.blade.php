@@ -75,8 +75,23 @@
             font-size: 7pt;
             padding: 20px 0;
         }
+        .recusado-badge {
+            display: inline-block;
+            background-color: #dc2626;
+            color: #fff;
+            font-size: 6.5pt;
+            font-weight: bold;
+            padding: 1px 4px;
+            border-radius: 2px;
+            margin-bottom: 2px;
+        }
         .col-20 { width: 20%; }
         .col-40 { width: 40%; }
+        .col-33 { width: 33.333%; }
+        .descricao-val {
+            white-space: pre-wrap;
+            min-height: 40px;
+        }
     </style>
 </head>
 <body>
@@ -90,7 +105,7 @@
                 @endif
             </td>
             <td class="cabecalho-titulo">
-                RELATÓRIO TÉCNICO FOTOGRÁFICO
+                {{ $dados['titulo_relatorio'] }}
             </td>
             <td class="cabecalho-logo col-20">
                 @php $vbLogo = public_path('images/viabeton_logo.png'); @endphp
@@ -104,60 +119,63 @@
     {{-- Tabela de campos --}}
     <table class="rat" cellspacing="0">
         <tr>
-            <td class="lbl">Número da ocorrência</td>
-            <td class="lbl">Emergencial (Sim/Não)</td>
-            <td class="lbl">Prazo de Atendimento</td>
+            <td class="lbl">Número da preventiva</td>
             <td class="lbl">Número do Contrato</td>
             <td class="lbl">Responsável Engenharia Banrisul</td>
         </tr>
         <tr>
-            <td class="val">{{ $dados['numero_ocorrencia'] }}</td>
-            <td class="val">{{ $dados['emergencial'] }}</td>
-            <td class="val">{{ $dados['prazo_atendimento'] }}</td>
+            <td class="val">{{ $dados['numero_preventiva'] }}</td>
             <td class="val">{{ $dados['numero_contrato'] }}</td>
             <td class="val">{{ $dados['responsavel_engenharia_banrisul'] }}</td>
         </tr>
         <tr>
             <td class="lbl" colspan="2">Código – Nome do local</td>
-            <td class="lbl" colspan="3">Endereço</td>
+            <td class="lbl" colspan="1">Endereço</td>
         </tr>
         <tr>
             <td class="val" colspan="2">{{ $dados['codigo_nome_local'] }}</td>
-            <td class="val" colspan="3">{{ $dados['endereco'] }}</td>
+            <td class="val" colspan="1">{{ $dados['endereco'] }}</td>
+        </tr>
+        <tr>
+            <td class="lbl" colspan="3">Descrição</td>
+        </tr>
+        <tr>
+            <td class="val descricao-val" colspan="3">{{ $dados['descricao'] }}</td>
         </tr>
     </table>
 
-    {{-- Tabela de fotos ANTES/DEPOIS --}}
-    @if (count($dados['pares']) > 0)
+    {{-- Tabela de fotos --}}
+    @if (count($dados['imagens']) > 0)
         <table class="rat" cellspacing="0" style="margin-top: 8px;">
             <tr>
-                <th class="th-foto">ANTES</th>
-                <th class="th-foto">DEPOIS</th>
+                <th class="th-foto" colspan="2">FOTOGRAFIAS</th>
             </tr>
-            @foreach ($dados['pares'] as $par)
+            @foreach (array_chunk($dados['imagens'], 2) as $linha)
                 <tr>
-                    <td class="td-foto">
-                        @if ($par['antes'] !== null)
-                            <img class="foto-img" src="{{ $par['antes']['src'] }}">
-                            @if ($par['antes']['legenda'] !== '')
-                                <div class="foto-legenda">{{ $par['antes']['legenda'] }}</div>
+                    @foreach ($linha as $imagem)
+                        <td class="td-foto">
+                            @if ($dados['incluirRecusadas'] && $imagem['recusada'])
+                                <span class="recusado-badge">RECUSADO</span>
                             @endif
-                        @else
-                            <span class="sem-foto">Sem foto</span>
-                        @endif
-                    </td>
-                    <td class="td-foto">
-                        @if ($par['depois'] !== null)
-                            <img class="foto-img" src="{{ $par['depois']['src'] }}">
-                            @if ($par['depois']['legenda'] !== '')
-                                <div class="foto-legenda">{{ $par['depois']['legenda'] }}</div>
+                            <img class="foto-img" src="{{ $imagem['src'] }}">
+                            @if ($imagem['legenda'] !== '')
+                                <div class="foto-legenda">{{ $imagem['legenda'] }}</div>
                             @endif
-                        @else
-                            <span class="sem-foto">Sem foto</span>
-                        @endif
-                    </td>
+                        </td>
+                    @endforeach
+                    @if (count($linha) === 1)
+                        <td class="td-foto">
+                            <span class="sem-foto"></span>
+                        </td>
+                    @endif
                 </tr>
             @endforeach
+        </table>
+    @else
+        <table class="rat" cellspacing="0" style="margin-top: 8px;">
+            <tr>
+                <td class="sem-foto">Nenhuma fotografia disponível.</td>
+            </tr>
         </table>
     @endif
 </body>
