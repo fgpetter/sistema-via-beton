@@ -168,6 +168,15 @@ class AtendimentoDetalheTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_foto_placeholders_show_camera_and_gallery_buttons(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->assertSee('Câmera')
+            ->assertSee('Galeria')
+            ->assertSee("fonte === 'camera'", false);
+    }
+
     public function test_prestador_can_upload_foto_antes(): void
     {
         Storage::fake('public');

@@ -112,11 +112,11 @@
             class="card mb-4"
             x-data="{
                 isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.screen.width <= 1024),
-                triggerFoto(par, tipo) {
+                triggerFoto(par, tipo, fonte) {
                     $wire.uploadingPar = par;
                     $wire.uploadingTipo = tipo;
                     const input = $refs.fotoInput;
-                    if (this.isMobile) {
+                    if (fonte === 'camera') {
                         input.setAttribute('capture', 'environment');
                     } else {
                         input.removeAttribute('capture');
@@ -161,12 +161,39 @@
                                     </button>
                                 </div>
                             @else
-                                <div
-                                    @click="triggerFoto({{ $par }}, 'antes')"
-                                    class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                    <span class="text-xs text-default-400 mt-1 uppercase font-medium">Antes</span>
+                                <div class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors overflow-hidden">
+                                    <div
+                                        x-show="!isMobile"
+                                        @click="triggerFoto({{ $par }}, 'antes', 'gallery')"
+                                        class="w-full h-full flex flex-col items-center justify-center cursor-pointer"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                        <span class="text-xs text-default-400 mt-1 uppercase font-medium">Antes</span>
+                                    </div>
+                                    <div x-show="isMobile" class="w-full h-full flex flex-col items-center justify-center gap-1.5 px-1 py-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300 shrink-0"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                        <span class="text-xs text-default-400 uppercase font-medium">Antes</span>
+                                        <div class="flex gap-1 w-full min-w-0">
+                                            <button
+                                                type="button"
+                                                @click.stop="triggerFoto({{ $par }}, 'antes', 'camera')"
+                                                aria-label="Tirar foto Antes com a câmera"
+                                                class="btn btn-sm flex-1 min-w-0 flex flex-col items-center gap-0.5 border border-default-300 text-default-600 hover:border-primary hover:text-primary hover:bg-primary/5 px-1 py-1.5"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                                <span class="text-[10px] font-medium whitespace-nowrap">Câmera</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                @click.stop="triggerFoto({{ $par }}, 'antes', 'gallery')"
+                                                aria-label="Escolher foto Antes da galeria"
+                                                class="btn btn-sm flex-1 min-w-0 flex flex-col items-center gap-0.5 border border-default-300 text-default-600 hover:border-primary hover:text-primary hover:bg-primary/5 px-1 py-1.5"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                <span class="text-[10px] font-medium whitespace-nowrap">Galeria</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
 
@@ -183,12 +210,39 @@
                                     </button>
                                 </div>
                             @else
-                                <div
-                                    @click="triggerFoto({{ $par }}, 'depois')"
-                                    class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                    <span class="text-xs text-default-400 mt-1 uppercase font-medium">Depois</span>
+                                <div class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors overflow-hidden">
+                                    <div
+                                        x-show="!isMobile"
+                                        @click="triggerFoto({{ $par }}, 'depois', 'gallery')"
+                                        class="w-full h-full flex flex-col items-center justify-center cursor-pointer"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                        <span class="text-xs text-default-400 mt-1 uppercase font-medium">Depois</span>
+                                    </div>
+                                    <div x-show="isMobile" class="w-full h-full flex flex-col items-center justify-center gap-1.5 px-1 py-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300 shrink-0"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                        <span class="text-xs text-default-400 uppercase font-medium">Depois</span>
+                                        <div class="flex gap-1 w-full min-w-0">
+                                            <button
+                                                type="button"
+                                                @click.stop="triggerFoto({{ $par }}, 'depois', 'camera')"
+                                                aria-label="Tirar foto Depois com a câmera"
+                                                class="btn btn-sm flex-1 min-w-0 flex flex-col items-center gap-0.5 border border-default-300 text-default-600 hover:border-primary hover:text-primary hover:bg-primary/5 px-1 py-1.5"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                                <span class="text-[10px] font-medium whitespace-nowrap">Câmera</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                @click.stop="triggerFoto({{ $par }}, 'depois', 'gallery')"
+                                                aria-label="Escolher foto Depois da galeria"
+                                                class="btn btn-sm flex-1 min-w-0 flex flex-col items-center gap-0.5 border border-default-300 text-default-600 hover:border-primary hover:text-primary hover:bg-primary/5 px-1 py-1.5"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                <span class="text-[10px] font-medium whitespace-nowrap">Galeria</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
                         </div>
