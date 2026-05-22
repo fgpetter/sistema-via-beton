@@ -17,6 +17,7 @@ class BuildVistoriaPdfDataFromPreventiva
      *   codigo_nome_local: string,
      *   endereco: string,
      *   titulo_relatorio: string,
+     *   descricao: string,
      *   imagens: array<int, array{src: string, legenda: string, recusada: bool}>,
      *   incluirRecusadas: true,
      * }
@@ -55,6 +56,7 @@ class BuildVistoriaPdfDataFromPreventiva
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
             'titulo_relatorio' => 'RELATÓRIO TÉCNICO FOTOGRÁFICO',
+            'descricao' => trim((string) $preventiva->descricao),
             'imagens' => $imagens,
             'incluirRecusadas' => true,
         ];

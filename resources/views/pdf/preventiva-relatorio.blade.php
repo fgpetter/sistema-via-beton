@@ -88,6 +88,10 @@
         .col-20 { width: 20%; }
         .col-40 { width: 40%; }
         .col-33 { width: 33.333%; }
+        .descricao-val {
+            white-space: pre-wrap;
+            min-height: 40px;
+        }
     </style>
 </head>
 <body>
@@ -131,6 +135,12 @@
         <tr>
             <td class="val" colspan="2">{{ $dados['codigo_nome_local'] }}</td>
             <td class="val" colspan="1">{{ $dados['endereco'] }}</td>
+        </tr>
+        <tr>
+            <td class="lbl" colspan="3">Descrição</td>
+        </tr>
+        <tr>
+            <td class="val descricao-val" colspan="3">{{ $dados['descricao'] }}</td>
         </tr>
     </table>
 

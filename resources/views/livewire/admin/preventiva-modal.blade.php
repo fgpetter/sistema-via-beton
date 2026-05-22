@@ -100,7 +100,7 @@
                                 </div>
 
                                 <div>
-                                    <label for="descricao" class="block text-sm font-medium text-default-700 mb-1">Descrição</label>
+                                    <label for="descricao" class="block text-sm font-medium text-default-700 mb-1">Descrição (visível no relatório)</label>
                                     <textarea
                                         wire:model="form.descricao"
                                         id="descricao"

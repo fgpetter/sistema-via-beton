@@ -17,6 +17,7 @@ class BuildRelatorioExecutivoPdfDataFromPreventiva
      *   codigo_nome_local: string,
      *   endereco: string,
      *   titulo_relatorio: string,
+     *   descricao: string,
      *   imagens: array<int, array{src: string, legenda: string, recusada: bool}>,
      *   incluirRecusadas: false,
      * }
@@ -55,6 +56,7 @@ class BuildRelatorioExecutivoPdfDataFromPreventiva
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
             'titulo_relatorio' => 'RELATÓRIO EXECUTIVO',
+            'descricao' => trim((string) $preventiva->descricao),
             'imagens' => $imagens,
             'incluirRecusadas' => false,
         ];
