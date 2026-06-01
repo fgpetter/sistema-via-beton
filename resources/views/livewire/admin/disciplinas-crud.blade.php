@@ -21,35 +21,25 @@
         </div>
     @endsession
 
-    <div class="card">
+    <div class="card mt-4">
         <div class="card-header">
-            <h6 class="card-title">Endereços</h6>
+            <h6 class="card-title">Disciplinas</h6>
             <button @click="$wire.openCreateModal()" class="btn btn-sm bg-primary text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Novo Endereço
+                Nova Disciplina
             </button>
         </div>
 
         <div class="card-header">
-            <div class="md:flex items-center md:space-y-0 space-y-4 gap-3 w-1/2">
-                <div class="relative w-3/5">
-                    <input
-                        wire:model.live.debounce.300ms="search"
-                        class="form-input form-input-sm ps-9"
-                        placeholder="Buscar por nome, endereço ou cidade"
-                        type="text"
-                    />
-                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-500"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </div>
-                </div>
-
-                <div class="relative w-2/5">
-                    <select wire:model.live="ativoFilter" class="form-input form-input-sm">
-                        <option value="">Todos os status</option>
-                        <option value="1">Ativos</option>
-                        <option value="0">Inativos</option>
-                    </select>
+            <div class="relative max-w-md">
+                <input
+                    wire:model.live.debounce.300ms="search"
+                    class="form-input form-input-sm ps-9"
+                    placeholder="Buscar por nome"
+                    type="text"
+                />
+                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-default-500"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </div>
             </div>
         </div>
@@ -63,37 +53,19 @@
                                 <tr class="text-sm font-normal text-default-700 whitespace-nowrap">
                                     <th class="px-3.5 py-3 text-start" scope="col">Nome</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Tipo</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Nº</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Horário</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Endereço</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Cidade/Estado</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Fone</th>
-                                    <th class="px-3.5 py-3 text-start" scope="col">Ativo</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($this->enderecos as $endereco)
-                                    <tr wire:key="endereco-{{ $endereco->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
-                                        <td class="px-3.5 py-3">{{ $endereco->nome }}</td>
-                                        <td class="px-3.5 py-3">{{ $endereco->tipo->label() }}</td>
-                                        <td class="px-3.5 py-3">{{ $endereco->numero }}</td>
-                                        <td class="px-3.5 py-3">{{ $endereco->horario }}</td>
-                                        <td class="px-3.5 py-3 max-w-xs truncate" title="{{ $endereco->endereco }}">{{ $endereco->endereco }}</td>
-                                        <td class="px-3.5 py-3">{{ $endereco->cidade_estado }}</td>
-                                        <td class="px-3.5 py-3">{{ $endereco->fone }}</td>
-                                        <td class="px-3.5 py-3">
-                                            @if ($endereco->ativo)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">Ativo</span>
-                                            @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger/10 text-danger">Inativo</span>
-                                            @endif
-                                        </td>
+                                @forelse ($this->disciplinasList as $item)
+                                    <tr wire:key="disciplina-{{ $item->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
+                                        <td class="px-3.5 py-3">{{ $item->disciplina }}</td>
+                                        <td class="px-3.5 py-3">{{ $item->subdisciplina ? 'Subdisciplina' : 'Disciplina' }}</td>
                                         <td class="px-3.5 py-3">
                                             <div class="flex items-center gap-2">
                                                 <button
                                                     type="button"
-                                                    @click="$wire.openEditModal({{ $endereco->id }})"
+                                                    @click="$wire.openEditModal({{ $item->id }})"
                                                     class="btn size-7.5 bg-default-200 hover:bg-primary/10 text-default-500 hover:text-primary"
                                                     title="Editar"
                                                 >
@@ -101,7 +73,7 @@
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    @click="$wire.confirmDelete({{ $endereco->id }})"
+                                                    @click="$wire.confirmDelete({{ $item->id }})"
                                                     class="btn size-7.5 bg-default-200 hover:bg-danger/10 text-default-500 hover:text-danger"
                                                     title="Excluir"
                                                 >
@@ -112,8 +84,8 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="px-3.5 py-8 text-center text-default-500">
-                                            Nenhum endereço encontrado.
+                                        <td colspan="3" class="px-3.5 py-8 text-center text-default-500">
+                                            Nenhuma disciplina encontrada.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -123,15 +95,14 @@
                 </div>
             </div>
 
-            @if ($this->enderecos->hasPages())
+            @if ($this->disciplinasList->hasPages())
                 <div class="card-footer">
-                    {{ $this->enderecos->links() }}
+                    {{ $this->disciplinasList->links() }}
                 </div>
             @endif
         </div>
     </div>
 
-    {{-- Modal de Criação/Edição --}}
     <template x-teleport="body">
         <div
             x-show="showModal"
@@ -139,7 +110,7 @@
             class="size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto pointer-events-none"
             role="dialog"
             tabindex="-1"
-            aria-labelledby="modal-title"
+            aria-labelledby="disciplina-modal-title"
         >
             <div
                 x-show="showModal"
@@ -153,7 +124,7 @@
                 @click="$wire.closeModal()"
             ></div>
 
-            <div class="w-1/2 mx-auto min-h-screen flex items-center justify-center relative z-10">
+            <div class="sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center relative z-10">
                 <div
                     x-show="showModal"
                     x-transition:enter="ease-out duration-200"
@@ -166,8 +137,8 @@
                     @click.stop
                 >
                     <div class="flex justify-between items-center p-4 border-b border-default-200">
-                        <h3 id="modal-title" class="font-bold text-default-800 text-base">
-                            {{ $editingId ? 'Editar Endereço' : 'Novo Endereço' }}
+                        <h3 id="disciplina-modal-title" class="font-bold text-default-800 text-base">
+                            {{ $editingId ? 'Editar Disciplina' : 'Nova Disciplina' }}
                         </h3>
                         <button type="button" aria-label="Fechar" @click="$wire.closeModal()">
                             <span class="sr-only">Fechar</span>
@@ -179,121 +150,27 @@
                         <div class="p-4 overflow-y-auto">
                             <div class="space-y-4">
                                 <div>
-                                    <label for="nome" class="block text-sm font-medium text-default-700 mb-1">Nome</label>
+                                    <label for="disciplina" class="block text-sm font-medium text-default-700 mb-1">Nome</label>
                                     <input
-                                        wire:model.blur="nome"
+                                        wire:model.blur="disciplina"
                                         type="text"
-                                        id="nome"
-                                        class="form-input w-full @error('nome') border-danger @enderror"
-                                        placeholder="Ex.: AG ACEGUA"
+                                        id="disciplina"
+                                        class="form-input w-full @error('disciplina') border-danger @enderror"
+                                        placeholder="Ex.: Elétrica"
                                     >
-                                    @error('nome')
+                                    @error('disciplina')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div>
-                                        <label for="tipo" class="block text-sm font-medium text-default-700 mb-1">Tipo</label>
-                                        <select
-                                            wire:model.blur="tipo"
-                                            id="tipo"
-                                            class="form-input w-full @error('tipo') border-danger @enderror"
-                                        >
-                                            <option value="">Selecione</option>
-                                            @foreach ($this->tipos as $value => $label)
-                                                <option value="{{ $value }}">{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('tipo')
-                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-
-                                    <div>
-                                        <label for="numero" class="block text-sm font-medium text-default-700 mb-1">Número</label>
-                                        <input
-                                            wire:model.blur="numero"
-                                            type="text"
-                                            id="numero"
-                                            class="form-input w-full @error('numero') border-danger @enderror"
-                                            placeholder="Ex.: 5"
-                                        >
-                                        @error('numero')
-                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-
-                                    <div>
-                                        <label for="horario" class="block text-sm font-medium text-default-700 mb-1">Horário</label>
-                                        <input
-                                            wire:model.blur="horario"
-                                            type="text"
-                                            id="horario"
-                                            class="form-input w-full @error('horario') border-danger @enderror"
-                                            placeholder="Ex.: 08:00 às 17:00"
-                                        >
-                                        @error('horario')
-                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="endereco" class="block text-sm font-medium text-default-700 mb-1">Endereço</label>
+                                <div class="flex items-center gap-2">
                                     <input
-                                        wire:model.blur="endereco"
-                                        type="text"
-                                        id="endereco"
-                                        class="form-input w-full @error('endereco') border-danger @enderror"
-                                        placeholder="Ex.: Rua Principal, 123"
+                                        wire:model="subdisciplina"
+                                        type="checkbox"
+                                        id="subdisciplina"
+                                        class="form-checkbox"
                                     >
-                                    @error('endereco')
-                                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div>
-                                        <label for="cidadeEstado" class="block text-sm font-medium text-default-700 mb-1">Cidade/Estado</label>
-                                        <input
-                                            wire:model.blur="cidadeEstado"
-                                            type="text"
-                                            id="cidadeEstado"
-                                            class="form-input w-full @error('cidadeEstado') border-danger @enderror"
-                                            placeholder="Ex.: Porto Alegre/RS"
-                                        >
-                                        @error('cidadeEstado')
-                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-
-                                    <div>
-                                        <label for="fone" class="block text-sm font-medium text-default-700 mb-1">Fone</label>
-                                        <input
-                                            wire:model.blur="fone"
-                                            type="text"
-                                            id="fone"
-                                            class="form-input w-full @error('fone') border-danger @enderror"
-                                            placeholder="Ex.: (51) 3000-0000"
-                                        >
-                                        @error('fone')
-                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-
-                                    <div>
-                                        <label for="ativo" class="block text-sm font-medium text-default-700 mb-1">Ativo</label>
-                                        <div class="flex min-h-10 items-center gap-2">
-                                            <input
-                                                wire:model="ativo"
-                                                type="checkbox"
-                                                id="ativo"
-                                                class="form-checkbox"
-                                            >
-                                            <span class="text-sm text-default-700">Endereço ativo</span>
-                                        </div>
-                                    </div>
+                                    <label for="subdisciplina" class="text-sm font-medium text-default-700">Subdisciplina</label>
                                 </div>
                             </div>
                         </div>
@@ -312,7 +189,7 @@
                                 wire:loading.attr="disabled"
                             >
                                 <span wire:loading.remove wire:target="save">
-                                    {{ $editingId ? 'Salvar Alterações' : 'Criar Endereço' }}
+                                    {{ $editingId ? 'Salvar Alterações' : 'Criar Disciplina' }}
                                 </span>
                                 <span wire:loading wire:target="save">Salvando...</span>
                             </button>
@@ -323,7 +200,6 @@
         </div>
     </template>
 
-    {{-- Modal de Exclusão --}}
     <template x-teleport="body">
         <div
             x-show="showDeleteModal"
@@ -331,7 +207,7 @@
             class="size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto pointer-events-none"
             role="dialog"
             tabindex="-1"
-            aria-labelledby="delete-modal-title"
+            aria-labelledby="delete-disciplina-modal-title"
         >
             <div
                 x-show="showDeleteModal"
@@ -358,8 +234,8 @@
                     @click.stop
                 >
                     <div class="flex justify-between items-center p-4 border-b border-default-200">
-                        <h3 id="delete-modal-title" class="font-bold text-default-800 text-base">
-                            Excluir Endereço
+                        <h3 id="delete-disciplina-modal-title" class="font-bold text-default-800 text-base">
+                            Excluir Disciplina
                         </h3>
                         <button type="button" aria-label="Fechar" @click="$wire.closeDeleteModal()">
                             <span class="sr-only">Fechar</span>
@@ -369,7 +245,7 @@
 
                     <div class="p-4 overflow-y-auto">
                         <p class="text-sm text-default-500">
-                            Tem certeza que deseja excluir este endereço? Esta ação não pode ser desfeita.
+                            Tem certeza que deseja excluir esta disciplina? Esta ação não pode ser desfeita.
                         </p>
                     </div>
 

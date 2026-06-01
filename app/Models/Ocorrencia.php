@@ -32,6 +32,10 @@ class Ocorrencia extends Model
         'ordem_prestador',
         'colaborador_id',
         'prazo_id',
+        'disciplina_id',
+        'subdisciplina_1_id',
+        'subdisciplina_2_id',
+        'subdisciplina_3_id',
         'agencia',
         'endereco_id',
         'endereco',
@@ -72,6 +76,26 @@ class Ocorrencia extends Model
     public function prazo(): BelongsTo
     {
         return $this->belongsTo(Prazo::class);
+    }
+
+    public function disciplina(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class);
+    }
+
+    public function subdisciplina1(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_1_id');
+    }
+
+    public function subdisciplina2(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_2_id');
+    }
+
+    public function subdisciplina3(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_3_id');
     }
 
     public function enderecoVinculado(): BelongsTo

@@ -7,6 +7,7 @@ use App\Livewire\Admin\OcorrenciaFotoGaleria;
 use App\Livewire\Admin\OcorrenciaModal;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
+use App\Models\Disciplina;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
 use App\Models\User;
@@ -382,6 +383,96 @@ class OcorrenciaModalTest extends TestCase
         $this->assertDatabaseHas('ocorrencias', [
             'titulo' => 'Emergência Teste',
             'prazo_id' => $prazo->id,
+        ]);
+    }
+
+    public function test_admin_can_save_ocorrencia_with_disciplinas(): void
+    {
+        Mail::fake();
+
+        $disciplina = Disciplina::factory()->create(['disciplina' => 'Hidráulica']);
+        $sub1 = Disciplina::factory()->subdisciplina()->create(['disciplina' => 'Sub A']);
+        $sub2 = Disciplina::factory()->subdisciplina()->create(['disciplina' => 'Sub B']);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Com disciplinas')
+            ->set('form.status', OcorrenciaStatus::Aberto->value)
+            ->set('form.abertura', '2026-06-01')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.disciplinaId', $disciplina->id)
+            ->set('form.subdisciplina1Id', $sub1->id)
+            ->set('form.subdisciplina2Id', $sub2->id)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'titulo' => 'Com disciplinas',
+            'disciplina_id' => $disciplina->id,
+            'subdisciplina_1_id' => $sub1->id,
+            'subdisciplina_2_id' => $sub2->id,
+            'subdisciplina_3_id' => null,
+        ]);
+    }
+
+    public function test_cannot_use_subdisciplina_as_disciplina_principal(): void
+    {
+        $sub = Disciplina::factory()->subdisciplina()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Inválida')
+            ->set('form.status', OcorrenciaStatus::Aberto->value)
+            ->set('form.abertura', '2026-06-01')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.disciplinaId', $sub->id)
+            ->call('save')
+            ->assertHasErrors(['form.disciplinaId']);
+    }
+
+    public function test_cannot_repeat_disciplina_ids_on_ocorrencia(): void
+    {
+        $sub = Disciplina::factory()->subdisciplina()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Duplicada')
+            ->set('form.status', OcorrenciaStatus::Aberto->value)
+            ->set('form.abertura', '2026-06-01')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.subdisciplina1Id', $sub->id)
+            ->set('form.subdisciplina2Id', $sub->id)
+            ->call('save')
+            ->assertHasErrors();
+
+        $this->assertDatabaseMissing('ocorrencias', [
+            'titulo' => 'Duplicada',
+        ]);
+    }
+
+    public function test_admin_can_save_ocorrencia_without_disciplinas(): void
+    {
+        Mail::fake();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Sem disciplinas')
+            ->set('form.status', OcorrenciaStatus::Aberto->value)
+            ->set('form.abertura', '2026-06-01')
+            ->set('form.agencia', 'Agência Central')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'titulo' => 'Sem disciplinas',
+            'disciplina_id' => null,
+            'subdisciplina_1_id' => null,
+            'subdisciplina_2_id' => null,
+            'subdisciplina_3_id' => null,
         ]);
     }
 }

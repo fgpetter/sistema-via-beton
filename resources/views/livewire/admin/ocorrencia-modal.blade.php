@@ -129,6 +129,76 @@
                                     @enderror
                                 </div>
 
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                    <div>
+                                        <label for="disciplinaId" class="block text-sm font-medium text-default-700 mb-1">Disciplina</label>
+                                        <select
+                                            wire:model="form.disciplinaId"
+                                            id="disciplinaId"
+                                            class="form-input w-full @error('form.disciplinaId') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione</option>
+                                            @foreach ($this->disciplinasOptions as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.disciplinaId')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="subdisciplina1Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 1</label>
+                                        <select
+                                            wire:model="form.subdisciplina1Id"
+                                            id="subdisciplina1Id"
+                                            class="form-input w-full @error('form.subdisciplina1Id') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione</option>
+                                            @foreach ($this->subdisciplinasOptions as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.subdisciplina1Id')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="subdisciplina2Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 2</label>
+                                        <select
+                                            wire:model="form.subdisciplina2Id"
+                                            id="subdisciplina2Id"
+                                            class="form-input w-full @error('form.subdisciplina2Id') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione</option>
+                                            @foreach ($this->subdisciplinasOptions as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.subdisciplina2Id')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="subdisciplina3Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 3</label>
+                                        <select
+                                            wire:model="form.subdisciplina3Id"
+                                            id="subdisciplina3Id"
+                                            class="form-input w-full @error('form.subdisciplina3Id') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione</option>
+                                            @foreach ($this->subdisciplinasOptions as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.subdisciplina3Id')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label for="agencia" class="block text-sm font-medium text-default-700 mb-1">Agência</label>

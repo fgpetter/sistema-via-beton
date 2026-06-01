@@ -8,6 +8,7 @@ use App\Enums\TipoColaborador;
 use App\Livewire\Admin\Forms\OcorrenciaForm;
 use App\Mail\OcorrenciaCriada;
 use App\Models\Colaborador;
+use App\Models\Disciplina;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
 use App\Models\User;
@@ -55,6 +56,26 @@ class OcorrenciaModal extends Component
             ->mapWithKeys(fn (Prazo $prazo) => [
                 $prazo->id => PrazoNome::labelFor($prazo->nome),
             ])
+            ->toArray();
+    }
+
+    #[Computed]
+    public function disciplinasOptions(): array
+    {
+        return Disciplina::query()
+            ->disciplinas()
+            ->orderBy('disciplina')
+            ->pluck('disciplina', 'id')
+            ->toArray();
+    }
+
+    #[Computed]
+    public function subdisciplinasOptions(): array
+    {
+        return Disciplina::query()
+            ->subdisciplinas()
+            ->orderBy('disciplina')
+            ->pluck('disciplina', 'id')
             ->toArray();
     }
 
