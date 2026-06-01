@@ -32,6 +32,10 @@ _Avoid_: Categoria (reservada ao prazo/categoria de manutenção da Ocorrência)
 Item de catálogo que detalha o escopo do serviço em uma **Ocorrência** (ex.: Tomada, Interruptor). Uma Ocorrência pode ter até três Subdisciplinas, opcionais e independentes da Disciplina escolhida.
 _Avoid_: Subcategoria genérica sem o vínculo com Ocorrência
 
+**Responsável Engenharia Banrisul**:
+Engenheiro fiscal do Banrisul associado à **Ocorrência**, escolhido entre opções fixas. Distinto do **Responsável** (colaborador/prestador).
+_Avoid_: Responsável (sem qualificador, quando se refere ao Banrisul)
+
 **Descrição (da Preventiva)**:
 Texto livre obrigatório para gerar os relatórios PDF; exibido integralmente no relatório, acima das fotografias.
 _Avoid_: Comentários (campo distinto na preventiva)

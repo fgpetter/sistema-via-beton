@@ -52,7 +52,7 @@
                     <form wire:submit="save">
                         <div class="p-4 overflow-y-auto max-h-[70vh]">
                             <div class="space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div>
                                         <label for="status" class="block text-sm font-medium text-default-700 mb-1">Status</label>
                                         <select
@@ -95,6 +95,23 @@
                                             @endforeach
                                         </select>
                                         @error('form.prazoId')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="responsavelEngenhariaBanrisul" class="block text-sm font-medium text-default-700 mb-1">Resp. Eng. Banrisul</label>
+                                        <select
+                                            wire:model="form.responsavelEngenhariaBanrisul"
+                                            id="responsavelEngenhariaBanrisul"
+                                            class="form-input w-full @error('responsavelEngenhariaBanrisul') border-danger @enderror"
+                                        >
+                                            <option value="">Nenhum</option>
+                                            @foreach ($this->responsaveisEngenhariaBanrisul as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.responsavelEngenhariaBanrisul')
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>

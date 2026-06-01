@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Forms;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Models\Ocorrencia;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -23,6 +24,8 @@ class OcorrenciaForm extends Form
     public ?int $colaboradorId = null;
 
     public ?int $prazoId = null;
+
+    public ?string $responsavelEngenhariaBanrisul = null;
 
     public ?int $disciplinaId = null;
 
@@ -52,6 +55,7 @@ class OcorrenciaForm extends Form
             'abertura' => ['required', 'date'],
             'colaboradorId' => ['nullable', 'exists:colaboradores,id'],
             'prazoId' => ['nullable', 'exists:prazos,id'],
+            'responsavelEngenhariaBanrisul' => ['nullable', Rule::enum(ResponsavelEngenhariaBanrisul::class)],
             'disciplinaId' => [
                 'nullable',
                 'integer',
@@ -92,6 +96,7 @@ class OcorrenciaForm extends Form
             'abertura.date' => 'A data de abertura deve ser uma data válida.',
             'colaboradorId.exists' => 'O colaborador selecionado não existe.',
             'prazoId.exists' => 'A categoria selecionada não existe.',
+            'responsavelEngenhariaBanrisul.enum' => 'O responsável de engenharia selecionado é inválido.',
             'disciplinaId.exists' => 'A disciplina selecionada é inválida.',
             'subdisciplina1Id.exists' => 'A subdisciplina 1 selecionada é inválida.',
             'subdisciplina2Id.exists' => 'A subdisciplina 2 selecionada é inválida.',
@@ -139,6 +144,7 @@ class OcorrenciaForm extends Form
         $this->abertura = $ocorrencia->abertura->format('Y-m-d');
         $this->colaboradorId = $ocorrencia->colaborador_id;
         $this->prazoId = $ocorrencia->prazo_id;
+        $this->responsavelEngenhariaBanrisul = $ocorrencia->responsavel_engenharia_banrisul?->value;
         $this->disciplinaId = $ocorrencia->disciplina_id;
         $this->subdisciplina1Id = $ocorrencia->subdisciplina_1_id;
         $this->subdisciplina2Id = $ocorrencia->subdisciplina_2_id;
@@ -161,6 +167,9 @@ class OcorrenciaForm extends Form
             'abertura' => $this->abertura,
             'colaborador_id' => $this->colaboradorId,
             'prazo_id' => $this->prazoId,
+            'responsavel_engenharia_banrisul' => blank($this->responsavelEngenhariaBanrisul)
+                ? null
+                : $this->responsavelEngenhariaBanrisul,
             'disciplina_id' => $this->disciplinaId,
             'subdisciplina_1_id' => $this->subdisciplina1Id,
             'subdisciplina_2_id' => $this->subdisciplina2Id,

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Enums\TipoImagemOcorrencia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,6 +33,7 @@ class Ocorrencia extends Model
         'ordem_prestador',
         'colaborador_id',
         'prazo_id',
+        'responsavel_engenharia_banrisul',
         'disciplina_id',
         'subdisciplina_1_id',
         'subdisciplina_2_id',
@@ -58,6 +60,7 @@ class Ocorrencia extends Model
     {
         return [
             'status' => OcorrenciaStatus::class,
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::class,
             'abertura' => 'date',
             'violacao_projetada' => 'datetime',
             'email_enviado' => 'datetime',

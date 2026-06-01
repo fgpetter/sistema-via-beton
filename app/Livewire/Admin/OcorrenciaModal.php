@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
 use App\Enums\PrazoNome;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Enums\TipoColaborador;
 use App\Livewire\Admin\Forms\OcorrenciaForm;
 use App\Mail\OcorrenciaCriada;
@@ -58,6 +59,12 @@ class OcorrenciaModal extends Component
                 $prazo->id => PrazoNome::labelFor($prazo->nome),
             ])
             ->toArray();
+    }
+
+    #[Computed]
+    public function responsaveisEngenhariaBanrisul(): array
+    {
+        return ResponsavelEngenhariaBanrisul::options();
     }
 
     #[Computed]

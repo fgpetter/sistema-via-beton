@@ -3,6 +3,7 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Livewire\Admin\OcorrenciaFotoGaleria;
 use App\Livewire\Admin\OcorrenciaModal;
 use App\Mail\OcorrenciaCriada;
@@ -474,6 +475,83 @@ class OcorrenciaModalTest extends TestCase
             'subdisciplina_1_id' => null,
             'subdisciplina_2_id' => null,
             'subdisciplina_3_id' => null,
+        ]);
+    }
+
+    public function test_admin_can_save_responsavel_engenharia_banrisul_on_create(): void
+    {
+        Mail::fake();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Com responsável Banrisul')
+            ->set('form.status', OcorrenciaStatus::Aberto->value)
+            ->set('form.abertura', '2026-06-01')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.responsavelEngenhariaBanrisul', ResponsavelEngenhariaBanrisul::DustinHofman->value)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'titulo' => 'Com responsável Banrisul',
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman->value,
+        ]);
+    }
+
+    public function test_admin_can_update_responsavel_engenharia_banrisul_on_edit(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.responsavelEngenhariaBanrisul', ResponsavelEngenhariaBanrisul::IcaroDupont->value)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $ocorrencia->id,
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::IcaroDupont->value,
+        ]);
+    }
+
+    public function test_admin_can_clear_responsavel_engenharia_banrisul(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.responsavelEngenhariaBanrisul', '')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $ocorrencia->id,
+            'responsavel_engenharia_banrisul' => null,
+        ]);
+    }
+
+    public function test_invalid_responsavel_engenharia_banrisul_is_rejected(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Responsável inválido')
+            ->set('form.status', OcorrenciaStatus::Aberto->value)
+            ->set('form.abertura', '2026-06-01')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.responsavelEngenhariaBanrisul', 'valor-invalido')
+            ->call('save')
+            ->assertHasErrors(['form.responsavelEngenhariaBanrisul']);
+
+        $this->assertDatabaseMissing('ocorrencias', [
+            'titulo' => 'Responsável inválido',
         ]);
     }
 }

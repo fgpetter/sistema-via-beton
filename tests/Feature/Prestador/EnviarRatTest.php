@@ -5,6 +5,7 @@ namespace Tests\Feature\Prestador;
 use App\Actions\Ocorrencias\BuildRatPdfDataFromOcorrencia;
 use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\PrazoUnidade;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Models\Colaborador;
 use App\Models\Disciplina;
@@ -105,6 +106,22 @@ class EnviarRatTest extends TestCase
         $this->assertSame('Tomada', $dados['subdisciplina_1']);
         $this->assertSame('Interruptor', $dados['subdisciplina_2']);
         $this->assertSame('', $dados['subdisciplina_3']);
+    }
+
+    public function test_rat_pdf_data_inclui_responsavel_engenharia_banrisul(): void
+    {
+        $prestador = User::factory()->prestador()->create();
+        $colaborador = Colaborador::factory()->create(['user_id' => $prestador->id]);
+        $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
+            'colaborador_id' => $colaborador->id,
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofmanIcaroDupont,
+        ]);
+
+        $dados = app(BuildRatPdfDataFromOcorrencia::class)(
+            $ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado'])
+        );
+
+        $this->assertSame('Dustin Hofman / Icaro Dupont', $dados['responsavel_engenharia_banrisul']);
     }
 
     public function test_rat_pdf_datahora_saida_usa_registro_da_ocorrencia_e_fuso_configurado(): void
