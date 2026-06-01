@@ -1,4 +1,37 @@
-<div class="border border-blue-200 rounded-md bg-blue-50" x-data="{ fotosOpen: false }">
+<div
+    class="border border-blue-200 rounded-md bg-blue-50"
+    x-data="{
+        fotosOpen: false,
+        @if ($dropzoneHabilitado)
+        dropzoneEnabled: true,
+        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.screen.width <= 1024),
+        activeDropPar: null,
+        clickAntes(par) {
+            $wire.uploadingPar = par;
+            $wire.uploadingTipo = 'antes';
+            $nextTick(() => $refs.fotoInputGaleria.click());
+        },
+        dropOnAntes(event, par) {
+            const file = event.dataTransfer?.files?.[0];
+            if (! file || ! file.type.startsWith('image/')) {
+                return;
+            }
+            this.activeDropPar = null;
+            $wire.set('uploadingPar', par);
+            $wire.set('uploadingTipo', 'antes');
+            $wire.upload('fotoUpload', file);
+        },
+        dragOverAntes(par) {
+            this.activeDropPar = par;
+        },
+        dragLeaveAntes(event) {
+            if (! event.currentTarget.contains(event.relatedTarget)) {
+                this.activeDropPar = null;
+            }
+        },
+        @endif
+    }"
+>
     <button
         type="button"
         @click="fotosOpen = !fotosOpen"
@@ -41,13 +74,32 @@
                             >
                         </div>
                     @else
-                        <div
-                            @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'antes'; $nextTick(() => $refs.fotoInputGaleria.click())"
-                            class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                            <span class="text-[10px] text-default-400 mt-1 uppercase font-medium">Antes</span>
-                        </div>
+                        @if ($dropzoneHabilitado)
+                            <div
+                                role="button"
+                                tabindex="0"
+                                @click="clickAntes({{ $par }})"
+                                @keydown.enter.prevent="clickAntes({{ $par }})"
+                                @keydown.space.prevent="clickAntes({{ $par }})"
+                                @drop.prevent="dropzoneEnabled && !isMobile && dropOnAntes($event, {{ $par }})"
+                                @dragover.prevent="dropzoneEnabled && !isMobile && dragOverAntes({{ $par }})"
+                                @dragleave.prevent="dragLeaveAntes($event)"
+                                :class="{ 'border-primary bg-primary/5': activeDropPar === {{ $par }} }"
+                                class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                <span class="text-[10px] text-default-400 mt-1 uppercase font-medium">Antes</span>
+                                <span x-show="dropzoneEnabled && !isMobile" class="text-[10px] text-default-400 mt-0.5 normal-case">Arraste ou clique</span>
+                            </div>
+                        @else
+                            <div
+                                @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'antes'; $nextTick(() => $refs.fotoInputGaleria.click())"
+                                class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                <span class="text-[10px] text-default-400 mt-1 uppercase font-medium">Antes</span>
+                            </div>
+                        @endif
                     @endif
 
                     @if ($fotos['depois'])

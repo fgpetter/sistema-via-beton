@@ -32,6 +32,8 @@ class OcorrenciaFotoGaleria extends Component
 
     public int $totalPares = 1;
 
+    public bool $dropzoneHabilitado = false;
+
     public function mount(int $ocorrenciaId): void
     {
         $this->ocorrenciaId = $ocorrenciaId;

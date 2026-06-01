@@ -194,7 +194,7 @@ class PreventivaModalTest extends TestCase
 
     public function test_edit_to_concluido_sets_concluido_por(): void
     {
-        $preventiva = Preventiva::factory()->aprovado()->create();
+        $preventiva = Preventiva::factory()->aberto()->create();
 
         Livewire::actingAs($this->admin)
             ->test(PreventivaModal::class)

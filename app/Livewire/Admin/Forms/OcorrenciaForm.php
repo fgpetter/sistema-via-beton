@@ -55,22 +55,22 @@ class OcorrenciaForm extends Form
             'disciplinaId' => [
                 'nullable',
                 'integer',
-                Rule::exists('disciplinas', 'id')->where('subdisciplina', false),
+                Rule::exists('disciplinas', 'id')->where('subdisciplina', 0),
             ],
             'subdisciplina1Id' => [
                 'nullable',
                 'integer',
-                Rule::exists('disciplinas', 'id')->where('subdisciplina', true),
+                Rule::exists('disciplinas', 'id')->where('subdisciplina', 1),
             ],
             'subdisciplina2Id' => [
                 'nullable',
                 'integer',
-                Rule::exists('disciplinas', 'id')->where('subdisciplina', true),
+                Rule::exists('disciplinas', 'id')->where('subdisciplina', 1),
             ],
             'subdisciplina3Id' => [
                 'nullable',
                 'integer',
-                Rule::exists('disciplinas', 'id')->where('subdisciplina', true),
+                Rule::exists('disciplinas', 'id')->where('subdisciplina', 1),
             ],
             'agencia' => ['required', 'string', 'max:255'],
             'endereco' => ['nullable', 'string', 'max:255'],

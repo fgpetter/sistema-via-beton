@@ -137,10 +137,8 @@ class OcorrenciasImportTest extends TestCase
         $import = new OcorrenciasImport;
         $import->import($this->testFilePath);
 
-        $this->assertDatabaseHas('ocorrencias', [
-            'id' => 1,
-            'abertura' => '2026-03-01',
-        ]);
+        $ocorrencia = Ocorrencia::query()->findOrFail(1);
+        $this->assertSame('2026-03-01', $ocorrencia->abertura->toDateString());
     }
 
     public function test_import_matches_prazo_by_category_case_insensitive(): void

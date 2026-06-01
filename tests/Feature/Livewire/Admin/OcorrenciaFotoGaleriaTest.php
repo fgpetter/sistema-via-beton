@@ -31,6 +31,27 @@ class OcorrenciaFotoGaleriaTest extends TestCase
         $this->prestador = User::factory()->prestador()->create();
     }
 
+    public function test_dropzone_desabilitado_por_padrao(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->assertDontSee('dropOnAntes');
+    }
+
+    public function test_dropzone_habilitado_renderiza_handlers(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaFotoGaleria::class, [
+                'ocorrenciaId' => $ocorrencia->id,
+                'dropzoneHabilitado' => true,
+            ])
+            ->assertSee('dropOnAntes');
+    }
+
     public function test_non_admin_cannot_mount_ocorrencia_foto_galeria(): void
     {
         $ocorrencia = Ocorrencia::factory()->create();

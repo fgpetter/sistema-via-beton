@@ -339,7 +339,8 @@ class OcorrenciaModalTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->assertSeeLivewire(OcorrenciaFotoGaleria::class);
+            ->assertSeeLivewire(OcorrenciaFotoGaleria::class)
+            ->assertSee('dropOnAntes');
     }
 
     public function test_non_admin_cannot_create_ocorrencia(): void

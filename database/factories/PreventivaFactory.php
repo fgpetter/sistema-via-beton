@@ -37,20 +37,6 @@ class PreventivaFactory extends Factory
         ]);
     }
 
-    public function aprovado(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => PreventivaStatus::Aprovado,
-        ]);
-    }
-
-    public function reprovado(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => PreventivaStatus::Reprovado,
-        ]);
-    }
-
     public function concluida(): static
     {
         return $this->state(fn (array $attributes) => [
