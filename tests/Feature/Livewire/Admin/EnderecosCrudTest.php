@@ -125,7 +125,13 @@ class EnderecosCrudTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(EnderecosCrud::class)
             ->call('confirmDelete', $endereco->id)
-            ->call('delete');
+            ->call('delete')
+            ->assertDispatched(Swal::SESSION_KEY, function (string $event, array $params): bool {
+                return $event === Swal::SESSION_KEY
+                    && ($params['title'] ?? null) === 'Endereço excluído com sucesso.'
+                    && ($params['icon'] ?? null) === 'success'
+                    && ($params['toast'] ?? null) === true;
+            });
 
         $this->assertDatabaseMissing('enderecos', [
             'id' => $endereco->id,

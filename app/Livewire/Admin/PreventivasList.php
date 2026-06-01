@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Enums\PreventivaStatus;
 use App\Models\Preventiva;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -105,12 +106,7 @@ class PreventivasList extends Component
         Preventiva::findOrFail($deletedId)->delete();
 
         unset($this->preventivas);
-        $this->swalToastWarning([
-            'title' => 'Excluído com sucesso!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Excluído com sucesso!'));
 
         $this->closeDeleteModal();
     }

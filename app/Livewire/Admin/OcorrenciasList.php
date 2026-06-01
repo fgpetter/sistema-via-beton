@@ -6,6 +6,7 @@ use App\Enums\OcorrenciaStatus;
 use App\Imports\OcorrenciasImport;
 use App\Models\Ocorrencia;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
@@ -238,12 +239,7 @@ class OcorrenciasList extends Component
         Ocorrencia::findOrFail($deletedId)->delete();
 
         unset($this->ordemPrestadorInputs[(string) $deletedId], $this->ocorrencias);
-        $this->swalToastWarning([
-            'title' => 'Excluído com sucesso!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Excluído com sucesso!'));
 
         $this->closeDeleteModal();
     }
@@ -270,13 +266,11 @@ class OcorrenciasList extends Component
         $imported = $import->getImportedCount();
         $skipped = $import->getSkippedCount();
 
-        $this->swalToastSuccess([
-            'title' => "{$imported} ocorrência(s) importada(s)!",
-            'text' => $skipped > 0 ? "{$skipped} linha(s) ignorada(s) por campos obrigatórios em branco." : '',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 4000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions(
+            "{$imported} ocorrência(s) importada(s)!",
+            $skipped > 0 ? "{$skipped} linha(s) ignorada(s) por campos obrigatórios em branco." : null,
+            4000
+        ));
     }
 
     public function closeDeleteModal(): void

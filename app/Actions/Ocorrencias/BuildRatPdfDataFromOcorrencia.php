@@ -15,7 +15,15 @@ class BuildRatPdfDataFromOcorrencia
     {
         $geradoEm ??= now();
 
-        $ocorrencia->loadMissing(['prazo', 'colaborador', 'enderecoVinculado']);
+        $ocorrencia->loadMissing([
+            'prazo',
+            'colaborador',
+            'enderecoVinculado',
+            'disciplina',
+            'subdisciplina1',
+            'subdisciplina2',
+            'subdisciplina3',
+        ]);
 
         $timezoneApp = (string) config('app.timezone');
         $datahoraSaidaPdf = ($ocorrencia->datahora_saida ?? $geradoEm)->copy()->timezone($timezoneApp);
@@ -57,6 +65,10 @@ class BuildRatPdfDataFromOcorrencia
             'usuario_final_afetado_col5' => (string) ($ocorrencia->agencia ?? ''),
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
+            'disciplina' => (string) ($ocorrencia->disciplina?->disciplina ?? ''),
+            'subdisciplina_1' => (string) ($ocorrencia->subdisciplina1?->disciplina ?? ''),
+            'subdisciplina_2' => (string) ($ocorrencia->subdisciplina2?->disciplina ?? ''),
+            'subdisciplina_3' => (string) ($ocorrencia->subdisciplina3?->disciplina ?? ''),
             'item_descricao_servico' => $itemDescricao,
             'situacao_codigo' => '',
             'comentarios_prestador' => $ocorrencia->comentarios_prestador ?? '',
@@ -87,6 +99,10 @@ class BuildRatPdfDataFromOcorrencia
             'usuario_final_afetado_col5' => 'AG ACEGUA',
             'codigo_nome_local' => '112 - AG ACEGUA',
             'endereco' => 'Rua Exemplo, 100 - Centro',
+            'disciplina' => 'Elétrica',
+            'subdisciplina_1' => 'Tomada',
+            'subdisciplina_2' => 'Interruptor',
+            'subdisciplina_3' => '',
             'item_descricao_servico' => "Manutenção preventiva no ar condicionado\n\nSubstituição de filtros e verificação do sistema de refrigeração.",
             'situacao_codigo' => '',
             'comentarios_prestador' => 'Comentários do prestador',

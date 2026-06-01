@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Livewire\Livewire;
+use SweetAlert2\Laravel\Swal;
 use Tests\TestCase;
 
 class PrazosCrudTest extends TestCase
@@ -51,6 +52,10 @@ class PrazosCrudTest extends TestCase
             ->set('prazoValor', 6)
             ->set('prazoUnidade', PrazoUnidade::Hora->value)
             ->call('save')
+            ->assertDispatched(Swal::SESSION_KEY, fn (string $event, array $params): bool => $event === Swal::SESSION_KEY
+                && ($params['title'] ?? null) === 'Prazo criado com sucesso.'
+                && ($params['icon'] ?? null) === 'success'
+                && ($params['toast'] ?? null) === true)
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('prazos', [
@@ -75,6 +80,10 @@ class PrazosCrudTest extends TestCase
             ->set('prazoValor', 12)
             ->set('prazoUnidade', PrazoUnidade::Hora->value)
             ->call('save')
+            ->assertDispatched(Swal::SESSION_KEY, fn (string $event, array $params): bool => $event === Swal::SESSION_KEY
+                && ($params['title'] ?? null) === 'Prazo atualizado com sucesso.'
+                && ($params['icon'] ?? null) === 'success'
+                && ($params['toast'] ?? null) === true)
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('prazos', [
@@ -96,7 +105,11 @@ class PrazosCrudTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(PrazosCrud::class)
             ->call('confirmDelete', $prazo->id)
-            ->call('delete');
+            ->call('delete')
+            ->assertDispatched(Swal::SESSION_KEY, fn (string $event, array $params): bool => $event === Swal::SESSION_KEY
+                && ($params['title'] ?? null) === 'Prazo excluído com sucesso.'
+                && ($params['icon'] ?? null) === 'success'
+                && ($params['toast'] ?? null) === true);
 
         $this->assertDatabaseMissing('prazos', [
             'id' => $prazo->id,

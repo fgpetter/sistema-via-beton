@@ -7,6 +7,7 @@ use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\PrazoUnidade;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Models\Colaborador;
+use App\Models\Disciplina;
 use App\Models\Endereco;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
@@ -72,6 +73,38 @@ class EnviarRatTest extends TestCase
         $dados = $build($ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']));
 
         $this->assertSame('Sim', $dados['emergencial']);
+    }
+
+    public function test_rat_pdf_data_inclui_disciplina_e_subdisciplinas(): void
+    {
+        $prestador = User::factory()->prestador()->create();
+        $colaborador = Colaborador::factory()->create(['user_id' => $prestador->id]);
+        $disciplina = Disciplina::factory()->create(['disciplina' => 'Elétrica']);
+        $sub1 = Disciplina::factory()->subdisciplina()->create(['disciplina' => 'Tomada']);
+        $sub2 = Disciplina::factory()->subdisciplina()->create(['disciplina' => 'Interruptor']);
+        $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
+            'colaborador_id' => $colaborador->id,
+            'disciplina_id' => $disciplina->id,
+            'subdisciplina_1_id' => $sub1->id,
+            'subdisciplina_2_id' => $sub2->id,
+        ]);
+
+        $dados = app(BuildRatPdfDataFromOcorrencia::class)(
+            $ocorrencia->fresh([
+                'prazo',
+                'colaborador',
+                'enderecoVinculado',
+                'disciplina',
+                'subdisciplina1',
+                'subdisciplina2',
+                'subdisciplina3',
+            ])
+        );
+
+        $this->assertSame('Elétrica', $dados['disciplina']);
+        $this->assertSame('Tomada', $dados['subdisciplina_1']);
+        $this->assertSame('Interruptor', $dados['subdisciplina_2']);
+        $this->assertSame('', $dados['subdisciplina_3']);
     }
 
     public function test_rat_pdf_datahora_saida_usa_registro_da_ocorrencia_e_fuso_configurado(): void

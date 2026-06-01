@@ -8,6 +8,7 @@ use App\Livewire\Admin\Forms\PreventivaForm;
 use App\Models\Colaborador;
 use App\Models\Preventiva;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -112,12 +113,7 @@ class PreventivaModal extends Component
         $this->closeModal();
         $this->dispatch('preventiva-saved');
 
-        $this->swalToastSuccess([
-            'title' => 'Salvo com sucesso!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Salvo com sucesso!'));
     }
 
     protected function ensureUserIsAuthorized(): void

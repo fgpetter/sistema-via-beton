@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\View\Composers\AuthSwalComposer;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,5 +33,12 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('prestador', function (User $user) {
             return $user->isPrestador();
         });
+
+        View::composer([
+            'auth.boxed-login',
+            'auth.boxed-register',
+            'auth.boxed-reset-password',
+            'auth.boxed-create-password',
+        ], AuthSwalComposer::class);
     }
 }

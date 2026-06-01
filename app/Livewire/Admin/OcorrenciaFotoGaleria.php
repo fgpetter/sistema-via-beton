@@ -7,6 +7,7 @@ use App\Jobs\ProcessarImagemOcorrencia;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
@@ -106,7 +107,7 @@ HTML;
         $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
         unset($this->ocorrencia, $this->fotoPares);
 
-        $this->swalToastSuccess(['title' => 'Foto enviada!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(SwalToast::successOptions('Foto enviada!'));
     }
 
     public function salvarLegenda(int $imagemId, string $legenda): void

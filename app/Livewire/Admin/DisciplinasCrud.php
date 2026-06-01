@@ -4,16 +4,19 @@ namespace App\Livewire\Admin;
 
 use App\Models\Disciplina;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
 class DisciplinasCrud extends Component
 {
     use WithPagination;
+    use WithSweetAlert;
 
     #[Url(as: 'busca')]
     public string $search = '';
@@ -101,10 +104,10 @@ class DisciplinasCrud extends Component
 
         if ($this->editingId) {
             Disciplina::findOrFail($this->editingId)->update($data);
-            session()->flash('success', 'Disciplina atualizada com sucesso.');
+            $this->swalToastSuccess(SwalToast::successOptions('Disciplina atualizada com sucesso.'));
         } else {
             Disciplina::create($data);
-            session()->flash('success', 'Disciplina criada com sucesso.');
+            $this->swalToastSuccess(SwalToast::successOptions('Disciplina criada com sucesso.'));
         }
 
         $this->closeModal();
@@ -126,7 +129,7 @@ class DisciplinasCrud extends Component
         }
 
         Disciplina::findOrFail($this->deletingId)->delete();
-        session()->flash('success', 'Disciplina excluída com sucesso.');
+        $this->swalToastSuccess(SwalToast::successOptions('Disciplina excluída com sucesso.'));
         $this->closeDeleteModal();
     }
 

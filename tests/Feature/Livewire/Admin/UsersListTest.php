@@ -60,4 +60,37 @@ class UsersListTest extends TestCase
 
         Notification::assertSentTo($user, SendPasswordResetNotification::class);
     }
+
+    public function test_admin_cannot_delete_own_account_and_dispatches_error_swal(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(UsersList::class)
+            ->call('confirmDelete', $this->admin->id)
+            ->assertDispatched(Swal::SESSION_KEY, function (string $event, array $params): bool {
+                return $event === Swal::SESSION_KEY
+                    && ($params['title'] ?? null) === 'Você não tem permissão para excluir este usuário.'
+                    && ($params['icon'] ?? null) === 'error'
+                    && ($params['toast'] ?? null) === true;
+            });
+
+        $this->assertDatabaseHas('users', ['id' => $this->admin->id]);
+    }
+
+    public function test_admin_can_delete_user_and_dispatch_success_swal(): void
+    {
+        $user = User::factory()->prestador()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(UsersList::class)
+            ->call('confirmDelete', $user->id)
+            ->call('delete')
+            ->assertDispatched(Swal::SESSION_KEY, function (string $event, array $params): bool {
+                return $event === Swal::SESSION_KEY
+                    && ($params['title'] ?? null) === 'Usuário excluído com sucesso.'
+                    && ($params['icon'] ?? null) === 'success'
+                    && ($params['toast'] ?? null) === true;
+            });
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    }
 }

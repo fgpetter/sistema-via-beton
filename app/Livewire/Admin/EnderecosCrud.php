@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Enums\TipoEndereco;
 use App\Models\Endereco;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -170,12 +171,7 @@ class EnderecosCrud extends Component
 
         $this->closeModal();
 
-        $this->swalToastSuccess([
-            'title' => 'Salvo com sucesso!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Salvo com sucesso!'));
     }
 
     public function confirmDelete(int $enderecoId): void
@@ -194,7 +190,7 @@ class EnderecosCrud extends Component
         }
 
         Endereco::findOrFail($this->deletingId)->delete();
-        session()->flash('success', 'Endereço excluído com sucesso.');
+        $this->swalToastSuccess(SwalToast::successOptions('Endereço excluído com sucesso.'));
         $this->closeDeleteModal();
     }
 

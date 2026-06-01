@@ -2,14 +2,17 @@
 
 namespace App\Livewire\Profile;
 
-use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Component;
+use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
 class EditProfile extends Component
 {
+    use WithSweetAlert;
+
     public string $name = '';
 
     public string $email = '';
@@ -76,7 +79,7 @@ class EditProfile extends Component
 
         $user->update($data);
 
-        session()->flash('success', 'Perfil atualizado com sucesso.');
+        $this->swalToastSuccess(SwalToast::successOptions('Perfil atualizado com sucesso.'));
     }
 
     public function render(): View

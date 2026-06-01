@@ -5,16 +5,19 @@ namespace App\Livewire\Admin;
 use App\Enums\PrazoUnidade;
 use App\Models\Prazo;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
 class PrazosCrud extends Component
 {
     use WithPagination;
+    use WithSweetAlert;
 
     #[Url(as: 'busca')]
     public string $search = '';
@@ -119,10 +122,10 @@ class PrazosCrud extends Component
 
         if ($this->editingId) {
             Prazo::findOrFail($this->editingId)->update($data);
-            session()->flash('success', 'Prazo atualizado com sucesso.');
+            $this->swalToastSuccess(SwalToast::successOptions('Prazo atualizado com sucesso.'));
         } else {
             Prazo::create($data);
-            session()->flash('success', 'Prazo criado com sucesso.');
+            $this->swalToastSuccess(SwalToast::successOptions('Prazo criado com sucesso.'));
         }
 
         $this->closeModal();
@@ -144,7 +147,7 @@ class PrazosCrud extends Component
         }
 
         Prazo::findOrFail($this->deletingId)->delete();
-        session()->flash('success', 'Prazo excluído com sucesso.');
+        $this->swalToastSuccess(SwalToast::successOptions('Prazo excluído com sucesso.'));
         $this->closeDeleteModal();
     }
 

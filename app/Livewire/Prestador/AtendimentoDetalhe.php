@@ -10,6 +10,7 @@ use App\Mail\RatEnviada;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -92,7 +93,7 @@ class AtendimentoDetalhe extends Component
         ]);
         unset($this->ocorrencia);
 
-        $this->swalToastSuccess(['title' => 'Atendimento iniciado!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(SwalToast::successOptions('Atendimento iniciado!'));
     }
 
     #[Computed]
@@ -130,7 +131,7 @@ class AtendimentoDetalhe extends Component
         $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
         unset($this->ocorrencia, $this->fotoPares);
 
-        $this->swalToastSuccess(['title' => 'Foto enviada!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(SwalToast::successOptions('Foto enviada!'));
     }
 
     public function removerImagem(int $imagemId): void
@@ -151,7 +152,7 @@ class AtendimentoDetalhe extends Component
         $this->validateOnly('comentariosPrestador');
         $this->ocorrencia->update(['comentarios_prestador' => $this->comentariosPrestador]);
 
-        $this->swalToastSuccess(['title' => 'Comentários salvos!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(SwalToast::successOptions('Comentários salvos!'));
     }
 
     public function enviarEmail(): void
@@ -181,7 +182,7 @@ class AtendimentoDetalhe extends Component
 
         unset($this->ocorrencia);
 
-        $this->swalToastSuccess(['title' => 'RAT enviada por e-mail com sucesso!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(SwalToast::successOptions('RAT enviada por e-mail com sucesso!'));
     }
 
     public function concluir(): void
@@ -205,7 +206,7 @@ class AtendimentoDetalhe extends Component
         ]);
         unset($this->ocorrencia);
 
-        $this->swalToastSuccess(['title' => 'Atendimento concluído! Aguardando revisão.', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(SwalToast::successOptions('Atendimento concluído! Aguardando revisão.'));
     }
 
     protected function ensureAtendimentoIniciado(): Ocorrencia

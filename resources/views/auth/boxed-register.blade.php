@@ -37,16 +37,6 @@
                                     <form action="/register" method="POST" class="text-left w-full mt-10">
                                         @csrf
 
-                                        @if ($errors->any())
-                                            <div class="mb-4 p-3 text-danger rounded-md bg-danger/15">
-                                                <ul class="list-disc list-inside">
-                                                    @foreach ($errors->all() as $error)
-                                                        <li>{{ $error }}</li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        @endif
-
                                         <div class="mb-4">
                                             <label class="block font-medium text-default-900 text-sm mb-2" for="name">Nome</label>
                                             <input class="form-input @error('name') border-danger @enderror" 

@@ -7,6 +7,7 @@ use App\Models\Disciplina;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use SweetAlert2\Laravel\Swal;
 use Tests\TestCase;
 
 class DisciplinasCrudTest extends TestCase
@@ -41,6 +42,10 @@ class DisciplinasCrudTest extends TestCase
             ->set('disciplina', 'Hidráulica')
             ->set('subdisciplina', false)
             ->call('save')
+            ->assertDispatched(Swal::SESSION_KEY, fn (string $event, array $params): bool => $event === Swal::SESSION_KEY
+                && ($params['title'] ?? null) === 'Disciplina criada com sucesso.'
+                && ($params['icon'] ?? null) === 'success'
+                && ($params['toast'] ?? null) === true)
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('disciplinas', [
@@ -75,6 +80,10 @@ class DisciplinasCrudTest extends TestCase
             ->set('disciplina', 'Nova')
             ->set('subdisciplina', true)
             ->call('save')
+            ->assertDispatched(Swal::SESSION_KEY, fn (string $event, array $params): bool => $event === Swal::SESSION_KEY
+                && ($params['title'] ?? null) === 'Disciplina atualizada com sucesso.'
+                && ($params['icon'] ?? null) === 'success'
+                && ($params['toast'] ?? null) === true)
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('disciplinas', [
@@ -91,7 +100,11 @@ class DisciplinasCrudTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(DisciplinasCrud::class)
             ->call('confirmDelete', $item->id)
-            ->call('delete');
+            ->call('delete')
+            ->assertDispatched(Swal::SESSION_KEY, fn (string $event, array $params): bool => $event === Swal::SESSION_KEY
+                && ($params['title'] ?? null) === 'Disciplina excluída com sucesso.'
+                && ($params['icon'] ?? null) === 'success'
+                && ($params['toast'] ?? null) === true);
 
         $this->assertDatabaseMissing('disciplinas', [
             'id' => $item->id,

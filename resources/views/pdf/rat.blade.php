@@ -123,6 +123,20 @@
             <td class="val" colspan="3">{{ $dados['endereco'] }}</td>
         </tr>
         <tr>
+            <td class="lbl">Disciplina</td>
+            <td class="lbl">Sub Disciplina 1</td>
+            <td class="lbl">Sub Disciplina 2</td>
+            <td class="lbl">Sub Disciplina 3</td>
+            <td class="lbl"></td>
+        </tr>
+        <tr>
+            <td class="val">{{ $dados['disciplina'] ?? ''}}</td>
+            <td class="val">{{ $dados['subdisciplina_1'] ?? ''}}</td>
+            <td class="val">{{ $dados['subdisciplina_2'] ?? ''}}</td>
+            <td class="val">{{ $dados['subdisciplina_3'] ?? ''}}</td>
+            <td class="val"></td>
+        </tr>
+        <tr>
             <td class="secao-servicos" colspan="5">SERVIÇOS SOLICITADOS NO LOCAL</td>
         </tr>
         <tr>

@@ -8,6 +8,7 @@ use App\Enums\TipoContrato;
 use App\Enums\UserRole;
 use App\Models\Colaborador;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -200,12 +201,7 @@ class ColaboradoresList extends Component
             );
         }
 
-        $this->swalToastSuccess([
-            'title' => 'Salvo com sucesso!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Salvo com sucesso!'));
 
         $this->closeModal();
     }
@@ -228,12 +224,7 @@ class ColaboradoresList extends Component
 
         Colaborador::findOrFail($this->deletingId)->delete();
 
-        $this->swalToastWarning([
-            'title' => 'Excluído com sucesso!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Excluído com sucesso!'));
 
         $this->closeDeleteModal();
     }

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Notifications\SendPasswordResetNotification;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -126,7 +127,7 @@ class UsersList extends Component
         $user = User::findOrFail($userId);
 
         if (! $this->canEditUser($user)) {
-            session()->flash('error', 'Você não tem permissão para editar este usuário.');
+            $this->swalToastError(SwalToast::errorOptions('Você não tem permissão para editar este usuário.'));
 
             return;
         }
@@ -154,7 +155,7 @@ class UsersList extends Component
             $user = User::findOrFail($this->editingUserId);
 
             if (! $this->canEditUser($user)) {
-                session()->flash('error', 'Você não tem permissão para editar este usuário.');
+                $this->swalToastError(SwalToast::errorOptions('Você não tem permissão para editar este usuário.'));
 
                 return;
             }
@@ -173,12 +174,7 @@ class UsersList extends Component
 
         $this->closeModal();
 
-        $this->swalToastSuccess([
-            'title' => 'Salvo com sucesso!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Salvo com sucesso!'));
     }
 
     public function confirmDelete(int $userId): void
@@ -188,7 +184,7 @@ class UsersList extends Component
         $user = User::findOrFail($userId);
 
         if (! $this->canDeleteUser($user)) {
-            session()->flash('error', 'Você não tem permissão para excluir este usuário.');
+            $this->swalToastError(SwalToast::errorOptions('Você não tem permissão para excluir este usuário.'));
 
             return;
         }
@@ -208,7 +204,7 @@ class UsersList extends Component
         $user = User::findOrFail($this->deletingUserId);
 
         if (! $this->canDeleteUser($user)) {
-            session()->flash('error', 'Você não tem permissão para excluir este usuário.');
+            $this->swalToastError(SwalToast::errorOptions('Você não tem permissão para excluir este usuário.'));
             $this->closeDeleteModal();
 
             return;
@@ -217,14 +213,14 @@ class UsersList extends Component
         /** @var User $currentUser */
         $currentUser = auth()->user();
         if ($user->id === $currentUser->id) {
-            session()->flash('error', 'Você não pode excluir sua própria conta.');
+            $this->swalToastError(SwalToast::errorOptions('Você não pode excluir sua própria conta.'));
             $this->closeDeleteModal();
 
             return;
         }
 
         $user->delete();
-        session()->flash('success', 'Usuário excluído com sucesso.');
+        $this->swalToastSuccess(SwalToast::successOptions('Usuário excluído com sucesso.'));
         $this->closeDeleteModal();
     }
 

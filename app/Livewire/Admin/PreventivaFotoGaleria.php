@@ -6,6 +6,7 @@ use App\Jobs\ProcessarImagemPreventiva;
 use App\Models\Preventiva;
 use App\Models\PreventivaImagem;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
@@ -82,7 +83,7 @@ HTML;
         $this->reset(['fotoUpload']);
         unset($this->preventiva);
 
-        $this->swalToastSuccess(['title' => 'Foto enviada!', 'showConfirmButton' => false, 'position' => 'top-end', 'timer' => 2000]);
+        $this->swalToastSuccess(SwalToast::successOptions('Foto enviada!'));
     }
 
     public function salvarLegenda(int $imagemId, string $legenda): void

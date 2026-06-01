@@ -12,6 +12,7 @@ use App\Models\Disciplina;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
 use App\Models\User;
+use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
@@ -139,12 +140,7 @@ class OcorrenciaModal extends Component
         $this->closeModal();
         $this->dispatch('ocorrencia-saved');
 
-        $this->swalToastSuccess([
-            'title' => 'Salvo com sucesso!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Salvo com sucesso!'));
     }
 
     public function concluirRevisao(int $ocorrenciaId): void
@@ -165,12 +161,7 @@ class OcorrenciaModal extends Component
         $this->closeModal();
         $this->dispatch('ocorrencia-saved');
 
-        $this->swalToastSuccess([
-            'title' => 'Ocorrência concluída!',
-            'showConfirmButton' => false,
-            'position' => 'top-end',
-            'timer' => 2000,
-        ]);
+        $this->swalToastSuccess(SwalToast::successOptions('Ocorrência concluída!'));
     }
 
     protected function ensureUserIsAuthorized(): void
