@@ -106,11 +106,14 @@
                                         id="descricao"
                                         rows="3"
                                         class="form-textarea rounded-md border-gray-300 w-full @error('descricao') border-danger @enderror"
-                                        placeholder="Descrição detalhada (opcional)"
+                                        placeholder="Preencha esse campo e salve para que seja gerado o relatório."
                                     ></textarea>
                                     @error('form.descricao')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
+                                    @if (blank(trim((string) $form->descricao)))
+                                        <small class="text-warning mt-0">Preencha o campo descrição para que o relatório possa ser gerado.</small>
+                                    @endif
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

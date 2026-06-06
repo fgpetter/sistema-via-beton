@@ -15,7 +15,7 @@ class SwalToast
             'toast' => true,
             'position' => 'top-end',
             'showConfirmButton' => false,
-            'timer' => $timer,
+            'timer' => $timer ?? 2000,
         ];
     }
 

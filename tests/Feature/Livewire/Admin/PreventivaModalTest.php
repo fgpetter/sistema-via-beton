@@ -265,4 +265,42 @@ class PreventivaModalTest extends TestCase
             ->call('openEditModal', $preventiva->id)
             ->assertForbidden();
     }
+
+    public function test_edit_modal_shows_descricao_helper_when_empty(): void
+    {
+        $preventiva = Preventiva::factory()->create([
+            'descricao' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaModal::class)
+            ->call('openEditModal', $preventiva->id)
+            ->assertSee('Preencha o campo descrição para que o relatório possa ser gerado');
+    }
+
+    public function test_edit_modal_hides_descricao_helper_when_filled(): void
+    {
+        $preventiva = Preventiva::factory()->create([
+            'descricao' => 'Descrição da preventiva',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaModal::class)
+            ->call('openEditModal', $preventiva->id)
+            ->assertDontSee('Preencha o campo descrição para que o relatório possa ser gerado');
+    }
+
+    public function test_edit_modal_hides_descricao_helper_after_user_fills_field(): void
+    {
+        $preventiva = Preventiva::factory()->create([
+            'descricao' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaModal::class)
+            ->call('openEditModal', $preventiva->id)
+            ->assertSee('Preencha o campo descrição para que o relatório possa ser gerado')
+            ->set('form.descricao', 'Nova descrição')
+            ->assertDontSee('Preencha o campo descrição para que o relatório possa ser gerado');
+    }
 }
