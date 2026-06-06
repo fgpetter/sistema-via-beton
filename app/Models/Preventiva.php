@@ -78,7 +78,9 @@ class Preventiva extends Model
 
     public function imagens(): HasMany
     {
-        return $this->hasMany(PreventivaImagem::class);
+        return $this->hasMany(PreventivaImagem::class)
+            ->orderBy('position')
+            ->orderBy('id');
     }
 
     public function imagensAceitas(): HasMany

@@ -25,7 +25,7 @@ class PreventivaFotoGaleria extends Component
 
     public $fotoUpload;
 
-    public bool $isUploading = false;
+    public bool $dropzoneHabilitado = false;
 
     public function mount(int $preventivaId): void
     {
@@ -73,9 +73,14 @@ HTML;
 
         $path = $this->fotoUpload->store("preventivas/{$this->preventivaId}", 'public');
 
+        $proximoPosition = (int) PreventivaImagem::query()
+            ->where('preventiva_id', $this->preventivaId)
+            ->max('position');
+
         $imagem = PreventivaImagem::create([
             'preventiva_id' => $this->preventivaId,
             'path' => $path,
+            'position' => $proximoPosition + 1,
         ]);
 
         ProcessarImagemPreventiva::dispatch($imagem);
@@ -110,6 +115,32 @@ HTML;
             ->firstOrFail();
 
         $imagem->update(['recusada' => ! $imagem->recusada]);
+
+        unset($this->preventiva);
+    }
+
+    public function reordenarImagens(int $imagemId, int $position): void
+    {
+        $this->ensureUserIsAuthorized();
+
+        $imagens = PreventivaImagem::query()
+            ->where('preventiva_id', $this->preventivaId)
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get();
+
+        $movida = $imagens->firstWhere('id', $imagemId);
+
+        if (! $movida) {
+            abort(404);
+        }
+
+        $ordenadas = $imagens->where('id', '!=', $imagemId)->values();
+        $ordenadas->splice($position, 0, [$movida]);
+
+        foreach ($ordenadas as $index => $imagem) {
+            $imagem->update(['position' => $index + 1]);
+        }
 
         unset($this->preventiva);
     }

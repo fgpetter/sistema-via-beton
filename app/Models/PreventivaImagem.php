@@ -21,6 +21,7 @@ class PreventivaImagem extends Model
         'path',
         'legenda',
         'recusada',
+        'position',
     ];
 
     /**

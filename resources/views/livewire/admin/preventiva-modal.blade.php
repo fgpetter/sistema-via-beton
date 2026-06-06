@@ -207,6 +207,7 @@
                                 @if ($form->editingId)
                                     <livewire:admin.preventiva-foto-galeria
                                         :preventiva-id="$form->editingId"
+                                        :dropzone-habilitado="true"
                                         :wire:key="'foto-galeria-' . $form->editingId"
                                     />
                                 @endif
