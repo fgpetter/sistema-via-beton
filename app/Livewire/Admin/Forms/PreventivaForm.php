@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Forms;
 
 use App\Enums\PreventivaStatus;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Models\Preventiva;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
@@ -23,6 +24,8 @@ class PreventivaForm extends Form
 
     public string $agencia = '';
 
+    public ?string $responsavelEngenhariaBanrisul = null;
+
     public ?string $endereco = null;
 
     public ?string $comentarios = null;
@@ -39,6 +42,7 @@ class PreventivaForm extends Form
             'abertura' => ['required', 'date'],
             'colaboradorId' => ['nullable', 'exists:colaboradores,id'],
             'agencia' => ['required', 'string', 'max:255'],
+            'responsavelEngenhariaBanrisul' => ['nullable', Rule::enum(ResponsavelEngenhariaBanrisul::class)],
             'endereco' => ['nullable', 'string', 'max:255'],
             'comentarios' => ['nullable', 'string'],
         ];
@@ -59,6 +63,7 @@ class PreventivaForm extends Form
             'colaboradorId.exists' => 'O colaborador selecionado não existe.',
             'agencia.required' => 'A agência é obrigatória.',
             'agencia.max' => 'A agência não pode ter mais de 255 caracteres.',
+            'responsavelEngenhariaBanrisul.enum' => 'O responsavel de engenharia selecionado e invalido.',
         ];
     }
 
@@ -78,6 +83,7 @@ class PreventivaForm extends Form
         $this->abertura = $preventiva->abertura->format('Y-m-d');
         $this->colaboradorId = $preventiva->colaborador_id;
         $this->agencia = $preventiva->agencia;
+        $this->responsavelEngenhariaBanrisul = $preventiva->responsavel_engenharia_banrisul?->value;
         $this->endereco = $preventiva->endereco;
         $this->comentarios = $preventiva->comentarios;
     }
@@ -94,6 +100,9 @@ class PreventivaForm extends Form
             'abertura' => $this->abertura,
             'colaborador_id' => $this->colaboradorId,
             'agencia' => $this->agencia,
+            'responsavel_engenharia_banrisul' => blank($this->responsavelEngenhariaBanrisul)
+                ? null
+                : $this->responsavelEngenhariaBanrisul,
             'endereco_id' => Preventiva::resolverEnderecoId($this->agencia),
             'endereco' => $this->endereco,
             'comentarios' => $this->comentarios,

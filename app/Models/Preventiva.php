@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PreventivaStatus;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,7 @@ class Preventiva extends Model
         'descricao',
         'abertura',
         'contrato',
+        'responsavel_engenharia_banrisul',
         'colaborador_id',
         'agencia',
         'endereco_id',
@@ -42,6 +44,7 @@ class Preventiva extends Model
     {
         return [
             'status' => PreventivaStatus::class,
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::class,
             'abertura' => 'date',
             'datahora_chegada' => 'datetime',
             'datahora_saida' => 'datetime',

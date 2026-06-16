@@ -15,7 +15,7 @@
     <!-- Detalhes da Ocorrência -->
     <div class="card mb-4">
         <div class="card-header">
-            <h6 class="card-title">{{ $this->ocorrencia->agencia }}</h6>
+            <h6 class="card-title">{{ $this->ocorrencia->agencia }} - {{ $this->ocorrencia->id }}</h6>
             <span class="py-0.5 px-2.5 inline-flex items-center text-xs font-medium bg-{{ $this->ocorrencia->status->color() }}/10 text-{{ $this->ocorrencia->status->color() }} rounded">
                 {{ $this->ocorrencia->status->label() }}
             </span>

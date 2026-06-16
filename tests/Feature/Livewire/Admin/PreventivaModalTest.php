@@ -3,6 +3,7 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\PreventivaStatus;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Livewire\Admin\PreventivaFotoGaleria;
 use App\Livewire\Admin\PreventivaModal;
 use App\Models\Colaborador;
@@ -302,5 +303,65 @@ class PreventivaModalTest extends TestCase
             ->assertSee('Preencha o campo descrição para que o relatório possa ser gerado')
             ->set('form.descricao', 'Nova descrição')
             ->assertDontSee('Preencha o campo descrição para que o relatório possa ser gerado');
+    }
+
+    public function test_admin_can_create_preventiva_with_responsavel_engenharia_banrisul(): void
+    {
+        $colaborador = Colaborador::factory()->create(['user_id' => $this->prestador->id]);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaModal::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Preventiva com Responsável Banrisul')
+            ->set('form.status', PreventivaStatus::Aberto->value)
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.colaboradorId', $colaborador->id)
+            ->set('form.responsavelEngenhariaBanrisul', ResponsavelEngenhariaBanrisul::DustinHofman->value)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('preventivas', [
+            'titulo' => 'Preventiva com Responsável Banrisul',
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman->value,
+        ]);
+    }
+
+    public function test_admin_can_update_responsavel_engenharia_banrisul_on_edit(): void
+    {
+        $preventiva = Preventiva::factory()->create([
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaModal::class)
+            ->call('openEditModal', $preventiva->id)
+            ->set('form.responsavelEngenhariaBanrisul', ResponsavelEngenhariaBanrisul::IcaroDupont->value)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('preventivas', [
+            'id' => $preventiva->id,
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::IcaroDupont->value,
+        ]);
+    }
+
+    public function test_admin_can_clear_responsavel_engenharia_banrisul(): void
+    {
+        $preventiva = Preventiva::factory()->create([
+            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaModal::class)
+            ->call('openEditModal', $preventiva->id)
+            ->set('form.responsavelEngenhariaBanrisul', '')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('preventivas', [
+            'id' => $preventiva->id,
+            'responsavel_engenharia_banrisul' => null,
+        ]);
     }
 }

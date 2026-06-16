@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\PreventivaStatus;
+use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Enums\TipoColaborador;
 use App\Livewire\Admin\Forms\PreventivaForm;
 use App\Models\Colaborador;
@@ -43,6 +44,12 @@ class PreventivaModal extends Component
                     : $colaborador->nome_exibicao,
             ])
             ->toArray();
+    }
+
+    #[Computed]
+    public function responsaveisEngenhariaBanrisul(): array
+    {
+        return ResponsavelEngenhariaBanrisul::options();
     }
 
     #[Computed]

@@ -30,7 +30,7 @@
                                     {{ $ocorrencia->prazo->nome }}
                                 </span>
                             @endif
-                            <h6 class="font-semibold text-default-800 text-base mb-1">{{ $ocorrencia->agencia }}</h6>
+                            <h6 class="font-semibold text-default-800 text-base mb-1">{{ $ocorrencia->agencia }} - {{ $ocorrencia->id }}</h6>
                             <p class="text-default-700 font-medium text-sm mb-2">{{ $ocorrencia->titulo }}</p>
                             @if ($ocorrencia->descricao)
                                 <p class="text-default-500 text-sm line-clamp-2">{{ $ocorrencia->descricao }}</p>

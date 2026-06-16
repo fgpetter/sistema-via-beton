@@ -52,7 +52,7 @@ class BuildRelatorioExecutivoPdfDataFromPreventiva
         return [
             'numero_preventiva' => (string) $preventiva->id,
             'numero_contrato' => (string) ($preventiva->contrato ?? ''),
-            'responsavel_engenharia_banrisul' => '',
+            'responsavel_engenharia_banrisul' => $preventiva->responsavel_engenharia_banrisul?->label() ?? '',
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
             'titulo_relatorio' => 'RELATÓRIO EXECUTIVO',
