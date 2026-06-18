@@ -5,11 +5,13 @@ namespace App\Enums;
 enum ContratoSolucionador: string
 {
     case ViaBetonSuregFronteira = '0100557/2025';
+    case ViaBetonDG = '0100914/2025'
 
     public function label(): string
     {
         return match ($this) {
             self::ViaBetonSuregFronteira => 'VIA BETON - Sureg Fronteira',
+            self::ViaBetonDG => 'VIA BETON - DG',
         };
     }
 
@@ -20,6 +22,7 @@ enum ContratoSolucionador: string
     {
         return match (mb_strtolower(trim($grupo))) {
             'via beton - sureg fronteira' => self::ViaBetonSuregFronteira,
+            'via beton - dg' => self::ViaBetonDG,
             default => null,
         };
     }
