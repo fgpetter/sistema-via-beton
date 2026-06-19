@@ -5,7 +5,7 @@ namespace App\Enums;
 enum ContratoSolucionador: string
 {
     case ViaBetonSuregFronteira = '0100557/2025';
-    case ViaBetonDG = '0100914/2025'
+    case ViaBetonDG = '0100914/2025';
 
     public function label(): string
     {
