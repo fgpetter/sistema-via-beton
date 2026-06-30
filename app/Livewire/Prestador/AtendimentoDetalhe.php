@@ -144,6 +144,8 @@ class AtendimentoDetalhe extends Component
         Storage::disk('public')->delete($imagem->path);
         $imagem->delete();
         unset($this->ocorrencia, $this->fotoPares);
+
+        $this->swalToastSuccess(SwalToast::successOptions('Foto removida!'));
     }
 
     public function salvarComentarios(): void

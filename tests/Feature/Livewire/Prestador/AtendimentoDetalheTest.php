@@ -246,6 +246,22 @@ class AtendimentoDetalheTest extends TestCase
         Queue::assertPushed(ProcessarImagemOcorrencia::class, 3);
     }
 
+    public function test_prestador_sees_remove_image_button_during_active_atendimento(): void
+    {
+        Storage::fake('public');
+
+        $imagem = OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
+            'path' => 'ocorrencias/test/antes/test.jpg',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->assertSeeHtml('wire:click="removerImagem('.$imagem->id.')"');
+    }
+
     public function test_prestador_can_remove_image(): void
     {
         Storage::fake('public');
