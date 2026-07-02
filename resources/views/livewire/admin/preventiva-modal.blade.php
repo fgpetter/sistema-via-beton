@@ -227,6 +227,11 @@
                                         :dropzone-habilitado="true"
                                         :wire:key="'foto-galeria-' . $form->editingId"
                                     />
+                                    <livewire:admin.preventiva-medicao-galeria
+                                        :preventiva-id="$form->editingId"
+                                        :dropzone-habilitado="true"
+                                        :wire:key="'medicao-galeria-' . $form->editingId"
+                                    />
                                 @endif
 
                                 <div>

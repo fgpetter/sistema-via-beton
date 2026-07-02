@@ -88,6 +88,7 @@ HTML;
         $this->reset(['fotoUpload']);
         unset($this->preventiva);
 
+        $this->dispatch('preventiva-imagens-atualizadas');
         $this->swalToastSuccess(SwalToast::successOptions('Foto enviada!'));
     }
 
@@ -103,6 +104,7 @@ HTML;
         $imagem->update(['legenda' => $legenda]);
 
         unset($this->preventiva);
+        $this->dispatch('preventiva-imagens-atualizadas');
     }
 
     public function toggleRecusada(int $imagemId): void
@@ -117,6 +119,7 @@ HTML;
         $imagem->update(['recusada' => ! $imagem->recusada]);
 
         unset($this->preventiva);
+        $this->dispatch('preventiva-imagens-atualizadas');
     }
 
     public function reordenarImagens(int $imagemId, int $position): void
@@ -143,6 +146,7 @@ HTML;
         }
 
         unset($this->preventiva);
+        $this->dispatch('preventiva-imagens-atualizadas');
     }
 
     public function removerImagem(int $imagemId): void
@@ -156,6 +160,7 @@ HTML;
         Storage::disk('public')->delete($imagem->path);
         $imagem->delete();
         unset($this->preventiva);
+        $this->dispatch('preventiva-imagens-atualizadas');
     }
 
     public function render(): View

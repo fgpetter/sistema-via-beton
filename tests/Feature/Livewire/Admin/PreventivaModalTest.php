@@ -5,6 +5,7 @@ namespace Tests\Feature\Livewire\Admin;
 use App\Enums\PreventivaStatus;
 use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Livewire\Admin\PreventivaFotoGaleria;
+use App\Livewire\Admin\PreventivaMedicaoGaleria;
 use App\Livewire\Admin\PreventivaModal;
 use App\Models\Colaborador;
 use App\Models\Preventiva;
@@ -217,7 +218,8 @@ class PreventivaModalTest extends TestCase
             ->test(PreventivaModal::class)
             ->call('openCreateModal')
             ->assertSet('isDraft', true)
-            ->assertSeeLivewire(PreventivaFotoGaleria::class);
+            ->assertSeeLivewire(PreventivaFotoGaleria::class)
+            ->assertSeeLivewire(PreventivaMedicaoGaleria::class);
     }
 
     public function test_close_modal_deletes_draft_preventiva(): void
@@ -246,7 +248,8 @@ class PreventivaModalTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(PreventivaModal::class)
             ->call('openEditModal', $preventiva->id)
-            ->assertSeeLivewire(PreventivaFotoGaleria::class);
+            ->assertSeeLivewire(PreventivaFotoGaleria::class)
+            ->assertSeeLivewire(PreventivaMedicaoGaleria::class);
     }
 
     public function test_non_admin_cannot_create_preventiva(): void

@@ -96,6 +96,15 @@ class Preventiva extends Model
         return $this->hasMany(PreventivaImagem::class)->where('recusada', true);
     }
 
+    public function imagensAceitasComMedicao(): HasMany
+    {
+        return $this->hasMany(PreventivaImagem::class)
+            ->where('recusada', false)
+            ->orderBy('position')
+            ->orderBy('id')
+            ->with('medicaoImagens');
+    }
+
     public function atendimentoIniciado(): bool
     {
         return $this->datahora_chegada !== null;
