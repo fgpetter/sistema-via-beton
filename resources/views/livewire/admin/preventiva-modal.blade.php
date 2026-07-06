@@ -190,7 +190,7 @@
                                     </div>
                                 @endif
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     @if ($this->editingPreventiva && $this->editingPreventiva->relatoriosDisponiveis())
                                         <div class="bg-blue-50 border border-blue-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                             <div>
@@ -211,6 +211,21 @@
                                             </div>
                                             <a
                                                 href="{{ route('admin.preventivas.relatorio-executivo-pdf', $this->editingPreventiva) }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
+                                            >
+                                                Baixar relatório
+                                            </a>
+                                        </div>
+                                    @endif
+                                    @if ($this->editingPreventiva && $this->editingPreventiva->relatorioMedicaoDisponivel())
+                                        <div class="bg-blue-50 border border-blue-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <div>
+                                                <span class="text-xs font-medium text-default-500 uppercase">Relatório de Medição</span>
+                                            </div>
+                                            <a
+                                                href="{{ route('admin.preventivas.relatorio-medicao-pdf', $this->editingPreventiva) }}"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"

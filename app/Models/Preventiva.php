@@ -116,6 +116,14 @@ class Preventiva extends Model
             && $this->imagens()->exists();
     }
 
+    public function relatorioMedicaoDisponivel(): bool
+    {
+        return $this->relatoriosDisponiveis()
+            && $this->imagensAceitas()
+                ->whereHas('medicaoImagens')
+                ->exists();
+    }
+
     public function scopeStatus(\Illuminate\Database\Eloquent\Builder $query, PreventivaStatus $status): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('status', $status);

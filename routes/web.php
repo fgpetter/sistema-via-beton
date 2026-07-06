@@ -27,6 +27,7 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
         Route::get('/preventivas', PreventivasList::class)->name('admin.preventivas')->can('admin');
         Route::get('/preventivas/{preventiva}/vistoria-pdf', App\Http\Controllers\Admin\DownloadVistoriaPdfController::class)->name('admin.preventivas.vistoria-pdf')->can('admin');
         Route::get('/preventivas/{preventiva}/relatorio-executivo-pdf', App\Http\Controllers\Admin\DownloadRelatorioExecutivoPdfController::class)->name('admin.preventivas.relatorio-executivo-pdf')->can('admin');
+        Route::get('/preventivas/{preventiva}/relatorio-medicao-pdf', App\Http\Controllers\Admin\DownloadRelatorioMedicaoPdfController::class)->name('admin.preventivas.relatorio-medicao-pdf')->can('admin');
         Route::view('/enderecos', 'admin.enderecos')->name('admin.enderecos')->can('admin');
         Route::view('/configuracoes-sistema', 'admin.configuracoes-sistema')->name('admin.configuracoes-sistema')->can('admin');
     });

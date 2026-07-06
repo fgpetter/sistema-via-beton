@@ -367,4 +367,32 @@ class PreventivaModalTest extends TestCase
             'responsavel_engenharia_banrisul' => null,
         ]);
     }
+
+    public function test_edit_modal_shows_relatorio_medicao_link_when_par_completo(): void
+    {
+        $preventiva = Preventiva::factory()->create([
+            'descricao' => 'Descrição da preventiva',
+        ]);
+        $imagem = $preventiva->imagens()->create(['path' => 'test/foto.jpg', 'recusada' => false, 'position' => 1]);
+        $imagem->medicaoImagens()->create(['path' => 'test/medicao.jpg']);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaModal::class)
+            ->call('openEditModal', $preventiva->id)
+            ->assertSee('Relatório de Medição')
+            ->assertSee(route('admin.preventivas.relatorio-medicao-pdf', $preventiva));
+    }
+
+    public function test_edit_modal_hides_relatorio_medicao_link_without_medicao_imagens(): void
+    {
+        $preventiva = Preventiva::factory()->create([
+            'descricao' => 'Descrição da preventiva',
+        ]);
+        $preventiva->imagens()->create(['path' => 'test/foto.jpg', 'recusada' => false, 'position' => 1]);
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaModal::class)
+            ->call('openEditModal', $preventiva->id)
+            ->assertDontSee(route('admin.preventivas.relatorio-medicao-pdf', $preventiva));
+    }
 }
