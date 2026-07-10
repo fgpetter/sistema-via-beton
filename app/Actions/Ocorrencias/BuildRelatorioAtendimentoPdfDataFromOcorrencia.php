@@ -61,7 +61,7 @@ class BuildRelatorioAtendimentoPdfDataFromOcorrencia
             'emergencial' => $emergencial,
             'prazo_atendimento' => $prazoAtendimento,
             'numero_contrato' => (string) ($ocorrencia->contrato ?? ''),
-            'responsavel_engenharia_banrisul' => '',
+            'responsavel_engenharia_banrisul' => $ocorrencia->responsavel_engenharia_banrisul?->label() ?? '',
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
             'pares' => $pares,
