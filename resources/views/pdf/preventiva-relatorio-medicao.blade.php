@@ -117,6 +117,10 @@
             border-top: 1px solid #ccc;
             padding-top: 4px;
         }
+        .pagina-fotos-quebra {
+            page-break-before: always;
+            break-before: page;
+        }
     </style>
 </head>
 <body>
@@ -169,54 +173,58 @@
         </tr>
     </table>
 
-    {{-- Seção de fotografias antes/depois --}}
+    {{-- Seção de fotografias antes/depois (máx. 2 conjuntos por página) --}}
     @if (count($dados['pares']) > 0)
-        <table class="rat" cellspacing="0" style="margin-top: 8px;">
-            <tr>
-                <th class="th-foto" colspan="3">FOTOGRAFIAS</th>
-            </tr>
-        </table>
-
-        @foreach ($dados['pares'] as $par)
-            <table class="rat bloco-par" cellspacing="0">
-                <tr>
-                    <th class="th-antes" colspan="3">IMAGEM ANTES</th>
-                </tr>
-                <tr>
-                    <td class="td-antes foto-area" colspan="3">
-                        @if ($par['antes'] !== null)
-                            <img class="foto-img-antes" src="{{ $par['antes']['src'] }}">
-                            @if ($par['antes']['legenda'] !== '')
-                                <div class="foto-legenda">{{ $par['antes']['legenda'] }}</div>
-                            @endif
-                        @endif
-                    </td>
-                </tr>
-
-                @php
-                    $linhasDepois = count($par['depois']) > 0
-                        ? array_chunk($par['depois'], 3)
-                        : [[]];
-                @endphp
-
-                @foreach ($linhasDepois as $linhaDepois)
+        @foreach (array_chunk($dados['pares'], 2) as $grupoPares)
+            <div @class(['pagina-fotos-quebra' => ! $loop->first])>
+                <table class="rat" cellspacing="0" style="margin-top: 8px;">
                     <tr>
-                        <th class="th-depois">IMAGEM DEPOIS</th>
-                        <th class="th-depois">IMAGEM DEPOIS</th>
-                        <th class="th-depois">IMAGEM DEPOIS</th>
+                        <th class="th-foto" colspan="3">FOTOGRAFIAS</th>
                     </tr>
-                    <tr>
-                        @foreach ($linhaDepois as $imagemDepois)
-                            <td class="td-depois foto-area">
-                                <img class="foto-img" src="{{ $imagemDepois['src'] }}">
+                </table>
+
+                @foreach ($grupoPares as $par)
+                    <table class="rat bloco-par" cellspacing="0">
+                        <tr>
+                            <th class="th-antes" colspan="3">IMAGEM ANTES</th>
+                        </tr>
+                        <tr>
+                            <td class="td-antes foto-area" colspan="3">
+                                @if ($par['antes'] !== null)
+                                    <img class="foto-img-antes" src="{{ $par['antes']['src'] }}">
+                                    @if ($par['antes']['legenda'] !== '')
+                                        <div class="foto-legenda">{{ $par['antes']['legenda'] }}</div>
+                                    @endif
+                                @endif
                             </td>
+                        </tr>
+
+                        @php
+                            $linhasDepois = count($par['depois']) > 0
+                                ? array_chunk($par['depois'], 3)
+                                : [[]];
+                        @endphp
+
+                        @foreach ($linhasDepois as $linhaDepois)
+                            <tr>
+                                <th class="th-depois">IMAGEM DEPOIS</th>
+                                <th class="th-depois">IMAGEM DEPOIS</th>
+                                <th class="th-depois">IMAGEM DEPOIS</th>
+                            </tr>
+                            <tr>
+                                @foreach ($linhaDepois as $imagemDepois)
+                                    <td class="td-depois foto-area">
+                                        <img class="foto-img" src="{{ $imagemDepois['src'] }}">
+                                    </td>
+                                @endforeach
+                                @for ($i = count($linhaDepois); $i < 3; $i++)
+                                    <td class="td-depois">&nbsp;</td>
+                                @endfor
+                            </tr>
                         @endforeach
-                        @for ($i = count($linhaDepois); $i < 3; $i++)
-                            <td class="td-depois">&nbsp;</td>
-                        @endfor
-                    </tr>
+                    </table>
                 @endforeach
-            </table>
+            </div>
         @endforeach
     @endif
 </body>

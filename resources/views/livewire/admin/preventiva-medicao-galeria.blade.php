@@ -17,6 +17,13 @@
             }
             const files = Array.from(event.target.files ?? []).filter(file => file.type.startsWith('image/'));
             event.target.value = '';
+            if (files.length === 0) {
+                return;
+            }
+            const ok = await $wire.validarLoteDepois(antesId, files.length);
+            if (! ok) {
+                return;
+            }
             for (const file of files) {
                 $wire.uploadingAntesId = antesId;
                 await $wire.upload('fotoUpload', file);
@@ -28,6 +35,10 @@
                 return;
             }
             this.activeDropAntesId = null;
+            const ok = await $wire.validarLoteDepois(antesId, files.length);
+            if (! ok) {
+                return;
+            }
             for (const file of files) {
                 $wire.uploadingAntesId = antesId;
                 await $wire.upload('fotoUpload', file);
@@ -83,31 +94,33 @@
                         </div>
 
                         <div class="grid grid-cols-3 gap-2">
-                            @if ($dropzoneHabilitado)
-                                <div
-                                    role="button"
-                                    tabindex="0"
-                                    @click="clickDepois({{ $imagemAntes->id }})"
-                                    @keydown.enter.prevent="clickDepois({{ $imagemAntes->id }})"
-                                    @keydown.space.prevent="clickDepois({{ $imagemAntes->id }})"
-                                    @drop.prevent="dropzoneEnabled && !isMobile && dropDepois($event, {{ $imagemAntes->id }})"
-                                    @dragover.prevent="dropzoneEnabled && !isMobile && dragOverDepois({{ $imagemAntes->id }})"
-                                    @dragleave.prevent="dragLeaveDepois($event)"
-                                    :class="{ 'border-primary bg-primary/5': activeDropAntesId === {{ $imagemAntes->id }} }"
-                                    class="col-span-3 aspect-[3/1] border-2 border-dashed border-default-300 rounded flex items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300 shrink-0"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                    <span class="text-[10px] text-default-400 uppercase font-medium">Depois</span>
-                                    <span x-show="dropzoneEnabled && !isMobile" class="text-[10px] text-default-400 normal-case">— arraste ou clique</span>
-                                </div>
-                            @else
-                                <div
-                                    @click="clickDepois({{ $imagemAntes->id }})"
-                                    class="col-span-3 aspect-[3/1] border-2 border-dashed border-default-300 rounded flex items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300 shrink-0"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                    <span class="text-[10px] text-default-400 uppercase font-medium">Depois</span>
-                                </div>
+                            @if ($imagemAntes->medicaoImagens->count() < \App\Livewire\Admin\PreventivaMedicaoGaleria::MAX_DEPOIS_POR_ANTES)
+                                @if ($dropzoneHabilitado)
+                                    <div
+                                        role="button"
+                                        tabindex="0"
+                                        @click="clickDepois({{ $imagemAntes->id }})"
+                                        @keydown.enter.prevent="clickDepois({{ $imagemAntes->id }})"
+                                        @keydown.space.prevent="clickDepois({{ $imagemAntes->id }})"
+                                        @drop.prevent="dropzoneEnabled && !isMobile && dropDepois($event, {{ $imagemAntes->id }})"
+                                        @dragover.prevent="dropzoneEnabled && !isMobile && dragOverDepois({{ $imagemAntes->id }})"
+                                        @dragleave.prevent="dragLeaveDepois($event)"
+                                        :class="{ 'border-primary bg-primary/5': activeDropAntesId === {{ $imagemAntes->id }} }"
+                                        class="col-span-3 aspect-[3/1] border-2 border-dashed border-default-300 rounded flex items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300 shrink-0"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                        <span class="text-[10px] text-default-400 uppercase font-medium">Depois</span>
+                                        <span x-show="dropzoneEnabled && !isMobile" class="text-[10px] text-default-400 normal-case">— arraste ou clique</span>
+                                    </div>
+                                @else
+                                    <div
+                                        @click="clickDepois({{ $imagemAntes->id }})"
+                                        class="col-span-3 aspect-[3/1] border-2 border-dashed border-default-300 rounded flex items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300 shrink-0"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                        <span class="text-[10px] text-default-400 uppercase font-medium">Depois</span>
+                                    </div>
+                                @endif
                             @endif
 
                             @foreach ($imagemAntes->medicaoImagens as $medicaoImagem)

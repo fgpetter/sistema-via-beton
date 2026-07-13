@@ -222,4 +222,131 @@ class PreventivaMedicaoGaleriaTest extends TestCase
             ])
             ->assertSee('dropDepois');
     }
+
+    public function test_admin_pode_enviar_ate_tres_fotos_de_medicao(): void
+    {
+        Storage::fake('public');
+        Queue::fake();
+
+        $preventiva = Preventiva::factory()->create();
+        $imagemAntes = PreventivaImagem::create([
+            'preventiva_id' => $preventiva->id,
+            'path' => 'test/antes.jpg',
+            'position' => 1,
+        ]);
+
+        $component = Livewire::actingAs($this->admin)
+            ->test(PreventivaMedicaoGaleria::class, ['preventivaId' => $preventiva->id]);
+
+        foreach (['depois1.jpg', 'depois2.jpg', 'depois3.jpg'] as $filename) {
+            $component
+                ->set('uploadingAntesId', $imagemAntes->id)
+                ->set('fotoUpload', UploadedFile::fake()->image($filename))
+                ->assertHasNoErrors();
+        }
+
+        $this->assertDatabaseCount('preventiva_medicao_imagens', 3);
+        Queue::assertPushed(ProcessarImagemMedicaoPreventiva::class, 3);
+        $component->assertSee('Relatório de Medição (3)');
+    }
+
+    public function test_validar_lote_depois_rejeita_quando_excede_limite_com_existentes(): void
+    {
+        $preventiva = Preventiva::factory()->create();
+        $imagemAntes = PreventivaImagem::create([
+            'preventiva_id' => $preventiva->id,
+            'path' => 'test/antes.jpg',
+            'position' => 1,
+        ]);
+
+        PreventivaMedicaoImagem::create([
+            'preventiva_imagem_id' => $imagemAntes->id,
+            'path' => 'test/medicao-1.jpg',
+        ]);
+        PreventivaMedicaoImagem::create([
+            'preventiva_imagem_id' => $imagemAntes->id,
+            'path' => 'test/medicao-2.jpg',
+        ]);
+
+        $resultado = Livewire::actingAs($this->admin)
+            ->test(PreventivaMedicaoGaleria::class, ['preventivaId' => $preventiva->id])
+            ->call('validarLoteDepois', $imagemAntes->id, 2);
+
+        $this->assertFalse($resultado->effects['returns'][0]);
+        $this->assertDatabaseCount('preventiva_medicao_imagens', 2);
+    }
+
+    public function test_upload_e_rejeitado_quando_ja_existem_tres_fotos(): void
+    {
+        Storage::fake('public');
+        Queue::fake();
+
+        $preventiva = Preventiva::factory()->create();
+        $imagemAntes = PreventivaImagem::create([
+            'preventiva_id' => $preventiva->id,
+            'path' => 'test/antes.jpg',
+            'position' => 1,
+        ]);
+
+        foreach (range(1, 3) as $index) {
+            PreventivaMedicaoImagem::create([
+                'preventiva_imagem_id' => $imagemAntes->id,
+                'path' => "test/medicao-{$index}.jpg",
+            ]);
+        }
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaMedicaoGaleria::class, ['preventivaId' => $preventiva->id])
+            ->set('uploadingAntesId', $imagemAntes->id)
+            ->set('fotoUpload', UploadedFile::fake()->image('depois4.jpg'));
+
+        $this->assertDatabaseCount('preventiva_medicao_imagens', 3);
+        Queue::assertNothingPushed();
+    }
+
+    public function test_dropzone_e_oculto_quando_atinge_limite_de_tres_imagens(): void
+    {
+        $preventiva = Preventiva::factory()->create();
+        $imagemAntes = PreventivaImagem::create([
+            'preventiva_id' => $preventiva->id,
+            'path' => 'test/antes.jpg',
+            'position' => 1,
+        ]);
+
+        foreach (range(1, 3) as $index) {
+            PreventivaMedicaoImagem::create([
+                'preventiva_imagem_id' => $imagemAntes->id,
+                'path' => "test/medicao-{$index}.jpg",
+            ]);
+        }
+
+        Livewire::actingAs($this->admin)
+            ->test(PreventivaMedicaoGaleria::class, [
+                'preventivaId' => $preventiva->id,
+                'dropzoneHabilitado' => true,
+            ])
+            ->assertDontSee('— arraste ou clique')
+            ->assertDontSeeHtml('aspect-[3/1]');
+    }
+
+    public function test_validar_lote_depois_permite_quando_cabe_no_limite(): void
+    {
+        $preventiva = Preventiva::factory()->create();
+        $imagemAntes = PreventivaImagem::create([
+            'preventiva_id' => $preventiva->id,
+            'path' => 'test/antes.jpg',
+            'position' => 1,
+        ]);
+
+        PreventivaMedicaoImagem::create([
+            'preventiva_imagem_id' => $imagemAntes->id,
+            'path' => 'test/medicao-1.jpg',
+        ]);
+
+        $resultado = Livewire::actingAs($this->admin)
+            ->test(PreventivaMedicaoGaleria::class, ['preventivaId' => $preventiva->id])
+            ->call('validarLoteDepois', $imagemAntes->id, 2);
+
+        $this->assertTrue($resultado->effects['returns'][0]);
+    }
 }

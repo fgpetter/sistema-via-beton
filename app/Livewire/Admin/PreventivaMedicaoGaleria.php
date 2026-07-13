@@ -21,6 +21,8 @@ class PreventivaMedicaoGaleria extends Component
     use WithFileUploads;
     use WithSweetAlert;
 
+    public const MAX_DEPOIS_POR_ANTES = 3;
+
     #[Locked]
     public int $preventivaId;
 
@@ -72,6 +74,25 @@ class PreventivaMedicaoGaleria extends Component
 HTML;
     }
 
+    public function validarLoteDepois(int $preventivaImagemId, int $quantidadeArquivos): bool
+    {
+        $this->ensureUserIsAuthorized();
+
+        if ($quantidadeArquivos < 1) {
+            return false;
+        }
+
+        if (! $this->podeAdicionarDepois($preventivaImagemId, $quantidadeArquivos)) {
+            $this->swalToastError(SwalToast::errorOptions(
+                'Máximo de '.self::MAX_DEPOIS_POR_ANTES.' imagens permitidas na coluna Depois. Nenhuma imagem foi enviada.'
+            ));
+
+            return false;
+        }
+
+        return true;
+    }
+
     public function updatedFotoUpload(): void
     {
         if (! $this->fotoUpload || $this->uploadingAntesId === null) {
@@ -82,6 +103,15 @@ HTML;
         $this->validate(['fotoUpload' => ['image', 'max:5120']]);
 
         $preventivaImagemId = $this->uploadingAntesId;
+
+        if (! $this->podeAdicionarDepois($preventivaImagemId, 1)) {
+            $this->reset(['fotoUpload']);
+            $this->swalToastError(SwalToast::errorOptions(
+                'Máximo de '.self::MAX_DEPOIS_POR_ANTES.' imagens permitidas na coluna Depois. Nenhuma imagem foi enviada.'
+            ));
+
+            return;
+        }
 
         $path = $this->fotoUpload->store(
             "preventivas/{$this->preventivaId}/medicao/{$preventivaImagemId}",
@@ -134,5 +164,18 @@ HTML;
         if (! $user?->isAdmin()) {
             abort(403, 'Você não tem permissão para acessar esta funcionalidade.');
         }
+    }
+
+    protected function contarDepoisExistentes(int $preventivaImagemId): int
+    {
+        return PreventivaMedicaoImagem::query()
+            ->where('preventiva_imagem_id', $preventivaImagemId)
+            ->whereHas('preventivaImagem', fn ($query) => $query->where('preventiva_id', $this->preventivaId))
+            ->count();
+    }
+
+    protected function podeAdicionarDepois(int $preventivaImagemId, int $quantidadeNovos): bool
+    {
+        return $this->contarDepoisExistentes($preventivaImagemId) + $quantidadeNovos <= self::MAX_DEPOIS_POR_ANTES;
     }
 }

@@ -71,6 +71,40 @@ class PreventivaRelatorioMedicaoPdfViewTest extends TestCase
         $this->assertEquals(6, substr_count($html, 'IMAGEM DEPOIS'));
     }
 
+    public function test_paginates_pares_em_grupos_de_dois(): void
+    {
+        $dados = $this->dadosMinimos();
+        $dados['pares'] = [
+            [
+                'antes' => ['src' => 'data:image/jpeg;base64,/9j/antes1', 'legenda' => ''],
+                'depois' => [['src' => 'data:image/jpeg;base64,/9j/depois1']],
+            ],
+            [
+                'antes' => ['src' => 'data:image/jpeg;base64,/9j/antes2', 'legenda' => ''],
+                'depois' => [['src' => 'data:image/jpeg;base64,/9j/depois2']],
+            ],
+            [
+                'antes' => ['src' => 'data:image/jpeg;base64,/9j/antes3', 'legenda' => ''],
+                'depois' => [['src' => 'data:image/jpeg;base64,/9j/depois3']],
+            ],
+            [
+                'antes' => ['src' => 'data:image/jpeg;base64,/9j/antes4', 'legenda' => ''],
+                'depois' => [['src' => 'data:image/jpeg;base64,/9j/depois4']],
+            ],
+            [
+                'antes' => ['src' => 'data:image/jpeg;base64,/9j/antes5', 'legenda' => ''],
+                'depois' => [['src' => 'data:image/jpeg;base64,/9j/depois5']],
+            ],
+        ];
+
+        $html = view('pdf.preventiva-relatorio-medicao', ['dados' => $dados])->render();
+
+        $this->assertEquals(5, substr_count($html, 'IMAGEM ANTES'));
+        $this->assertEquals(3, substr_count($html, 'FOTOGRAFIAS'));
+        $this->assertEquals(2, substr_count($html, 'class="pagina-fotos-quebra"'));
+        $this->assertStringContainsString('page-break-before: always', $html);
+    }
+
     /**
      * @return array<string, mixed>
      */
