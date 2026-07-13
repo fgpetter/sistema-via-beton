@@ -38,7 +38,6 @@
     "fullcalendar": "^6.1.17",
     "lucide": "^0.544.0",
     "preline": "^3.2.3",
-    "simplebar": "^6.3.0",
-    "swiper": "^11.0.3"
+    "simplebar": "^6.3.0"
   }
 }
