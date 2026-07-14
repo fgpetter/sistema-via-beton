@@ -6,6 +6,7 @@ use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\TipoImagemOcorrencia;
 use App\Jobs\ProcessarImagemOcorrencia;
+use App\Mail\OcorrenciaConcluida;
 use App\Mail\RatEnviada;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
@@ -206,6 +207,11 @@ class AtendimentoDetalhe extends Component
             'datahora_saida' => now(),
             'status' => OcorrenciaStatus::Revisar,
         ]);
+
+        Mail::to('gueberson@vbeton.com.br')
+            ->cc('fabio@vbeton.com.br')
+            ->send(new OcorrenciaConcluida($ocorrencia->fresh()));
+
         unset($this->ocorrencia);
 
         $this->swalToastSuccess(SwalToast::successOptions('Atendimento concluído! Aguardando revisão.'));

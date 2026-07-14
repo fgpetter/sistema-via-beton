@@ -7,6 +7,7 @@ use App\Enums\TipoImagemOcorrencia;
 use App\Jobs\ProcessarImagemOcorrencia;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Livewire\Prestador\AtendimentoFotoGaleriaReadonly;
+use App\Mail\OcorrenciaConcluida;
 use App\Mail\RatEnviada;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
@@ -342,18 +343,22 @@ class AtendimentoDetalheTest extends TestCase
 
     public function test_prestador_cannot_concluir_without_requirements(): void
     {
+        Mail::fake();
+
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
             ->call('concluir');
 
         $this->ocorrencia->refresh();
         $this->assertNotEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
+        Mail::assertNotQueued(OcorrenciaConcluida::class);
     }
 
     public function test_prestador_can_concluir_with_all_requirements(): void
     {
         $this->freezeTime();
         Storage::fake('public');
+        Mail::fake();
 
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
@@ -378,10 +383,18 @@ class AtendimentoDetalheTest extends TestCase
         $this->assertEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
         $this->assertNotNull($this->ocorrencia->datahora_saida);
         $this->assertEquals(now()->startOfSecond()->toDateTimeString(), $this->ocorrencia->datahora_saida->toDateTimeString());
+
+        Mail::assertQueued(OcorrenciaConcluida::class, function (OcorrenciaConcluida $mail): bool {
+            return $mail->ocorrencia->id === $this->ocorrencia->id
+                && $mail->hasTo('gueberson@vbeton.com.br')
+                && $mail->hasCc('fabio@vbeton.com.br');
+        });
     }
 
     public function test_prestador_cannot_concluir_without_antes_image(): void
     {
+        Mail::fake();
+
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Depois,
@@ -396,10 +409,13 @@ class AtendimentoDetalheTest extends TestCase
 
         $this->ocorrencia->refresh();
         $this->assertNotEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
+        Mail::assertNotQueued(OcorrenciaConcluida::class);
     }
 
     public function test_prestador_cannot_concluir_without_email_sent(): void
     {
+        Mail::fake();
+
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
             'tipo' => TipoImagemOcorrencia::Antes,
@@ -419,10 +435,13 @@ class AtendimentoDetalheTest extends TestCase
 
         $this->ocorrencia->refresh();
         $this->assertNotEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
+        Mail::assertNotQueued(OcorrenciaConcluida::class);
     }
 
     public function test_prestador_cannot_concluir_before_iniciar(): void
     {
+        Mail::fake();
+
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
             'datahora_chegada' => null,
@@ -432,6 +451,8 @@ class AtendimentoDetalheTest extends TestCase
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
             ->call('concluir')
             ->assertForbidden();
+
+        Mail::assertNotQueued(OcorrenciaConcluida::class);
     }
 
     public function test_guest_cannot_access_atendimento_page(): void
