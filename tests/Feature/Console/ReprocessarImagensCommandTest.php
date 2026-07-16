@@ -184,4 +184,35 @@ class ReprocessarImagensCommandTest extends TestCase
             ->expectsOutputToContain('--step deve ser um inteiro maior ou igual a 1')
             ->assertFailed();
     }
+
+    public function test_desconsidera_arquivos_com_extensao_nao_permitida(): void
+    {
+        Storage::fake('public');
+        Queue::fake();
+
+        $ocorrencia = Ocorrencia::factory()->create();
+        $pathJpg = "ocorrencias/{$ocorrencia->id}/antes/foto.jpg";
+        $pathTxt = "ocorrencias/{$ocorrencia->id}/antes/readme.txt";
+        $pathWebp = "ocorrencias/{$ocorrencia->id}/antes/foto.webp";
+
+        Storage::disk('public')->put($pathJpg, 'fake-image');
+        Storage::disk('public')->put($pathTxt, 'texto');
+        Storage::disk('public')->put($pathWebp, 'fake-webp');
+
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
+            'path' => $pathJpg,
+        ]);
+
+        $this->artisan('imagens:reprocessar', ['pasta' => 'ocorrencias'])
+            ->expectsOutputToContain('Arquivos lidos: 1')
+            ->expectsOutputToContain('Enfileirados: 1')
+            ->expectsOutputToContain('Órfãos: 0')
+            ->assertSuccessful();
+
+        Queue::assertPushed(ProcessarImagemOcorrencia::class, 1);
+        $this->assertFileDoesNotExist($this->logPath);
+    }
 }

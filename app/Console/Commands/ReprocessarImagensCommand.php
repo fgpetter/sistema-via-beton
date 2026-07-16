@@ -41,7 +41,10 @@ class ReprocessarImagensCommand extends Command
         /** @var array{model: class-string<Model>, job: class-string} $contexto */
         $contexto = $this->contextoParaPasta($pasta);
 
-        $files = Storage::disk('public')->allFiles($pasta);
+        $files = array_values(array_filter(
+            Storage::disk('public')->allFiles($pasta),
+            fn (string $path): bool => $this->ehExtensaoPermitida($path)
+        ));
         $total = count($files);
         $enfileirados = 0;
         $orfaos = 0;
@@ -101,6 +104,13 @@ class ReprocessarImagensCommand extends Command
             $path.PHP_EOL,
             FILE_APPEND
         );
+    }
+
+    private function ehExtensaoPermitida(string $path): bool
+    {
+        $extensao = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        return in_array($extensao, ['png', 'jpg', 'jpeg'], true);
     }
 
     protected function aguardarEntreDispatches(): void
