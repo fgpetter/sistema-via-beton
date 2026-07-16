@@ -48,7 +48,6 @@ class ReprocessarImagensCommand extends Command
         $total = count($files);
         $enfileirados = 0;
         $orfaos = 0;
-        $jaDespachou = false;
 
         foreach ($files as $path) {
             if ($limite !== null && $enfileirados >= $limite) {
@@ -64,12 +63,8 @@ class ReprocessarImagensCommand extends Command
                 continue;
             }
 
-            if ($jaDespachou) {
-                $this->aguardarEntreDispatches();
-            }
-
-            ($contexto['job'])::dispatch($imagem);
-            $jaDespachou = true;
+            ($contexto['job'])::dispatch($imagem)->delay($enfileirados);
+            $this->registrarProcessamento($path);
             $enfileirados++;
         }
 
@@ -106,15 +101,19 @@ class ReprocessarImagensCommand extends Command
         );
     }
 
+    private function registrarProcessamento(string $path): void
+    {
+        file_put_contents(
+            storage_path('logs/images_proc.log'),
+            $path.PHP_EOL,
+            FILE_APPEND
+        );
+    }
+
     private function ehExtensaoPermitida(string $path): bool
     {
         $extensao = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
         return in_array($extensao, ['png', 'jpg', 'jpeg'], true);
-    }
-
-    protected function aguardarEntreDispatches(): void
-    {
-        sleep(1);
     }
 }

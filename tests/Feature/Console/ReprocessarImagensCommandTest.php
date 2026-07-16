@@ -20,21 +20,28 @@ class ReprocessarImagensCommandTest extends TestCase
 
     private string $logPath;
 
+    private string $procLogPath;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->logPath = storage_path('logs/images_to_prune.log');
+        $this->procLogPath = storage_path('logs/images_proc.log');
 
-        if (file_exists($this->logPath)) {
-            unlink($this->logPath);
+        foreach ([$this->logPath, $this->procLogPath] as $path) {
+            if (file_exists($path)) {
+                unlink($path);
+            }
         }
     }
 
     protected function tearDown(): void
     {
-        if (file_exists($this->logPath)) {
-            unlink($this->logPath);
+        foreach ([$this->logPath, $this->procLogPath] as $path) {
+            if (file_exists($path)) {
+                unlink($path);
+            }
         }
 
         parent::tearDown();
@@ -64,6 +71,8 @@ class ReprocessarImagensCommandTest extends TestCase
 
         Queue::assertPushed(ProcessarImagemOcorrencia::class);
         Queue::assertNotPushed(ProcessarImagemPreventiva::class);
+        $this->assertFileExists($this->procLogPath);
+        $this->assertStringContainsString($path, (string) file_get_contents($this->procLogPath));
     }
 
     public function test_enfileira_job_de_preventiva_para_arquivo_com_registro(): void
@@ -117,7 +126,7 @@ class ReprocessarImagensCommandTest extends TestCase
             ->assertFailed();
     }
 
-    public function test_aguarda_um_segundo_entre_dispatches(): void
+    public function test_atrasa_execucao_dos_jobs_em_um_segundo_entre_si(): void
     {
         Storage::fake('public');
         Queue::fake();
@@ -136,14 +145,19 @@ class ReprocessarImagensCommandTest extends TestCase
             ]);
         }
 
-        $inicio = microtime(true);
-
         $this->artisan('imagens:reprocessar', ['pasta' => 'ocorrencias'])
             ->expectsOutputToContain('Enfileirados: 2')
             ->assertSuccessful();
 
-        $this->assertGreaterThanOrEqual(1.0, microtime(true) - $inicio);
-        Queue::assertPushed(ProcessarImagemOcorrencia::class, 2);
+        $delays = [];
+
+        Queue::assertPushed(ProcessarImagemOcorrencia::class, function (ProcessarImagemOcorrencia $job) use (&$delays): bool {
+            $delays[] = $job->delay;
+
+            return true;
+        });
+
+        $this->assertSame([0, 1], $delays);
     }
 
     public function test_step_limita_quantidade_de_imagens_enfileiradas(): void
