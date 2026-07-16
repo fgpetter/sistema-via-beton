@@ -9,7 +9,9 @@ use App\Models\OcorrenciaImagem;
 use App\Models\User;
 use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -94,8 +96,24 @@ HTML;
         $this->ensureUserIsAuthorized();
         $this->validate(['fotoUpload' => ['image', 'max:5120']]);
 
+        $traceId = (string) Str::uuid();
         $tipo = TipoImagemOcorrencia::from($this->uploadingTipo);
+        Log::info('ocorrencia_imagem.upload.iniciado', [
+            'trace_id' => $traceId,
+            'origem' => 'admin',
+            'ocorrencia_id' => $this->ocorrenciaId,
+            'tipo' => $tipo->value,
+            'par' => $this->uploadingPar,
+            'arquivo_original' => $this->fotoUpload->getClientOriginalName(),
+        ]);
+
         $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
+        Log::info('ocorrencia_imagem.upload.salvo_storage', [
+            'trace_id' => $traceId,
+            'origem' => 'admin',
+            'ocorrencia_id' => $this->ocorrenciaId,
+            'path' => $path,
+        ]);
 
         $imagem = OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrenciaId,
@@ -103,8 +121,22 @@ HTML;
             'par' => $this->uploadingPar,
             'path' => $path,
         ]);
+        Log::info('ocorrencia_imagem.upload.salvo_banco', [
+            'trace_id' => $traceId,
+            'origem' => 'admin',
+            'ocorrencia_id' => $this->ocorrenciaId,
+            'imagem_id' => $imagem->id,
+            'path' => $imagem->path,
+        ]);
 
-        ProcessarImagemOcorrencia::dispatch($imagem);
+        ProcessarImagemOcorrencia::dispatch($imagem, $traceId);
+        Log::info('ocorrencia_imagem.job.dispatch', [
+            'trace_id' => $traceId,
+            'origem' => 'admin',
+            'ocorrencia_id' => $this->ocorrenciaId,
+            'imagem_id' => $imagem->id,
+            'job' => ProcessarImagemOcorrencia::class,
+        ]);
 
         $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
         unset($this->ocorrencia, $this->fotoPares);
