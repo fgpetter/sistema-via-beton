@@ -15,6 +15,9 @@
 /.vscode
 /.zed
 /.plans
+/.agents
+/.cursor
+/.claude
 /auth.json
 /node_modules
 /public/build

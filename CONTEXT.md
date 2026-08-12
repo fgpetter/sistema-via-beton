@@ -44,12 +44,21 @@ _Avoid_: Comentários (campo distinto na preventiva)
 Origem da imagem no dispositivo do prestador — **Câmera** (foto nova no local) ou **Galeria** (arquivo já existente no aparelho).
 _Avoid_: Upload (como termo de negócio quando o usuário fala de escolher da galeria)
 
+**Importação de Ocorrências**:
+Criação em lote de Ocorrências a partir de uma planilha.
+_Avoid_: Upload de Excel (quando se refere ao resultado de negócio)
+
+**Linha ignorada**:
+Linha da planilha que não gerou Ocorrência, por campo obrigatório em branco ou por ID duplicado.
+_Avoid_: Erro de importação (a importação concluiu; a linha não virou Ocorrência)
+
 ## Relationships
 
 - Uma **Ocorrência** pode ter zero ou uma **Disciplina** e zero a três **Subdisciplinas**
 - Um **Atendimento** pertence a exatamente uma **Ocorrência**
 - Uma **Ocorrência** em andamento pode ter um ou mais **Pares Antes/Depois**
 - Cada slot de **Foto de atendimento** (Antes ou Depois) é preenchido com uma imagem de uma **Fonte da captura** escolhida pelo prestador
+- Uma linha da planilha na Importação de Ocorrências gera no máximo uma Ocorrência
 
 ## Example dialogue
 
