@@ -147,6 +147,21 @@ class OcorrenciaModalTest extends TestCase
         $this->assertEquals($originalDate->format('Y-m-d H:i'), $ocorrencia->email_enviado->format('Y-m-d H:i'));
     }
 
+    public function test_open_edit_modal_hydrates_null_titulo_and_agencia_as_empty_string(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'titulo' => null,
+            'agencia' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSet('form.titulo', '')
+            ->assertSet('form.agencia', '')
+            ->assertHasNoErrors();
+    }
+
     public function test_create_ocorrencia_validation_requires_titulo(): void
     {
         Livewire::actingAs($this->admin)

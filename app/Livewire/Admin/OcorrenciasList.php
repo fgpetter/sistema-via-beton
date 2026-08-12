@@ -268,7 +268,7 @@ class OcorrenciasList extends Component
 
         $this->swalToastSuccess(SwalToast::successOptions(
             "{$imported} ocorrência(s) importada(s)!",
-            $skipped > 0 ? "{$skipped} linha(s) ignorada(s) por campos obrigatórios em branco." : null,
+            $skipped > 0 ? "{$skipped} ocorrência(s) ignorada(s) por IDs duplicados." : null,
             4000
         ));
     }

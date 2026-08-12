@@ -45,22 +45,22 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
     public function model(array $row): ?Ocorrencia
     {
         $id = $this->parseOcorrenciaId($row['no_da_ocorrencia'] ?? null);
+
+        if ($id === null) {
+            return null;
+        }
+
+        if ($this->idJaImportado($id) || Ocorrencia::where('id', $id)->exists()) {
+            $this->skippedCount++;
+
+            return null;
+        }
+
         $titulo = $this->cleanValue($row['resumo'] ?? null);
         $agencia = $this->cleanValue($row['usuario_final_afetado'] ?? $row['agencia'] ?? null);
 
-        if (! $titulo || ! $agencia) {
-            $this->skippedCount++;
-
-            return null;
-        }
-
-        if ($id !== null && ($this->idJaImportado($id) || Ocorrencia::where('id', $id)->exists())) {
-            $this->skippedCount++;
-
-            return null;
-        }
-
         $this->importedCount++;
+        $this->idsImportados[$id] = true;
 
         $ocorrencia = new Ocorrencia([
             'status' => $this->mapStatus($row['status'] ?? null),
@@ -75,10 +75,7 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             'prazo_id' => $this->findPrazoId($row['categoria'] ?? null),
         ]);
 
-        if ($id !== null) {
-            $this->idsImportados[$id] = true;
-            $ocorrencia->id = $id;
-        }
+        $ocorrencia->id = $id;
 
         return $ocorrencia;
     }
@@ -188,13 +185,31 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
 
     private function parseOcorrenciaId(mixed $value): ?int
     {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_int($value)) {
+            return $value > 0 ? $value : null;
+        }
+
+        if (is_float($value)) {
+            if ($value <= 0 || floor($value) !== $value) {
+                return null;
+            }
+
+            return (int) $value;
+        }
+
         $id = $this->cleanValue($value);
 
         if ($id === null || ! ctype_digit($id)) {
             return null;
         }
 
-        return (int) $id;
+        $parsed = (int) $id;
+
+        return $parsed > 0 ? $parsed : null;
     }
 
     private function idJaImportado(int $id): bool

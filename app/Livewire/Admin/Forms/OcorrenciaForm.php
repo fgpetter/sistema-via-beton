@@ -139,7 +139,7 @@ class OcorrenciaForm extends Form
     {
         $this->editingId = $ocorrencia->id;
         $this->status = $ocorrencia->status->value;
-        $this->titulo = $ocorrencia->titulo;
+        $this->titulo = $ocorrencia->titulo ?? '';
         $this->descricao = $ocorrencia->descricao;
         $this->abertura = $ocorrencia->abertura->format('Y-m-d');
         $this->colaboradorId = $ocorrencia->colaborador_id;
@@ -149,7 +149,7 @@ class OcorrenciaForm extends Form
         $this->subdisciplina1Id = $ocorrencia->subdisciplina_1_id;
         $this->subdisciplina2Id = $ocorrencia->subdisciplina_2_id;
         $this->subdisciplina3Id = $ocorrencia->subdisciplina_3_id;
-        $this->agencia = $ocorrencia->agencia;
+        $this->agencia = $ocorrencia->agencia ?? '';
         $this->endereco = $ocorrencia->endereco;
         $this->comentarios = $ocorrencia->comentarios;
         $this->comentarios_prestador = $ocorrencia->comentarios_prestador;

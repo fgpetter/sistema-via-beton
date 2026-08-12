@@ -14,6 +14,7 @@ use Livewire\Livewire;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use SweetAlert2\Laravel\Swal;
 use Tests\TestCase;
 
 class OcorrenciasImportTest extends TestCase
@@ -63,7 +64,7 @@ class OcorrenciasImportTest extends TestCase
         ]);
     }
 
-    public function test_import_skips_rows_without_titulo(): void
+    public function test_import_creates_ocorrencia_without_titulo(): void
     {
         $this->createTestExcel([
             ['9498549', 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG FORMIGUEIRO', '', 'Descrição'],
@@ -73,13 +74,18 @@ class OcorrenciasImportTest extends TestCase
         $import = new OcorrenciasImport;
         $import->import($this->testFilePath);
 
-        $this->assertEquals(1, $import->getImportedCount());
-        $this->assertEquals(1, $import->getSkippedCount());
-        $this->assertDatabaseCount('ocorrencias', 1);
+        $this->assertEquals(2, $import->getImportedCount());
+        $this->assertEquals(0, $import->getSkippedCount());
+        $this->assertDatabaseCount('ocorrencias', 2);
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => 9498549,
+            'titulo' => null,
+            'agencia' => 'AG FORMIGUEIRO',
+        ]);
         $this->assertDatabaseHas('ocorrencias', ['titulo' => 'Titulo válido']);
     }
 
-    public function test_import_skips_rows_without_agencia(): void
+    public function test_import_creates_ocorrencia_without_agencia(): void
     {
         $this->createTestExcel([
             ['9498549', 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', '', 'Titulo teste', 'Descrição'],
@@ -88,9 +94,14 @@ class OcorrenciasImportTest extends TestCase
         $import = new OcorrenciasImport;
         $import->import($this->testFilePath);
 
-        $this->assertEquals(0, $import->getImportedCount());
-        $this->assertEquals(1, $import->getSkippedCount());
-        $this->assertDatabaseCount('ocorrencias', 0);
+        $this->assertEquals(1, $import->getImportedCount());
+        $this->assertEquals(0, $import->getSkippedCount());
+        $this->assertDatabaseCount('ocorrencias', 1);
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => 9498549,
+            'titulo' => 'Titulo teste',
+            'agencia' => null,
+        ]);
     }
 
     public function test_import_skips_completely_empty_rows(): void
@@ -282,6 +293,105 @@ class OcorrenciasImportTest extends TestCase
             'titulo' => 'Titulo A',
             'agencia' => 'AG A',
         ]);
+    }
+
+    public function test_import_silently_skips_empty_id(): void
+    {
+        $this->createTestExcel([
+            ['', 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG A', 'Titulo', 'Descrição'],
+        ]);
+
+        $import = new OcorrenciasImport;
+        $import->import($this->testFilePath);
+
+        $this->assertEquals(0, $import->getImportedCount());
+        $this->assertEquals(0, $import->getSkippedCount());
+        $this->assertDatabaseCount('ocorrencias', 0);
+    }
+
+    public function test_import_silently_skips_invalid_ids(): void
+    {
+        $this->createTestExcel([
+            ['ABC', 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG A', 'Titulo A', ''],
+            [9498549.5, 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG B', 'Titulo B', ''],
+        ]);
+
+        $import = new OcorrenciasImport;
+        $import->import($this->testFilePath);
+
+        $this->assertEquals(0, $import->getImportedCount());
+        $this->assertEquals(0, $import->getSkippedCount());
+        $this->assertDatabaseCount('ocorrencias', 0);
+    }
+
+    public function test_import_accepts_excel_float_integer_id(): void
+    {
+        $this->createTestExcel([
+            [9498549.0, 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG A', 'Titulo', ''],
+        ]);
+
+        $import = new OcorrenciasImport;
+        $import->import($this->testFilePath);
+
+        $this->assertEquals(1, $import->getImportedCount());
+        $this->assertEquals(0, $import->getSkippedCount());
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => 9498549,
+            'titulo' => 'Titulo',
+        ]);
+    }
+
+    public function test_livewire_import_toast_reports_duplicate_ids(): void
+    {
+        Ocorrencia::factory()->create(['id' => 100]);
+
+        $this->createTestExcel([
+            ['200', 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG A', 'Nova', ''],
+            ['100', 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG B', 'Duplicada', ''],
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent(
+            'import.xlsx',
+            file_get_contents($this->testFilePath)
+        );
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('importFile', $file)
+            ->assertDispatched(Swal::SESSION_KEY, function (string $event, array $params): bool {
+                return $event === Swal::SESSION_KEY
+                    && ($params['title'] ?? null) === '1 ocorrência(s) importada(s)!'
+                    && ($params['text'] ?? null) === '1 ocorrência(s) ignorada(s) por IDs duplicados.'
+                    && ($params['icon'] ?? null) === 'success'
+                    && ($params['toast'] ?? null) === true;
+            });
+
+        $this->assertDatabaseHas('ocorrencias', ['id' => 200, 'titulo' => 'Nova']);
+    }
+
+    public function test_livewire_import_toast_silent_when_only_empty_id(): void
+    {
+        $this->createTestExcel([
+            ['', 'Em andamento', Date::PHPToExcel(new \DateTime('2026-01-15')), '', 'AG A', 'Titulo', ''],
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent(
+            'import.xlsx',
+            file_get_contents($this->testFilePath)
+        );
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('importFile', $file)
+            ->assertDispatched(Swal::SESSION_KEY, function (string $event, array $params): bool {
+                return $event === Swal::SESSION_KEY
+                    && ($params['title'] ?? null) === '0 ocorrência(s) importada(s)!'
+                    && ! array_key_exists('text', $params)
+                    && ($params['icon'] ?? null) === 'success'
+                    && ($params['toast'] ?? null) === true;
+            });
+
+        $this->assertDatabaseCount('ocorrencias', 0);
     }
 
     /**
