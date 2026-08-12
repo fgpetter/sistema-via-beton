@@ -49,8 +49,12 @@ Criação em lote de Ocorrências a partir de uma planilha.
 _Avoid_: Upload de Excel (quando se refere ao resultado de negócio)
 
 **Linha ignorada**:
-Linha da planilha que não gerou Ocorrência, por campo obrigatório em branco ou por ID duplicado.
+Linha da planilha que não gerou Ocorrência porque o Nº da ocorrência já existe no banco ou na própria planilha.
 _Avoid_: Erro de importação (a importação concluiu; a linha não virou Ocorrência)
+
+**Nº da ocorrência**:
+Identidade da Ocorrência na planilha; corresponde ao id da Ocorrência. Único campo obrigatório na Importação de Ocorrências.
+_Avoid_: ID (sem o vínculo com a planilha)
 
 ## Relationships
 
