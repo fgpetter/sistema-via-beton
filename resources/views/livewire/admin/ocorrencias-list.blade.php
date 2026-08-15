@@ -65,7 +65,7 @@
         <div class="card-header">
             <div class="flex flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center xl:my-3 w-full">
                 <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center flex-1 min-w-0">
-                    <div class="relative w-full max-w-md">
+                    <div class="relative w-full max-w-sm">
                         <input
                             wire:model.live.debounce.300ms="search"
                             class="form-input form-input-sm ps-9"
@@ -89,6 +89,15 @@
                         <select wire:model.live="priorityFilter" class="form-input form-input-sm w-full">
                             <option value="">Todas as prioridades</option>
                             @foreach ($this->priorities as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="relative w-full sm:w-64 shrink-0">
+                        <select wire:model.live="contratoFilter" class="form-input form-input-sm w-full">
+                            <option value="">Todos Contratos</option>
+                            @foreach ($this->contratos as $value => $label)
                                 <option value="{{ $value }}">{{ $label }}</option>
                             @endforeach
                         </select>

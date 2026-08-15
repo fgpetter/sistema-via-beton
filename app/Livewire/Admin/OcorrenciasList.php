@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\ContratoSolucionador;
 use App\Enums\OcorrenciaStatus;
 use App\Imports\OcorrenciasImport;
 use App\Models\Ocorrencia;
@@ -42,6 +43,9 @@ class OcorrenciasList extends Component
     #[Url(as: 'prioridade')]
     public string $priorityFilter = '';
 
+    #[Url(as: 'contrato')]
+    public string $contratoFilter = '';
+
     public bool $showDeleteModal = false;
 
     public ?int $deletingId = null;
@@ -73,6 +77,11 @@ class OcorrenciasList extends Component
     }
 
     public function updatedPriorityFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedContratoFilter(): void
     {
         $this->resetPage();
     }
@@ -185,6 +194,12 @@ class OcorrenciasList extends Component
             ->when($this->priorityFilter, function ($query) {
                 $query->where('prioridade', $this->priorityFilter);
             })
+            ->when($this->contratoFilter, function ($query) {
+                $contrato = ContratoSolucionador::tryFrom($this->contratoFilter);
+                if ($contrato) {
+                    $query->where('contrato', $contrato->value);
+                }
+            })
             ->emergenciaisFirst()
             ->orderByDesc('abertura')
             ->paginate(10);
@@ -209,6 +224,15 @@ class OcorrenciasList extends Component
             ->distinct()
             ->pluck('prioridade', 'prioridade')
             ->toArray();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    #[Computed]
+    public function contratos(): array
+    {
+        return ContratoSolucionador::options();
     }
 
     #[On('ocorrencia-saved')]

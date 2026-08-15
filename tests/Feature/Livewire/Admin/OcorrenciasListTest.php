@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Livewire\Admin;
 
+use App\Enums\ContratoSolucionador;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\PrazoUnidade;
 use App\Livewire\Admin\OcorrenciasList;
@@ -213,6 +214,76 @@ class OcorrenciasListTest extends TestCase
             ->set('priorityFilter', 'Alta')
             ->assertSee('Ocorrência Alta')
             ->assertDontSee('Ocorrência Baixa');
+    }
+
+    public function test_default_contrato_filter_is_empty_and_includes_ocorrencias_without_contrato(): void
+    {
+        Ocorrencia::factory()->create([
+            'contrato' => ContratoSolucionador::ViaBetonSuregFronteira->value,
+            'titulo' => 'Com contrato Fronteira',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+        Ocorrencia::factory()->create([
+            'contrato' => null,
+            'titulo' => 'Sem contrato',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->assertSet('contratoFilter', '')
+            ->assertSee('Todos Contratos')
+            ->assertSee(ContratoSolucionador::ViaBetonSuregFronteira->label())
+            ->assertSee(ContratoSolucionador::ViaBetonDG->label())
+            ->assertSee('Com contrato Fronteira')
+            ->assertSee('Sem contrato');
+    }
+
+    public function test_contrato_filter_matches_exact_contrato_solucionador(): void
+    {
+        Ocorrencia::factory()->create([
+            'contrato' => ContratoSolucionador::ViaBetonSuregFronteira->value,
+            'titulo' => 'Ocorrência Fronteira',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+        Ocorrencia::factory()->create([
+            'contrato' => ContratoSolucionador::ViaBetonDG->value,
+            'titulo' => 'Ocorrência DG',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+        Ocorrencia::factory()->create([
+            'contrato' => null,
+            'titulo' => 'Ocorrência sem contrato',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciasList::class)
+            ->set('contratoFilter', ContratoSolucionador::ViaBetonDG->value)
+            ->assertSee('Ocorrência DG')
+            ->assertDontSee('Ocorrência Fronteira')
+            ->assertDontSee('Ocorrência sem contrato');
+    }
+
+    public function test_contrato_filter_reads_from_url_query_string(): void
+    {
+        Ocorrencia::factory()->create([
+            'contrato' => ContratoSolucionador::ViaBetonSuregFronteira->value,
+            'titulo' => 'Ocorrência Fronteira URL',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+        Ocorrencia::factory()->create([
+            'contrato' => ContratoSolucionador::ViaBetonDG->value,
+            'titulo' => 'Ocorrência DG URL',
+            'status' => OcorrenciaStatus::Aberto,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->withQueryParams(['contrato' => ContratoSolucionador::ViaBetonSuregFronteira->value])
+            ->test(OcorrenciasList::class)
+            ->assertSet('contratoFilter', ContratoSolucionador::ViaBetonSuregFronteira->value)
+            ->assertSee('Ocorrência Fronteira URL')
+            ->assertDontSee('Ocorrência DG URL');
     }
 
     public function test_close_delete_modal_resets_state(): void
