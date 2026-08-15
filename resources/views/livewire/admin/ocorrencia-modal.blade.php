@@ -247,7 +247,7 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                         <label for="agencia" class="block text-sm font-medium text-default-700 mb-1">Agência</label>
                                         <input
@@ -277,6 +277,17 @@
                                         @error('form.colaboradorId')
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="contratoSolucionador" class="block text-sm font-medium text-default-700 mb-1">Contrato Solucionador</label>
+                                        <input
+                                            type="text"
+                                            id="contratoSolucionador"
+                                            class="form-input w-full"
+                                            value="{{ $form->contratoLabel }}"
+                                            readonly
+                                        >
                                     </div>
                                 </div>
 

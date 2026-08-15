@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Livewire\Admin;
 
+use App\Enums\ContratoSolucionador;
 use App\Enums\OcorrenciaStatus;
 use App\Livewire\Admin\OcorrenciaFotoGaleria;
 use App\Livewire\Admin\OcorrenciaModal;
@@ -160,6 +161,55 @@ class OcorrenciaModalTest extends TestCase
             ->assertSet('form.titulo', '')
             ->assertSet('form.agencia', '')
             ->assertHasNoErrors();
+    }
+
+    public function test_edit_modal_shows_readonly_contrato_solucionador_label(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'contrato' => ContratoSolucionador::ViaBetonSuregFronteira->value,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSet('form.contratoLabel', ContratoSolucionador::ViaBetonSuregFronteira->label())
+            ->assertSee('Contrato Solucionador')
+            ->assertSee(ContratoSolucionador::ViaBetonSuregFronteira->label())
+            ->assertSeeHtml('id="contratoSolucionador"')
+            ->assertSeeHtml('readonly');
+    }
+
+    public function test_edit_modal_shows_empty_contrato_label_when_ocorrencia_has_no_contrato(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'contrato' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSet('form.contratoLabel', '');
+    }
+
+    public function test_save_does_not_persist_contrato_label_changes(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'contrato' => ContratoSolucionador::ViaBetonDG->value,
+            'titulo' => 'Original',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.titulo', 'Editado')
+            ->set('form.contratoLabel', 'valor adulterado')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+
+        $this->assertSame('Editado', $ocorrencia->titulo);
+        $this->assertSame(ContratoSolucionador::ViaBetonDG->value, $ocorrencia->contrato);
     }
 
     public function test_create_ocorrencia_validation_requires_titulo(): void

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Forms;
 
+use App\Enums\ContratoSolucionador;
 use App\Enums\OcorrenciaStatus;
 use App\Models\Ocorrencia;
 use Illuminate\Validation\Rule;
@@ -35,6 +36,8 @@ class OcorrenciaForm extends Form
     public ?int $subdisciplina3Id = null;
 
     public string $agencia = '';
+
+    public string $contratoLabel = '';
 
     public ?string $endereco = null;
 
@@ -170,6 +173,7 @@ class OcorrenciaForm extends Form
         $this->subdisciplina2Id = $ocorrencia->subdisciplina_2_id;
         $this->subdisciplina3Id = $ocorrencia->subdisciplina_3_id;
         $this->agencia = $ocorrencia->agencia ?? '';
+        $this->contratoLabel = ContratoSolucionador::tryFrom((string) $ocorrencia->contrato)?->label() ?? '';
         $this->endereco = $ocorrencia->endereco;
         $this->datahoraChegada = $ocorrencia->datahora_chegada?->format('Y-m-d\TH:i');
         $this->datahoraSaida = $ocorrencia->datahora_saida?->format('Y-m-d\TH:i');
