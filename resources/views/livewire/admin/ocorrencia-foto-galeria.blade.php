@@ -45,6 +45,15 @@
     </button>
     <div x-show="fotosOpen" x-collapse>
         <div class="px-4 pb-4 space-y-3">
+            <button
+                type="button"
+                wire:click="adicionarPar"
+                class="btn w-full border-2 border-dashed border-default-300 text-default-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors text-sm"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Adicionar Foto
+            </button>
+
             <div class="grid grid-cols-2 gap-2 text-center">
                 <span class="text-xs font-semibold text-default-500 uppercase">Antes</span>
                 <span class="text-xs font-semibold text-default-500 uppercase">Depois</span>
@@ -135,15 +144,6 @@
             <div wire:loading wire:target="fotoUpload" class="text-sm text-primary text-center py-2">
                 Carregando imagem...
             </div>
-
-            <button
-                type="button"
-                wire:click="adicionarPar"
-                class="btn w-full border-2 border-dashed border-default-300 text-default-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors text-sm"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Adicionar Foto
-            </button>
 
             <input x-ref="fotoInputGaleria" wire:model="fotoUpload" type="file" accept="image/*" class="hidden">
         </div>

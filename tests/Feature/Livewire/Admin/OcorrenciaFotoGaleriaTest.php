@@ -8,6 +8,7 @@ use App\Livewire\Admin\OcorrenciaFotoGaleria;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -117,6 +118,15 @@ class OcorrenciaFotoGaleriaTest extends TestCase
             ->assertSet('totalPares', 2);
     }
 
+    public function test_adicionar_foto_aparece_no_topo_da_galeria(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->assertSeeInOrder(['Adicionar Foto', 'Antes', 'Depois']);
+    }
+
     public function test_admin_can_salvar_legenda(): void
     {
         $ocorrencia = Ocorrencia::factory()->create();
@@ -149,7 +159,7 @@ class OcorrenciaFotoGaleriaTest extends TestCase
             'path' => 'test/antes.jpg',
         ]);
 
-        $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+        $this->expectException(ModelNotFoundException::class);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
