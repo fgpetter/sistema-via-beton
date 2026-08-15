@@ -5,13 +5,13 @@ namespace Tests\Feature\Prestador;
 use App\Actions\Ocorrencias\BuildRatPdfDataFromOcorrencia;
 use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\PrazoUnidade;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Models\Colaborador;
 use App\Models\Disciplina;
 use App\Models\Endereco;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
+use App\Models\ResponsavelEngenharia;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -114,7 +114,9 @@ class EnviarRatTest extends TestCase
         $colaborador = Colaborador::factory()->create(['user_id' => $prestador->id]);
         $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
             'colaborador_id' => $colaborador->id,
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofmanIcaroDupont,
+            'responsavel_engenharia_id' => ResponsavelEngenharia::query()
+                ->where('nome', 'Dustin Hofman / Icaro Dupont')
+                ->value('id'),
         ]);
 
         $dados = app(BuildRatPdfDataFromOcorrencia::class)(
@@ -141,5 +143,18 @@ class EnviarRatTest extends TestCase
         $dados = $build($ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']), $geradoEmUtc);
 
         $this->assertSame('28/03/2026 - 16:30', $dados['datahora_saida']);
+    }
+
+    public function test_rat_pdf_nao_exibe_coluna_prazo_de_atendimento_no_rodape(): void
+    {
+        $dados = BuildRatPdfDataFromOcorrencia::mockForPreview();
+        $html = view('pdf.rat', ['dados' => $dados])->render();
+
+        $this->assertArrayNotHasKey('prazo_atendimento_rodape', $dados);
+        $this->assertSame(1, substr_count($html, 'Prazo de Atendimento'));
+        $this->assertDoesNotMatchRegularExpression(
+            '/Data e hora SAÍDA<\/td>\s*<td class="lbl">Prazo de Atendimento/',
+            $html,
+        );
     }
 }

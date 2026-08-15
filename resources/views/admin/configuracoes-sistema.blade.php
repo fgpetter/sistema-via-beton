@@ -6,4 +6,6 @@
     <livewire:admin.prazos-crud />
 
     <livewire:admin.disciplinas-crud />
+
+    <livewire:admin.responsaveis-engenharia-crud />
 @endsection

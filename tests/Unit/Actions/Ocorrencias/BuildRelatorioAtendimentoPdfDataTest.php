@@ -3,8 +3,8 @@
 namespace Tests\Unit\Actions\Ocorrencias;
 
 use App\Actions\Ocorrencias\BuildRelatorioAtendimentoPdfDataFromOcorrencia;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Models\Ocorrencia;
+use App\Models\ResponsavelEngenharia;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +15,9 @@ class BuildRelatorioAtendimentoPdfDataTest extends TestCase
     public function test_relatorio_atendimento_pdf_data_inclui_responsavel_engenharia_banrisul(): void
     {
         $ocorrencia = Ocorrencia::factory()->create([
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofmanIcaroDupont,
+            'responsavel_engenharia_id' => ResponsavelEngenharia::query()
+                ->where('nome', 'Dustin Hofman / Icaro Dupont')
+                ->value('id'),
         ]);
 
         $dados = app(BuildRelatorioAtendimentoPdfDataFromOcorrencia::class)($ocorrencia);
@@ -26,7 +28,7 @@ class BuildRelatorioAtendimentoPdfDataTest extends TestCase
     public function test_relatorio_atendimento_pdf_data_retorna_vazio_quando_responsavel_nao_informado(): void
     {
         $ocorrencia = Ocorrencia::factory()->create([
-            'responsavel_engenharia_banrisul' => null,
+            'responsavel_engenharia_id' => null,
         ]);
 
         $dados = app(BuildRelatorioAtendimentoPdfDataFromOcorrencia::class)($ocorrencia);

@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Enums\OcorrenciaStatus;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Enums\TipoImagemOcorrencia;
+use Database\Factories\OcorrenciaFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 
 class Ocorrencia extends Model
 {
-    /** @use HasFactory<\Database\Factories\OcorrenciaFactory> */
+    /** @use HasFactory<OcorrenciaFactory> */
     use HasFactory;
 
     protected $table = 'ocorrencias';
@@ -33,7 +33,7 @@ class Ocorrencia extends Model
         'ordem_prestador',
         'colaborador_id',
         'prazo_id',
-        'responsavel_engenharia_banrisul',
+        'responsavel_engenharia_id',
         'disciplina_id',
         'subdisciplina_1_id',
         'subdisciplina_2_id',
@@ -60,7 +60,6 @@ class Ocorrencia extends Model
     {
         return [
             'status' => OcorrenciaStatus::class,
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::class,
             'abertura' => 'date',
             'violacao_projetada' => 'datetime',
             'email_enviado' => 'datetime',
@@ -79,6 +78,11 @@ class Ocorrencia extends Model
     public function prazo(): BelongsTo
     {
         return $this->belongsTo(Prazo::class);
+    }
+
+    public function responsavelEngenharia(): BelongsTo
+    {
+        return $this->belongsTo(ResponsavelEngenharia::class)->withTrashed();
     }
 
     public function disciplina(): BelongsTo
@@ -168,6 +172,13 @@ class Ocorrencia extends Model
     public function atendimentoIniciado(): bool
     {
         return $this->datahora_chegada !== null;
+    }
+
+    public function podeEditarDatahorasAtendimento(): bool
+    {
+        return $this->status === OcorrenciaStatus::Revisar
+            && $this->datahora_chegada !== null
+            && $this->datahora_saida !== null;
     }
 
     public function podeConcluir(): bool

@@ -3,12 +3,12 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\PreventivaStatus;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Livewire\Admin\PreventivaFotoGaleria;
 use App\Livewire\Admin\PreventivaMedicaoGaleria;
 use App\Livewire\Admin\PreventivaModal;
 use App\Models\Colaborador;
 use App\Models\Preventiva;
+use App\Models\ResponsavelEngenharia;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -311,6 +311,7 @@ class PreventivaModalTest extends TestCase
     public function test_admin_can_create_preventiva_with_responsavel_engenharia_banrisul(): void
     {
         $colaborador = Colaborador::factory()->create(['user_id' => $this->prestador->id]);
+        $responsavelId = $this->idResponsavelEngenharia('Dustin Hofman');
 
         Livewire::actingAs($this->admin)
             ->test(PreventivaModal::class)
@@ -320,51 +321,53 @@ class PreventivaModalTest extends TestCase
             ->set('form.abertura', '2026-02-18')
             ->set('form.agencia', 'Agência Central')
             ->set('form.colaboradorId', $colaborador->id)
-            ->set('form.responsavelEngenhariaBanrisul', ResponsavelEngenhariaBanrisul::DustinHofman->value)
+            ->set('form.responsavelEngenhariaId', $responsavelId)
             ->call('save')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('preventivas', [
             'titulo' => 'Preventiva com Responsável Banrisul',
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman->value,
+            'responsavel_engenharia_id' => $responsavelId,
         ]);
     }
 
     public function test_admin_can_update_responsavel_engenharia_banrisul_on_edit(): void
     {
+        $dustinId = $this->idResponsavelEngenharia('Dustin Hofman');
+        $icaroId = $this->idResponsavelEngenharia('Icaro Dupont');
         $preventiva = Preventiva::factory()->create([
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman,
+            'responsavel_engenharia_id' => $dustinId,
         ]);
 
         Livewire::actingAs($this->admin)
             ->test(PreventivaModal::class)
             ->call('openEditModal', $preventiva->id)
-            ->set('form.responsavelEngenhariaBanrisul', ResponsavelEngenhariaBanrisul::IcaroDupont->value)
+            ->set('form.responsavelEngenhariaId', $icaroId)
             ->call('save')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('preventivas', [
             'id' => $preventiva->id,
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::IcaroDupont->value,
+            'responsavel_engenharia_id' => $icaroId,
         ]);
     }
 
     public function test_admin_can_clear_responsavel_engenharia_banrisul(): void
     {
         $preventiva = Preventiva::factory()->create([
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman,
+            'responsavel_engenharia_id' => $this->idResponsavelEngenharia('Dustin Hofman'),
         ]);
 
         Livewire::actingAs($this->admin)
             ->test(PreventivaModal::class)
             ->call('openEditModal', $preventiva->id)
-            ->set('form.responsavelEngenhariaBanrisul', '')
+            ->set('form.responsavelEngenhariaId', null)
             ->call('save')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('preventivas', [
             'id' => $preventiva->id,
-            'responsavel_engenharia_banrisul' => null,
+            'responsavel_engenharia_id' => null,
         ]);
     }
 
@@ -394,5 +397,10 @@ class PreventivaModalTest extends TestCase
             ->test(PreventivaModal::class)
             ->call('openEditModal', $preventiva->id)
             ->assertDontSee(route('admin.preventivas.relatorio-medicao-pdf', $preventiva));
+    }
+
+    private function idResponsavelEngenharia(string $nome): int
+    {
+        return (int) ResponsavelEngenharia::query()->where('nome', $nome)->value('id');
     }
 }

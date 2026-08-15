@@ -24,7 +24,7 @@ class BuildRelatorioExecutivoPdfDataFromPreventiva
      */
     public function __invoke(Preventiva $preventiva): array
     {
-        $preventiva->loadMissing(['enderecoVinculado', 'imagensAceitas']);
+        $preventiva->loadMissing(['enderecoVinculado', 'imagensAceitas', 'responsavelEngenharia']);
 
         $endereco = $preventiva->enderecoVinculado;
         $codigoNomeLocal = '';
@@ -52,7 +52,7 @@ class BuildRelatorioExecutivoPdfDataFromPreventiva
         return [
             'numero_preventiva' => (string) $preventiva->id,
             'numero_contrato' => (string) ($preventiva->contrato ?? ''),
-            'responsavel_engenharia_banrisul' => $preventiva->responsavel_engenharia_banrisul?->label() ?? '',
+            'responsavel_engenharia_banrisul' => $preventiva->responsavelEngenharia?->nome ?? '',
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
             'titulo_relatorio' => 'RELATÓRIO EXECUTIVO',

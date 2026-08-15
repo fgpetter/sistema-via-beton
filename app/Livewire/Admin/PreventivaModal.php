@@ -3,11 +3,11 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\PreventivaStatus;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Enums\TipoColaborador;
 use App\Livewire\Admin\Forms\PreventivaForm;
 use App\Models\Colaborador;
 use App\Models\Preventiva;
+use App\Models\ResponsavelEngenharia;
 use App\Models\User;
 use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
@@ -49,7 +49,7 @@ class PreventivaModal extends Component
     #[Computed]
     public function responsaveisEngenhariaBanrisul(): array
     {
-        return ResponsavelEngenhariaBanrisul::options();
+        return ResponsavelEngenharia::optionsForSelect($this->form->responsavelEngenhariaId);
     }
 
     #[Computed]

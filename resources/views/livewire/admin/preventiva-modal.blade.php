@@ -84,18 +84,18 @@
                                     </div>
 
                                     <div>
-                                        <label for="responsavelEngenhariaBanrisul" class="block text-sm font-medium text-default-700 mb-1">Resp. Eng. Banrisul</label>
+                                        <label for="responsavelEngenhariaId" class="block text-sm font-medium text-default-700 mb-1">Resp. Eng. Banrisul</label>
                                         <select
-                                            wire:model="form.responsavelEngenhariaBanrisul"
-                                            id="responsavelEngenhariaBanrisul"
-                                            class="form-input w-full @error('responsavelEngenhariaBanrisul') border-danger @enderror"
+                                            wire:model="form.responsavelEngenhariaId"
+                                            id="responsavelEngenhariaId"
+                                            class="form-input w-full @error('responsavelEngenhariaId') border-danger @enderror"
                                         >
                                             <option value="">Nenhum</option>
-                                            @foreach ($this->responsaveisEngenhariaBanrisul as $value => $label)
-                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @foreach ($this->responsaveisEngenhariaBanrisul as $id => $label)
+                                                <option value="{{ $id }}">{{ $label }}</option>
                                             @endforeach
                                         </select>
-                                        @error('form.responsavelEngenhariaBanrisul')
+                                        @error('form.responsavelEngenhariaId')
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>

@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin\Forms;
 
 use App\Enums\OcorrenciaStatus;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Models\Ocorrencia;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -25,7 +24,7 @@ class OcorrenciaForm extends Form
 
     public ?int $prazoId = null;
 
-    public ?string $responsavelEngenhariaBanrisul = null;
+    public ?int $responsavelEngenhariaId = null;
 
     public ?int $disciplinaId = null;
 
@@ -38,6 +37,10 @@ class OcorrenciaForm extends Form
     public string $agencia = '';
 
     public ?string $endereco = null;
+
+    public ?string $datahoraChegada = null;
+
+    public ?string $datahoraSaida = null;
 
     public ?string $comentarios = null;
 
@@ -55,7 +58,17 @@ class OcorrenciaForm extends Form
             'abertura' => ['required', 'date'],
             'colaboradorId' => ['nullable', 'exists:colaboradores,id'],
             'prazoId' => ['nullable', 'exists:prazos,id'],
-            'responsavelEngenhariaBanrisul' => ['nullable', Rule::enum(ResponsavelEngenhariaBanrisul::class)],
+            'responsavelEngenhariaId' => [
+                'nullable',
+                'integer',
+                Rule::exists('responsavel_engenharia', 'id')->where(function ($query) {
+                    $vinculadoId = $this->responsavelEngenhariaIdVinculado();
+
+                    if ($vinculadoId === null || (int) $this->responsavelEngenhariaId !== (int) $vinculadoId) {
+                        $query->whereNull('deleted_at');
+                    }
+                }),
+            ],
             'disciplinaId' => [
                 'nullable',
                 'integer',
@@ -78,6 +91,8 @@ class OcorrenciaForm extends Form
             ],
             'agencia' => ['required', 'string', 'max:255'],
             'endereco' => ['nullable', 'string', 'max:255'],
+            'datahoraChegada' => ['nullable', 'date'],
+            'datahoraSaida' => ['nullable', 'date'],
             'comentarios' => ['nullable', 'string'],
         ];
     }
@@ -96,18 +111,23 @@ class OcorrenciaForm extends Form
             'abertura.date' => 'A data de abertura deve ser uma data válida.',
             'colaboradorId.exists' => 'O colaborador selecionado não existe.',
             'prazoId.exists' => 'A categoria selecionada não existe.',
-            'responsavelEngenhariaBanrisul.enum' => 'O responsável de engenharia selecionado é inválido.',
+            'responsavelEngenhariaId.exists' => 'O responsável de engenharia selecionado é inválido.',
             'disciplinaId.exists' => 'A disciplina selecionada é inválida.',
             'subdisciplina1Id.exists' => 'A subdisciplina 1 selecionada é inválida.',
             'subdisciplina2Id.exists' => 'A subdisciplina 2 selecionada é inválida.',
             'subdisciplina3Id.exists' => 'A subdisciplina 3 selecionada é inválida.',
             'agencia.required' => 'A agência é obrigatória.',
             'agencia.max' => 'A agência não pode ter mais de 255 caracteres.',
+            'datahoraChegada.date' => 'A data/hora de chegada deve ser uma data válida.',
+            'datahoraSaida.date' => 'A data/hora de saída deve ser uma data válida.',
         ];
     }
 
     public function validate($rules = null, $messages = [], $attributes = []): void
     {
+        $this->datahoraChegada = blank($this->datahoraChegada) ? null : $this->datahoraChegada;
+        $this->datahoraSaida = blank($this->datahoraSaida) ? null : $this->datahoraSaida;
+
         parent::validate($rules, $messages, $attributes);
 
         $ids = array_values(array_filter([
@@ -144,13 +164,15 @@ class OcorrenciaForm extends Form
         $this->abertura = $ocorrencia->abertura->format('Y-m-d');
         $this->colaboradorId = $ocorrencia->colaborador_id;
         $this->prazoId = $ocorrencia->prazo_id;
-        $this->responsavelEngenhariaBanrisul = $ocorrencia->responsavel_engenharia_banrisul?->value;
+        $this->responsavelEngenhariaId = $ocorrencia->responsavel_engenharia_id;
         $this->disciplinaId = $ocorrencia->disciplina_id;
         $this->subdisciplina1Id = $ocorrencia->subdisciplina_1_id;
         $this->subdisciplina2Id = $ocorrencia->subdisciplina_2_id;
         $this->subdisciplina3Id = $ocorrencia->subdisciplina_3_id;
         $this->agencia = $ocorrencia->agencia ?? '';
         $this->endereco = $ocorrencia->endereco;
+        $this->datahoraChegada = $ocorrencia->datahora_chegada?->format('Y-m-d\TH:i');
+        $this->datahoraSaida = $ocorrencia->datahora_saida?->format('Y-m-d\TH:i');
         $this->comentarios = $ocorrencia->comentarios;
         $this->comentarios_prestador = $ocorrencia->comentarios_prestador;
     }
@@ -158,18 +180,18 @@ class OcorrenciaForm extends Form
     /**
      * @return array<string, mixed>
      */
-    public function toData(): array
+    public function toData(?Ocorrencia $ocorrencia = null): array
     {
-        return [
+        $data = [
             'status' => $this->status,
             'titulo' => $this->titulo,
             'descricao' => $this->descricao,
             'abertura' => $this->abertura,
             'colaborador_id' => $this->colaboradorId,
             'prazo_id' => $this->prazoId,
-            'responsavel_engenharia_banrisul' => blank($this->responsavelEngenhariaBanrisul)
+            'responsavel_engenharia_id' => blank($this->responsavelEngenhariaId)
                 ? null
-                : $this->responsavelEngenhariaBanrisul,
+                : (int) $this->responsavelEngenhariaId,
             'disciplina_id' => $this->disciplinaId,
             'subdisciplina_1_id' => $this->subdisciplina1Id,
             'subdisciplina_2_id' => $this->subdisciplina2Id,
@@ -179,5 +201,21 @@ class OcorrenciaForm extends Form
             'endereco' => $this->endereco,
             'comentarios' => $this->comentarios,
         ];
+
+        if ($ocorrencia?->podeEditarDatahorasAtendimento()) {
+            $data['datahora_chegada'] = $this->datahoraChegada;
+            $data['datahora_saida'] = $this->datahoraSaida;
+        }
+
+        return $data;
+    }
+
+    protected function responsavelEngenhariaIdVinculado(): ?int
+    {
+        if (! $this->editingId) {
+            return null;
+        }
+
+        return Ocorrencia::query()->whereKey($this->editingId)->value('responsavel_engenharia_id');
     }
 }

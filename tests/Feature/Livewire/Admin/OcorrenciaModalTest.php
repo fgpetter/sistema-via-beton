@@ -3,7 +3,6 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Livewire\Admin\OcorrenciaFotoGaleria;
 use App\Livewire\Admin\OcorrenciaModal;
 use App\Mail\OcorrenciaCriada;
@@ -11,6 +10,7 @@ use App\Models\Colaborador;
 use App\Models\Disciplina;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
+use App\Models\ResponsavelEngenharia;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -227,6 +227,136 @@ class OcorrenciaModalTest extends TestCase
             ->assertHasErrors(['form.status']);
     }
 
+    public function test_edit_modal_shows_datahora_inputs_when_revisar_and_filled(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSee('Data/Hora de Chegada')
+            ->assertSee('Data/Hora de Saída')
+            ->assertSeeHtml('wire:model="form.datahoraChegada"')
+            ->assertSeeHtml('wire:model="form.datahoraSaida"');
+    }
+
+    public function test_create_modal_does_not_show_datahora_chegada_and_saida_inputs(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->assertDontSee('Data/Hora de Chegada')
+            ->assertDontSee('Data/Hora de Saída');
+    }
+
+    public function test_open_edit_modal_hydrates_datahora_chegada_and_saida(): void
+    {
+        $chegada = now()->setTime(9, 30);
+        $saida = now()->setTime(17, 45);
+        $ocorrencia = Ocorrencia::factory()->create([
+            'datahora_chegada' => $chegada,
+            'datahora_saida' => $saida,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSet('form.datahoraChegada', $chegada->format('Y-m-d\TH:i'))
+            ->assertSet('form.datahoraSaida', $saida->format('Y-m-d\TH:i'));
+    }
+
+    public function test_admin_can_edit_datahora_chegada_and_saida_when_revisar_and_filled(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.datahoraChegada', '2026-03-20T09:30')
+            ->set('form.datahoraSaida', '2026-03-20T17:45')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals('2026-03-20 09:30:00', $ocorrencia->datahora_chegada->format('Y-m-d H:i:s'));
+        $this->assertEquals('2026-03-20 17:45:00', $ocorrencia->datahora_saida->format('Y-m-d H:i:s'));
+    }
+
+    public function test_admin_cannot_edit_datahora_when_status_is_not_revisar(): void
+    {
+        $chegada = now()->subHours(4)->startOfMinute();
+        $saida = now()->subHours(2)->startOfMinute();
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'datahora_chegada' => $chegada,
+            'datahora_saida' => $saida,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertDontSee('Data/Hora de Chegada')
+            ->assertDontSee('Data/Hora de Saída')
+            ->set('form.datahoraChegada', '2026-03-20T09:30')
+            ->set('form.datahoraSaida', '2026-03-20T17:45')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals($chegada->format('Y-m-d H:i:s'), $ocorrencia->datahora_chegada->format('Y-m-d H:i:s'));
+        $this->assertEquals($saida->format('Y-m-d H:i:s'), $ocorrencia->datahora_saida->format('Y-m-d H:i:s'));
+    }
+
+    public function test_admin_cannot_edit_datahora_when_revisar_but_fields_are_empty(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create([
+            'datahora_chegada' => null,
+            'datahora_saida' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertDontSee('Data/Hora de Chegada')
+            ->assertDontSee('Data/Hora de Saída')
+            ->set('form.datahoraChegada', '2026-03-20T09:30')
+            ->set('form.datahoraSaida', '2026-03-20T17:45')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertNull($ocorrencia->datahora_chegada);
+        $this->assertNull($ocorrencia->datahora_saida);
+    }
+
+    public function test_admin_can_clear_datahora_chegada_and_saida_when_editable(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.datahoraChegada', '')
+            ->set('form.datahoraSaida', '')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertNull($ocorrencia->datahora_chegada);
+        $this->assertNull($ocorrencia->datahora_saida);
+    }
+
+    public function test_invalid_datahora_chegada_is_rejected(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.datahoraChegada', 'nao-e-data')
+            ->call('save')
+            ->assertHasErrors(['form.datahoraChegada']);
+    }
+
     public function test_admin_can_edit_ocorrencia(): void
     {
         $colaborador = Colaborador::factory()->create(['user_id' => $this->prestador->id]);
@@ -263,6 +393,13 @@ class OcorrenciaModalTest extends TestCase
             ->call('closeModal')
             ->assertSet('showModal', false)
             ->assertSet('form.titulo', '');
+    }
+
+    public function test_modal_closes_when_escape_key_is_pressed(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->assertSeeHtml('x-on:keydown.escape.window="if (showModal) $wire.closeModal()"');
     }
 
     public function test_close_modal_does_not_dispatch_ocorrencia_saved(): void
@@ -497,6 +634,8 @@ class OcorrenciaModalTest extends TestCase
     {
         Mail::fake();
 
+        $responsavelId = $this->idResponsavelEngenharia('Dustin Hofman');
+
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openCreateModal')
@@ -504,51 +643,53 @@ class OcorrenciaModalTest extends TestCase
             ->set('form.status', OcorrenciaStatus::Aberto->value)
             ->set('form.abertura', '2026-06-01')
             ->set('form.agencia', 'Agência Central')
-            ->set('form.responsavelEngenhariaBanrisul', ResponsavelEngenhariaBanrisul::DustinHofman->value)
+            ->set('form.responsavelEngenhariaId', $responsavelId)
             ->call('save')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencias', [
             'titulo' => 'Com responsável Banrisul',
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman->value,
+            'responsavel_engenharia_id' => $responsavelId,
         ]);
     }
 
     public function test_admin_can_update_responsavel_engenharia_banrisul_on_edit(): void
     {
+        $dustinId = $this->idResponsavelEngenharia('Dustin Hofman');
+        $icaroId = $this->idResponsavelEngenharia('Icaro Dupont');
         $ocorrencia = Ocorrencia::factory()->create([
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman,
+            'responsavel_engenharia_id' => $dustinId,
         ]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->set('form.responsavelEngenhariaBanrisul', ResponsavelEngenhariaBanrisul::IcaroDupont->value)
+            ->set('form.responsavelEngenhariaId', $icaroId)
             ->call('save')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencias', [
             'id' => $ocorrencia->id,
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::IcaroDupont->value,
+            'responsavel_engenharia_id' => $icaroId,
         ]);
     }
 
     public function test_admin_can_clear_responsavel_engenharia_banrisul(): void
     {
         $ocorrencia = Ocorrencia::factory()->create([
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::DustinHofman,
+            'responsavel_engenharia_id' => $this->idResponsavelEngenharia('Dustin Hofman'),
         ]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->set('form.responsavelEngenhariaBanrisul', '')
+            ->set('form.responsavelEngenhariaId', null)
             ->call('save')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('ocorrencias', [
             'id' => $ocorrencia->id,
-            'responsavel_engenharia_banrisul' => null,
+            'responsavel_engenharia_id' => null,
         ]);
     }
 
@@ -561,12 +702,39 @@ class OcorrenciaModalTest extends TestCase
             ->set('form.status', OcorrenciaStatus::Aberto->value)
             ->set('form.abertura', '2026-06-01')
             ->set('form.agencia', 'Agência Central')
-            ->set('form.responsavelEngenhariaBanrisul', 'valor-invalido')
+            ->set('form.responsavelEngenhariaId', 999999)
             ->call('save')
-            ->assertHasErrors(['form.responsavelEngenhariaBanrisul']);
+            ->assertHasErrors(['form.responsavelEngenhariaId']);
 
         $this->assertDatabaseMissing('ocorrencias', [
             'titulo' => 'Responsável inválido',
         ]);
+    }
+
+    public function test_ocorrencia_with_inactive_responsavel_keeps_selection_on_save(): void
+    {
+        $responsavel = ResponsavelEngenharia::query()->where('nome', 'Dustin Hofman')->firstOrFail();
+        $ocorrencia = Ocorrencia::factory()->create([
+            'responsavel_engenharia_id' => $responsavel->id,
+        ]);
+        $responsavel->delete();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSet('form.responsavelEngenhariaId', $responsavel->id)
+            ->assertSee('Dustin Hofman')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $ocorrencia->id,
+            'responsavel_engenharia_id' => $responsavel->id,
+        ]);
+    }
+
+    private function idResponsavelEngenharia(string $nome): int
+    {
+        return (int) ResponsavelEngenharia::query()->where('nome', $nome)->value('id');
     }
 }

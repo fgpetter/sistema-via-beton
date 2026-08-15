@@ -169,19 +169,17 @@
         <tr>
             <td class="lbl">Data e hora CHEGADA</td>
             <td class="lbl">Data e hora SAÍDA</td>
-            <td class="lbl">Prazo de Atendimento</td>
             <td class="lbl">Identificação do representante da contratada</td>
             <td class="lbl">Assinatura do representante da contratada</td>
         </tr>
         <tr>
             <td class="val"><br><br></td>
             <td class="val"><br><br></td>
-            <td class="val">{{ $dados['prazo_atendimento_rodape'] }}</td>
             <td class="val">{{ $dados['identificacao_representante'] }}</td>
             <td class="val">{{ $dados['assinatura_representante'] }}</td>
         </tr>
         <tr>
-            <td class="val" colspan="5" style="text-align: center; min-height: 56px; padding-top: 28px;">
+            <td class="val" colspan="4" style="text-align: center; min-height: 56px; padding-top: 28px;">
                 _________________________________________________<br>
                 Carimbo e assinatura da administração do Banrisul
             </td>

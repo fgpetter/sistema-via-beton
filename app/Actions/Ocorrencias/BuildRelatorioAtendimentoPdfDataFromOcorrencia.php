@@ -24,7 +24,7 @@ class BuildRelatorioAtendimentoPdfDataFromOcorrencia
      */
     public function __invoke(Ocorrencia $ocorrencia): array
     {
-        $ocorrencia->loadMissing(['prazo', 'enderecoVinculado', 'imagens']);
+        $ocorrencia->loadMissing(['prazo', 'enderecoVinculado', 'imagens', 'responsavelEngenharia']);
 
         $prazo = $ocorrencia->prazo;
         $prazoAtendimento = '';
@@ -61,7 +61,7 @@ class BuildRelatorioAtendimentoPdfDataFromOcorrencia
             'emergencial' => $emergencial,
             'prazo_atendimento' => $prazoAtendimento,
             'numero_contrato' => (string) ($ocorrencia->contrato ?? ''),
-            'responsavel_engenharia_banrisul' => $ocorrencia->responsavel_engenharia_banrisul?->label() ?? '',
+            'responsavel_engenharia_banrisul' => $ocorrencia->responsavelEngenharia?->nome ?? '',
             'codigo_nome_local' => $codigoNomeLocal,
             'endereco' => $enderecoTexto,
             'pares' => $pares,

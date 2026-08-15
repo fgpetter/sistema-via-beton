@@ -4,7 +4,6 @@ namespace App\Livewire\Admin;
 
 use App\Enums\OcorrenciaStatus;
 use App\Enums\PrazoNome;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Enums\TipoColaborador;
 use App\Livewire\Admin\Forms\OcorrenciaForm;
 use App\Mail\OcorrenciaCriada;
@@ -12,6 +11,7 @@ use App\Models\Colaborador;
 use App\Models\Disciplina;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
+use App\Models\ResponsavelEngenharia;
 use App\Models\User;
 use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
@@ -64,7 +64,7 @@ class OcorrenciaModal extends Component
     #[Computed]
     public function responsaveisEngenhariaBanrisul(): array
     {
-        return ResponsavelEngenhariaBanrisul::options();
+        return ResponsavelEngenharia::optionsForSelect($this->form->responsavelEngenhariaId);
     }
 
     #[Computed]
@@ -97,6 +97,12 @@ class OcorrenciaModal extends Component
         return Ocorrencia::with('enderecoVinculado')->find($this->form->editingId);
     }
 
+    #[Computed]
+    public function datahorasEditaveis(): bool
+    {
+        return $this->editingOcorrencia?->podeEditarDatahorasAtendimento() ?? false;
+    }
+
     public function openCreateModal(): void
     {
         $this->ensureUserIsAuthorized();
@@ -125,8 +131,8 @@ class OcorrenciaModal extends Component
         $this->form->validate();
 
         if ($this->form->editingId) {
-            $data = $this->form->toData();
             $ocorrencia = Ocorrencia::findOrFail($this->form->editingId);
+            $data = $this->form->toData($ocorrencia);
 
             if ($data['status'] === OcorrenciaStatus::Concluido->value && $ocorrencia->status !== OcorrenciaStatus::Concluido) {
                 $data['concluido_por'] = auth()->id();

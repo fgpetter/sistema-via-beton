@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Enums\PreventivaStatus;
-use App\Enums\ResponsavelEngenhariaBanrisul;
 use App\Models\Colaborador;
+use App\Models\Preventiva;
+use App\Models\ResponsavelEngenharia;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Preventiva>
+ * @extends Factory<Preventiva>
  */
 class PreventivaFactory extends Factory
 {
@@ -28,7 +29,9 @@ class PreventivaFactory extends Factory
             'datahora_chegada' => fake()->optional(0.4)->dateTimeBetween('-3 months', 'now'),
             'datahora_saida' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
             'comentarios' => fake()->optional()->paragraph(),
-            'responsavel_engenharia_banrisul' => fake()->optional()->randomElement(ResponsavelEngenhariaBanrisul::cases()),
+            'responsavel_engenharia_id' => fake()->boolean()
+                ? ResponsavelEngenharia::factory()
+                : null,
         ];
     }
 

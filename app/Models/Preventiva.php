@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use App\Enums\PreventivaStatus;
-use App\Enums\ResponsavelEngenhariaBanrisul;
+use Database\Factories\PreventivaFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Support\Str;
 
 class Preventiva extends Model
 {
-    /** @use HasFactory<\Database\Factories\PreventivaFactory> */
+    /** @use HasFactory<PreventivaFactory> */
     use HasFactory;
 
     protected $table = 'preventivas';
@@ -26,7 +27,7 @@ class Preventiva extends Model
         'descricao',
         'abertura',
         'contrato',
-        'responsavel_engenharia_banrisul',
+        'responsavel_engenharia_id',
         'colaborador_id',
         'agencia',
         'endereco_id',
@@ -44,7 +45,6 @@ class Preventiva extends Model
     {
         return [
             'status' => PreventivaStatus::class,
-            'responsavel_engenharia_banrisul' => ResponsavelEngenhariaBanrisul::class,
             'abertura' => 'date',
             'datahora_chegada' => 'datetime',
             'datahora_saida' => 'datetime',
@@ -54,6 +54,11 @@ class Preventiva extends Model
     public function colaborador(): BelongsTo
     {
         return $this->belongsTo(Colaborador::class);
+    }
+
+    public function responsavelEngenharia(): BelongsTo
+    {
+        return $this->belongsTo(ResponsavelEngenharia::class)->withTrashed();
     }
 
     public function enderecoVinculado(): BelongsTo
@@ -124,14 +129,14 @@ class Preventiva extends Model
                 ->exists();
     }
 
-    public function scopeStatus(\Illuminate\Database\Eloquent\Builder $query, PreventivaStatus $status): \Illuminate\Database\Eloquent\Builder
+    public function scopeStatus(Builder $query, PreventivaStatus $status): Builder
     {
         return $query->where('status', $status);
     }
 
-    public function scopeSemRascunho(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeSemRascunho(Builder $query): Builder
     {
-        return $query->whereNot(function (\Illuminate\Database\Eloquent\Builder $subQuery): void {
+        return $query->whereNot(function (Builder $subQuery): void {
             $subQuery->where('titulo', 'Rascunho')->where('agencia', 'A definir');
         });
     }
