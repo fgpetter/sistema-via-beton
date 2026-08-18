@@ -194,7 +194,7 @@ class Ocorrencia extends Model
     public function fotoPares(int $minPares = 1): array
     {
         $imagens = $this->imagens;
-        $maxPar = max($minPares, (int) $imagens->max('par'), 1);
+        $maxPar = max($minPares, (int) $imagens->max('par'));
         $pares = [];
 
         for ($i = 1; $i <= $maxPar; $i++) {

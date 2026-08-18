@@ -43,7 +43,7 @@ class AtendimentoDetalhe extends Component
 
     public ?string $uploadingTipo = null;
 
-    public int $totalPares = 1;
+    public int $totalPares = 0;
 
     public function mount(int $ocorrenciaId): void
     {
@@ -51,7 +51,7 @@ class AtendimentoDetalhe extends Component
         $ocorrencia = $this->ensureUserOwnsOcorrencia();
         $this->comentariosPrestador = $ocorrencia->comentarios_prestador;
         $this->emailRat = $ocorrencia->email_rat;
-        $this->totalPares = max(1, (int) $ocorrencia->imagens()->max('par'));
+        $this->totalPares = (int) $ocorrencia->imagens()->max('par');
     }
 
     protected function rules(): array
@@ -145,6 +145,10 @@ class AtendimentoDetalhe extends Component
         Storage::disk('public')->delete($imagem->path);
         $imagem->delete();
         unset($this->ocorrencia, $this->fotoPares);
+
+        if (! $this->ocorrencia->imagens()->exists()) {
+            $this->totalPares = 0;
+        }
 
         $this->swalToastSuccess(SwalToast::successOptions('Foto removida!'));
     }
