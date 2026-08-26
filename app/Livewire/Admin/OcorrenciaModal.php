@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\PrazoNome;
 use App\Enums\TipoColaborador;
@@ -16,6 +17,7 @@ use App\Models\User;
 use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use SweetAlert2\Laravel\Traits\WithSweetAlert;
@@ -125,14 +127,7 @@ class OcorrenciaModal extends Component
         $this->form->validate();
 
         if ($this->form->editingId) {
-            $ocorrencia = Ocorrencia::findOrFail($this->form->editingId);
-            $data = $this->form->toData($ocorrencia);
-
-            if ($data['status'] === OcorrenciaStatus::Concluido->value && $ocorrencia->status !== OcorrenciaStatus::Concluido) {
-                $data['concluido_por'] = auth()->id();
-            }
-            $data['relatorio_pdf_path'] = null;
-            $ocorrencia->update($data);
+            $this->persistEditedOcorrencia();
         } else {
             $ocorrencia = Ocorrencia::create($this->form->toData());
 
@@ -148,6 +143,51 @@ class OcorrenciaModal extends Component
         $this->dispatch('ocorrencia-saved');
 
         $this->swalToastSuccess(SwalToast::successOptions('Salvo com sucesso!'));
+    }
+
+    public function gerarNovaRat(): void
+    {
+        $this->ensureUserIsAuthorized();
+
+        if (! $this->form->editingId) {
+            abort(404);
+        }
+
+        $ocorrencia = Ocorrencia::findOrFail($this->form->editingId);
+
+        if ($ocorrencia->rat_pdf_path === null) {
+            abort(404);
+        }
+
+        $this->form->validate();
+        $ocorrencia = $this->persistEditedOcorrencia();
+
+        $ocorrencia = $ocorrencia->fresh([
+            'prazo',
+            'colaborador',
+            'enderecoVinculado',
+            'responsavelEngenharia',
+            'disciplina',
+            'subdisciplina1',
+            'subdisciplina2',
+            'subdisciplina3',
+        ]);
+
+        $relativePath = 'ocorrencias/'.$ocorrencia->id.'/rat/RAT-'.$ocorrencia->id.'.pdf';
+        $pdfBytes = app(RenderRatPdfFromOcorrencia::class)($ocorrencia);
+        Storage::disk('public')->put($relativePath, $pdfBytes);
+
+        if ($ocorrencia->rat_pdf_path !== $relativePath) {
+            $ocorrencia->update(['rat_pdf_path' => $relativePath]);
+        }
+
+        unset($this->editingOcorrencia);
+        $this->dispatch('ocorrencia-saved');
+
+        $url = route('admin.ocorrencias.rat-pdf', $ocorrencia).'?t='.now()->timestamp;
+        $this->js('window.open('.json_encode($url).', "_blank")');
+
+        $this->swalToastSuccess(SwalToast::successOptions('Nova RAT gerada com sucesso!'));
     }
 
     public function concluirRevisao(int $ocorrenciaId): void
@@ -169,6 +209,20 @@ class OcorrenciaModal extends Component
         $this->dispatch('ocorrencia-saved');
 
         $this->swalToastSuccess(SwalToast::successOptions('Ocorrência concluída!'));
+    }
+
+    protected function persistEditedOcorrencia(): Ocorrencia
+    {
+        $ocorrencia = Ocorrencia::findOrFail($this->form->editingId);
+        $data = $this->form->toData($ocorrencia);
+
+        if ($data['status'] === OcorrenciaStatus::Concluido->value && $ocorrencia->status !== OcorrenciaStatus::Concluido) {
+            $data['concluido_por'] = auth()->id();
+        }
+        $data['relatorio_pdf_path'] = null;
+        $ocorrencia->update($data);
+
+        return $ocorrencia->fresh();
     }
 
     protected function ensureUserIsAuthorized(): void

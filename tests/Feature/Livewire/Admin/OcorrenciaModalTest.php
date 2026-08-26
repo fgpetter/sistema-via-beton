@@ -522,7 +522,90 @@ class OcorrenciaModalTest extends TestCase
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
             ->assertSee('Visualizar PDF da RAT')
+            ->assertSee('Gerar uma nova RAT')
             ->assertSee(route('admin.ocorrencias.rat-pdf', $ocorrencia), false);
+    }
+
+    public function test_edit_modal_hides_gerar_nova_rat_when_no_rat_pdf(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'email_rat_enviado' => null,
+            'rat_pdf_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertDontSee('Gerar uma nova RAT');
+    }
+
+    public function test_gerar_nova_rat_persists_form_overwrites_pdf_and_keeps_modal_open(): void
+    {
+        Storage::fake('public');
+        Mail::fake();
+
+        $enviadoEm = now()->subDay();
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'titulo' => 'Título antigo',
+            'email_rat_enviado' => $enviadoEm,
+            'relatorio_pdf_path' => 'ocorrencias/1/relatorio/old.pdf',
+        ]);
+        $path = 'ocorrencias/'.$ocorrencia->id.'/rat/RAT-'.$ocorrencia->id.'.pdf';
+        Storage::disk('public')->put($path, '%PDF-1.4 old content');
+        $ocorrencia->update(['rat_pdf_path' => $path]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.titulo', 'Título novo')
+            ->call('gerarNovaRat')
+            ->assertHasNoErrors()
+            ->assertSet('showModal', true)
+            ->assertDispatched('ocorrencia-saved');
+
+        $ocorrencia->refresh();
+        $this->assertSame('Título novo', $ocorrencia->titulo);
+        $this->assertEquals(
+            $enviadoEm->format('Y-m-d H:i:s'),
+            $ocorrencia->email_rat_enviado->format('Y-m-d H:i:s')
+        );
+        $this->assertNull($ocorrencia->relatorio_pdf_path);
+        $this->assertSame($path, $ocorrencia->rat_pdf_path);
+        $this->assertNotSame(
+            '%PDF-1.4 old content',
+            Storage::disk('public')->get($path)
+        );
+        $this->assertTrue(Storage::disk('public')->exists($path));
+        Mail::assertNothingOutgoing();
+    }
+
+    public function test_gerar_nova_rat_keeps_old_pdf_when_validation_fails(): void
+    {
+        Storage::fake('public');
+
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'email_rat_enviado' => now(),
+        ]);
+        $path = 'ocorrencias/'.$ocorrencia->id.'/rat/RAT-'.$ocorrencia->id.'.pdf';
+        Storage::disk('public')->put($path, '%PDF-1.4 old content');
+        $ocorrencia->update(['rat_pdf_path' => $path]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.titulo', '')
+            ->call('gerarNovaRat')
+            ->assertHasErrors(['form.titulo']);
+
+        $this->assertSame('%PDF-1.4 old content', Storage::disk('public')->get($path));
+    }
+
+    public function test_non_admin_cannot_gerar_nova_rat(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(OcorrenciaModal::class)
+            ->call('gerarNovaRat')
+            ->assertForbidden();
     }
 
     public function test_edit_modal_includes_ocorrencia_foto_galeria_component(): void

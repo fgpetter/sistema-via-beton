@@ -322,14 +322,39 @@
                                                     Enviada em {{ $this->editingOcorrencia->email_rat_enviado->format('d/m/Y H:i') }}
                                                 </p>
                                             </div>
-                                            <a
-                                                href="{{ route('admin.ocorrencias.rat-pdf', $this->editingOcorrencia) }}"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
-                                            >
-                                                Visualizar PDF da RAT
-                                            </a>
+                                            <div class="flex flex-col items-start sm:items-end gap-1">
+                                                <a
+                                                    href="{{ route('admin.ocorrencias.rat-pdf', $this->editingOcorrencia) }}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
+                                                >
+                                                    Visualizar PDF da RAT
+                                                </a>
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
+                                                    x-on:click="
+                                                        (async () => {
+                                                            if (!window.Swal) {
+                                                                window.Swal = (await import('https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.esm.all.min.js')).default;
+                                                            }
+                                                            const result = await window.Swal.fire({
+                                                                text: 'Salvar dados e gerar uma nova RAT com os dados inseridos? A nova RAT não será enviada.',
+                                                                icon: 'question',
+                                                                showCancelButton: true,
+                                                                confirmButtonText: 'Confirmar',
+                                                                cancelButtonText: 'Cancelar',
+                                                            });
+                                                            if (result.isConfirmed) {
+                                                                $wire.gerarNovaRat()
+                                                            }
+                                                        })()
+                                                    "
+                                                >
+                                                    Gerar uma nova RAT
+                                                </button>
+                                            </div>
                                         </div>
                                     @endif
 
