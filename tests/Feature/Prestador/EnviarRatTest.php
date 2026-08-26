@@ -14,7 +14,8 @@ use App\Models\Prazo;
 use App\Models\ResponsavelEngenharia;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -47,7 +48,7 @@ class EnviarRatTest extends TestCase
         $colaborador = Colaborador::factory()->create(['user_id' => $prestador->id]);
         $ocorrencia = Ocorrencia::factory()->aberto()->create([
             'colaborador_id' => $colaborador->id,
-            'datahora_chegada' => null,
+            'data_chegada' => null,
         ]);
 
         Livewire::actingAs($prestador)
@@ -126,23 +127,80 @@ class EnviarRatTest extends TestCase
         $this->assertSame('Dustin Hofman / Icaro Dupont', $dados['responsavel_engenharia_banrisul']);
     }
 
-    public function test_rat_pdf_datahora_saida_usa_registro_da_ocorrencia_e_fuso_configurado(): void
+    public function test_rat_pdf_data_saida_usa_registro_da_ocorrencia(): void
     {
-        config(['app.timezone' => 'America/Sao_Paulo']);
-
         $prestador = User::factory()->prestador()->create();
         $colaborador = Colaborador::factory()->create(['user_id' => $prestador->id]);
-        $saida = Carbon::parse('2026-03-28 16:30:59', 'America/Sao_Paulo');
         $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
             'colaborador_id' => $colaborador->id,
-            'datahora_saida' => $saida,
+            'data_chegada' => '2026-03-28',
+            'data_saida' => '2026-03-28',
         ]);
 
-        $geradoEmUtc = Carbon::parse('2026-03-28 19:31:00', 'UTC');
         $build = app(BuildRatPdfDataFromOcorrencia::class);
-        $dados = $build($ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']), $geradoEmUtc);
+        $dados = $build($ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']));
 
-        $this->assertSame('28/03/2026 - 16:30', $dados['datahora_saida']);
+        $this->assertSame('28/03/2026', $dados['data_chegada']);
+        $this->assertSame('28/03/2026', $dados['data_saida']);
+    }
+
+    public function test_reenvio_rat_nao_sobrescreve_data_saida(): void
+    {
+        $prestador = User::factory()->prestador()->create();
+        $colaborador = Colaborador::factory()->create(['user_id' => $prestador->id]);
+        $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
+            'colaborador_id' => $colaborador->id,
+            'data_saida' => '2026-03-10',
+            'email_rat_enviado' => now()->subDay(),
+        ]);
+
+        Mail::fake();
+        Storage::fake('public');
+
+        Livewire::actingAs($prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->set('emailRat', 'contato@agencia.com')
+            ->call('enviarEmail')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals('2026-03-10', $ocorrencia->data_saida->toDateString());
+    }
+
+    public function test_primeiro_envio_rat_nao_sobrescreve_data_saida_preenchida(): void
+    {
+        $prestador = User::factory()->prestador()->create();
+        $colaborador = Colaborador::factory()->create(['user_id' => $prestador->id]);
+        $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
+            'colaborador_id' => $colaborador->id,
+            'data_saida' => '2026-03-10',
+            'email_rat_enviado' => null,
+        ]);
+
+        Mail::fake();
+        Storage::fake('public');
+
+        Livewire::actingAs($prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->set('emailRat', 'contato@agencia.com')
+            ->call('enviarEmail')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals('2026-03-10', $ocorrencia->data_saida->toDateString());
+        $this->assertNotNull($ocorrencia->email_rat_enviado);
+    }
+
+    public function test_rat_pdf_exibe_labels_chegada_e_saida_com_datas(): void
+    {
+        $dados = BuildRatPdfDataFromOcorrencia::mockForPreview();
+        $html = view('pdf.rat', ['dados' => $dados])->render();
+
+        $this->assertStringContainsString('CHEGADA', $html);
+        $this->assertStringContainsString('SAÍDA', $html);
+        $this->assertStringContainsString('20/03/2026', $html);
+        $this->assertStringNotContainsString('Data e hora CHEGADA', $html);
+        $this->assertStringNotContainsString('Data e hora SAÍDA', $html);
     }
 
     public function test_rat_pdf_nao_exibe_coluna_prazo_de_atendimento_no_rodape(): void
@@ -153,7 +211,7 @@ class EnviarRatTest extends TestCase
         $this->assertArrayNotHasKey('prazo_atendimento_rodape', $dados);
         $this->assertSame(1, substr_count($html, 'Prazo de Atendimento'));
         $this->assertDoesNotMatchRegularExpression(
-            '/Data e hora SAÍDA<\/td>\s*<td class="lbl">Prazo de Atendimento/',
+            '/SAÍDA<\/td>\s*<td class="lbl">Prazo de Atendimento/',
             $html,
         );
     }

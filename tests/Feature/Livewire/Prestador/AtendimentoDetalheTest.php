@@ -75,7 +75,7 @@ class AtendimentoDetalheTest extends TestCase
     {
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
-            'datahora_chegada' => null,
+            'data_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -89,7 +89,7 @@ class AtendimentoDetalheTest extends TestCase
 
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
-            'datahora_chegada' => null,
+            'data_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -98,8 +98,8 @@ class AtendimentoDetalheTest extends TestCase
             ->assertHasNoErrors();
 
         $ocorrencia->refresh();
-        $this->assertNotNull($ocorrencia->datahora_chegada);
-        $this->assertEquals(now()->startOfSecond()->toDateTimeString(), $ocorrencia->datahora_chegada->toDateTimeString());
+        $this->assertNotNull($ocorrencia->data_chegada);
+        $this->assertEquals(now()->toDateString(), $ocorrencia->data_chegada->toDateString());
     }
 
     public function test_prestador_cannot_iniciar_atendimento_twice(): void
@@ -116,7 +116,7 @@ class AtendimentoDetalheTest extends TestCase
 
         $ocorrencia = Ocorrencia::factory()->aberto()->create([
             'colaborador_id' => $this->colaborador->id,
-            'datahora_chegada' => null,
+            'data_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -126,7 +126,61 @@ class AtendimentoDetalheTest extends TestCase
 
         $ocorrencia->refresh();
         $this->assertEquals(OcorrenciaStatus::Andamento, $ocorrencia->status);
-        $this->assertNotNull($ocorrencia->datahora_chegada);
+        $this->assertNotNull($ocorrencia->data_chegada);
+    }
+
+    public function test_iniciar_atendimento_does_not_overwrite_existing_data_chegada(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
+            'colaborador_id' => $this->colaborador->id,
+            'data_chegada' => '2026-03-10',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->call('iniciarAtendimento')
+            ->assertForbidden();
+
+        $ocorrencia->refresh();
+        $this->assertEquals('2026-03-10', $ocorrencia->data_chegada->toDateString());
+    }
+
+    public function test_prestador_can_edit_datas_when_andamento(): void
+    {
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('dataChegada', '2026-03-20')
+            ->set('dataSaida', '2026-03-21')
+            ->assertHasNoErrors();
+
+        $this->ocorrencia->refresh();
+        $this->assertEquals('2026-03-20', $this->ocorrencia->data_chegada->toDateString());
+        $this->assertEquals('2026-03-21', $this->ocorrencia->data_saida->toDateString());
+    }
+
+    public function test_prestador_blank_data_chegada_does_not_persist_null(): void
+    {
+        $chegada = $this->ocorrencia->data_chegada->toDateString();
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->set('dataChegada', '')
+            ->assertHasNoErrors();
+
+        $this->ocorrencia->refresh();
+        $this->assertEquals($chegada, $this->ocorrencia->data_chegada->toDateString());
+    }
+
+    public function test_prestador_cannot_edit_datas_when_revisar(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create([
+            'colaborador_id' => $this->colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $ocorrencia->id])
+            ->set('dataChegada', '2026-03-20')
+            ->assertForbidden();
     }
 
     public function test_prestador_cannot_iniciar_atendimento_with_wrong_status(): void
@@ -159,7 +213,7 @@ class AtendimentoDetalheTest extends TestCase
     {
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
-            'datahora_chegada' => null,
+            'data_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -326,6 +380,7 @@ class AtendimentoDetalheTest extends TestCase
         $this->ocorrencia->refresh();
         $this->assertEquals('contato@agencia.com', $this->ocorrencia->email_rat);
         $this->assertNotNull($this->ocorrencia->email_rat_enviado);
+        $this->assertEquals(now()->toDateString(), $this->ocorrencia->data_saida->toDateString());
         $this->assertNotNull($this->ocorrencia->rat_pdf_path);
         $this->assertTrue(
             Storage::disk('public')->exists($this->ocorrencia->rat_pdf_path),
@@ -411,8 +466,7 @@ class AtendimentoDetalheTest extends TestCase
 
         $this->ocorrencia->refresh();
         $this->assertEquals(OcorrenciaStatus::Revisar, $this->ocorrencia->status);
-        $this->assertNotNull($this->ocorrencia->datahora_saida);
-        $this->assertEquals(now()->startOfSecond()->toDateTimeString(), $this->ocorrencia->datahora_saida->toDateTimeString());
+        $this->assertNull($this->ocorrencia->data_saida);
 
         Mail::assertQueued(OcorrenciaConcluida::class, function (OcorrenciaConcluida $mail): bool {
             return $mail->ocorrencia->id === $this->ocorrencia->id
@@ -474,7 +528,7 @@ class AtendimentoDetalheTest extends TestCase
 
         $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
             'colaborador_id' => $this->colaborador->id,
-            'datahora_chegada' => null,
+            'data_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)
@@ -579,7 +633,7 @@ class AtendimentoDetalheTest extends TestCase
     {
         $ocorrencia = Ocorrencia::factory()->aberto()->create([
             'colaborador_id' => $this->colaborador->id,
-            'datahora_chegada' => null,
+            'data_chegada' => null,
         ]);
 
         Livewire::actingAs($this->prestador)

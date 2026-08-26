@@ -27,7 +27,7 @@ class BuildRatPdfDataFromOcorrencia
         ]);
 
         $timezoneApp = (string) config('app.timezone');
-        $datahoraSaidaPdf = ($ocorrencia->datahora_saida ?? $geradoEm)->copy()->timezone($timezoneApp);
+        $dataSaidaPdf = ($ocorrencia->data_saida ?? $geradoEm)->copy()->timezone($timezoneApp);
 
         $prazo = $ocorrencia->prazo;
         $prazoAtendimento = '';
@@ -73,8 +73,8 @@ class BuildRatPdfDataFromOcorrencia
             'item_descricao_servico' => $itemDescricao,
             'situacao_codigo' => '',
             'comentarios_prestador' => $ocorrencia->comentarios_prestador ?? '',
-            'datahora_chegada' => $ocorrencia->datahora_chegada?->copy()->timezone($timezoneApp)->format('d/m/Y - H:i') ?? '',
-            'datahora_saida' => $datahoraSaidaPdf->format('d/m/Y - H:i'),
+            'data_chegada' => $ocorrencia->data_chegada?->format('d/m/Y') ?? '',
+            'data_saida' => $dataSaidaPdf->format('d/m/Y'),
             'identificacao_representante' => (string) ($ocorrencia->colaborador?->nome ?? ''),
             'assinatura_representante' => '',
             'carimbo_banrisul' => '',
@@ -106,8 +106,8 @@ class BuildRatPdfDataFromOcorrencia
             'item_descricao_servico' => "Manutenção preventiva no ar condicionado\n\nSubstituição de filtros e verificação do sistema de refrigeração.",
             'situacao_codigo' => '',
             'comentarios_prestador' => 'Comentários do prestador',
-            'datahora_chegada' => '20/03/2026 - 09:30',
-            'datahora_saida' => '20/03/2026 - 17:45',
+            'data_chegada' => '20/03/2026',
+            'data_saida' => '20/03/2026',
             'identificacao_representante' => 'Carlos Adriano Vidal',
             'assinatura_representante' => '',
             'carimbo_banrisul' => '',

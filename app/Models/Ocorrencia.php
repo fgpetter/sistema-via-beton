@@ -46,8 +46,8 @@ class Ocorrencia extends Model
         'email_rat_enviado',
         'rat_pdf_path',
         'relatorio_pdf_path',
-        'datahora_chegada',
-        'datahora_saida',
+        'data_chegada',
+        'data_saida',
         'comentarios',
         'comentarios_prestador',
         'concluido_por',
@@ -64,8 +64,8 @@ class Ocorrencia extends Model
             'violacao_projetada' => 'datetime',
             'email_enviado' => 'datetime',
             'email_rat_enviado' => 'datetime',
-            'datahora_chegada' => 'datetime',
-            'datahora_saida' => 'datetime',
+            'data_chegada' => 'date',
+            'data_saida' => 'date',
             'ordem_prestador' => 'integer',
         ];
     }
@@ -171,14 +171,7 @@ class Ocorrencia extends Model
 
     public function atendimentoIniciado(): bool
     {
-        return $this->datahora_chegada !== null;
-    }
-
-    public function podeEditarDatahorasAtendimento(): bool
-    {
-        return $this->status === OcorrenciaStatus::Revisar
-            && $this->datahora_chegada !== null
-            && $this->datahora_saida !== null;
+        return $this->data_chegada !== null;
     }
 
     public function podeConcluir(): bool

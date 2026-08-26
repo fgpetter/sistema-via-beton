@@ -37,6 +37,10 @@ class AtendimentoDetalhe extends Component
 
     public ?string $emailRat = null;
 
+    public ?string $dataChegada = null;
+
+    public ?string $dataSaida = null;
+
     public $fotoUpload;
 
     public ?int $uploadingPar = null;
@@ -51,6 +55,8 @@ class AtendimentoDetalhe extends Component
         $ocorrencia = $this->ensureUserOwnsOcorrencia();
         $this->comentariosPrestador = $ocorrencia->comentarios_prestador;
         $this->emailRat = $ocorrencia->email_rat;
+        $this->dataChegada = $ocorrencia->data_chegada?->format('Y-m-d');
+        $this->dataSaida = $ocorrencia->data_saida?->format('Y-m-d');
         $this->totalPares = (int) $ocorrencia->imagens()->max('par');
     }
 
@@ -59,6 +65,8 @@ class AtendimentoDetalhe extends Component
         return [
             'comentariosPrestador' => ['nullable', 'string'],
             'emailRat' => ['nullable', 'email', 'max:255'],
+            'dataChegada' => ['nullable', 'date'],
+            'dataSaida' => ['nullable', 'date'],
             'fotoUpload' => ['nullable', 'image', 'max:5120'],
         ];
     }
@@ -68,6 +76,8 @@ class AtendimentoDetalhe extends Component
         return [
             'emailRat.email' => 'O e-mail informado não é válido.',
             'emailRat.max' => 'O e-mail não pode ter mais de 255 caracteres.',
+            'dataChegada.date' => 'A data de chegada deve ser uma data válida.',
+            'dataSaida.date' => 'A data de saída deve ser uma data válida.',
             'fotoUpload.image' => 'O arquivo deve ser uma imagem.',
             'fotoUpload.max' => 'A imagem deve ter no máximo 5MB.',
         ];
@@ -88,10 +98,16 @@ class AtendimentoDetalhe extends Component
             abort(403, 'Não é possível iniciar este atendimento.');
         }
 
-        $ocorrencia->update([
-            'datahora_chegada' => now(),
+        $payload = [
             'status' => OcorrenciaStatus::Andamento,
-        ]);
+        ];
+
+        if ($ocorrencia->data_chegada === null) {
+            $payload['data_chegada'] = now();
+        }
+
+        $ocorrencia->update($payload);
+        $this->dataChegada = $ocorrencia->fresh()->data_chegada?->format('Y-m-d');
         unset($this->ocorrencia);
 
         $this->swalToastSuccess(SwalToast::successOptions('Atendimento iniciado!'));
@@ -162,6 +178,38 @@ class AtendimentoDetalhe extends Component
         $this->swalToastSuccess(SwalToast::successOptions('Comentários salvos!'));
     }
 
+    public function updatedDataChegada(): void
+    {
+        $this->persistirDataAtendimento('data_chegada', $this->dataChegada);
+    }
+
+    public function updatedDataSaida(): void
+    {
+        $this->persistirDataAtendimento('data_saida', $this->dataSaida);
+    }
+
+    protected function persistirDataAtendimento(string $coluna, ?string $valor): void
+    {
+        $ocorrencia = $this->ensureAtendimentoIniciado();
+
+        if ($ocorrencia->status !== OcorrenciaStatus::Andamento) {
+            abort(403, 'Não é possível alterar as datas deste atendimento.');
+        }
+
+        $propriedade = $coluna === 'data_chegada' ? 'dataChegada' : 'dataSaida';
+
+        if (blank($valor)) {
+            $this->{$propriedade} = $ocorrencia->{$coluna}?->format('Y-m-d');
+
+            return;
+        }
+
+        $this->validateOnly($propriedade);
+        $ocorrencia->update([$coluna => $valor]);
+        unset($this->ocorrencia);
+        $this->{$propriedade} = $ocorrencia->fresh()->{$coluna}?->format('Y-m-d');
+    }
+
     public function enviarEmail(): void
     {
         $this->ensureAtendimentoIniciado();
@@ -174,20 +222,33 @@ class AtendimentoDetalhe extends Component
         }
 
         $ocorrencia = $this->ocorrencia->fresh(['prazo', 'colaborador', 'enderecoVinculado']);
+        $primeiroEnvio = $ocorrencia->email_rat_enviado === null;
+
+        if ($primeiroEnvio && $ocorrencia->data_saida === null) {
+            $ocorrencia->data_saida = now();
+        }
+
         $pdfBytes = app(RenderRatPdfFromOcorrencia::class)($ocorrencia);
 
         $relativePath = 'ocorrencias/'.$ocorrencia->id.'/rat/RAT-'.$ocorrencia->id.'.pdf';
         Storage::disk('public')->put($relativePath, $pdfBytes);
 
-        $ocorrencia->update([
+        $dados = [
             'email_rat' => $this->emailRat,
             'email_rat_enviado' => now(),
             'rat_pdf_path' => $relativePath,
-        ]);
+        ];
+
+        if ($primeiroEnvio && $ocorrencia->data_saida !== null) {
+            $dados['data_saida'] = $ocorrencia->data_saida;
+        }
+
+        $ocorrencia->update($dados);
 
         Mail::to($this->emailRat)->send(new RatEnviada($ocorrencia->fresh(['colaborador', 'prazo', 'enderecoVinculado'])));
 
         unset($this->ocorrencia);
+        $this->dataSaida = $ocorrencia->fresh()->data_saida?->format('Y-m-d');
 
         $this->swalToastSuccess(SwalToast::successOptions('RAT enviada por e-mail com sucesso!'));
     }
@@ -208,7 +269,6 @@ class AtendimentoDetalhe extends Component
         }
 
         $ocorrencia->update([
-            'datahora_saida' => now(),
             'status' => OcorrenciaStatus::Revisar,
         ]);
 

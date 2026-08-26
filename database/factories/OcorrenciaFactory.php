@@ -5,11 +5,12 @@ namespace Database\Factories;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\PrazoUnidade;
 use App\Models\Colaborador;
+use App\Models\Ocorrencia;
 use App\Models\Prazo;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Ocorrencia>
+ * @extends Factory<Ocorrencia>
  */
 class OcorrenciaFactory extends Factory
 {
@@ -33,8 +34,8 @@ class OcorrenciaFactory extends Factory
             'endereco' => fake()->optional()->address(),
             'email_enviado' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
             'email_rat' => fake()->optional(0.3)->safeEmail(),
-            'datahora_chegada' => fake()->optional(0.4)->dateTimeBetween('-3 months', 'now'),
-            'datahora_saida' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
+            'data_chegada' => fake()->optional(0.4)->dateTimeBetween('-3 months', 'now'),
+            'data_saida' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
             'comentarios' => fake()->optional()->paragraph(),
             'ordem_prestador' => null,
         ];
@@ -58,7 +59,8 @@ class OcorrenciaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => OcorrenciaStatus::Andamento,
-            'datahora_chegada' => now(),
+            'data_chegada' => now(),
+            'data_saida' => null,
         ]);
     }
 
@@ -66,8 +68,8 @@ class OcorrenciaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => OcorrenciaStatus::Revisar,
-            'datahora_chegada' => now()->subHours(2),
-            'datahora_saida' => now(),
+            'data_chegada' => now()->subHours(2),
+            'data_saida' => now(),
         ]);
     }
 

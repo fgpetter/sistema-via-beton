@@ -41,9 +41,9 @@ class OcorrenciaForm extends Form
 
     public ?string $endereco = null;
 
-    public ?string $datahoraChegada = null;
+    public ?string $dataChegada = null;
 
-    public ?string $datahoraSaida = null;
+    public ?string $dataSaida = null;
 
     public ?string $comentarios = null;
 
@@ -94,8 +94,8 @@ class OcorrenciaForm extends Form
             ],
             'agencia' => ['required', 'string', 'max:255'],
             'endereco' => ['nullable', 'string', 'max:255'],
-            'datahoraChegada' => ['nullable', 'date'],
-            'datahoraSaida' => ['nullable', 'date'],
+            'dataChegada' => ['nullable', 'date'],
+            'dataSaida' => ['nullable', 'date'],
             'comentarios' => ['nullable', 'string'],
         ];
     }
@@ -121,15 +121,15 @@ class OcorrenciaForm extends Form
             'subdisciplina3Id.exists' => 'A subdisciplina 3 selecionada é inválida.',
             'agencia.required' => 'A agência é obrigatória.',
             'agencia.max' => 'A agência não pode ter mais de 255 caracteres.',
-            'datahoraChegada.date' => 'A data/hora de chegada deve ser uma data válida.',
-            'datahoraSaida.date' => 'A data/hora de saída deve ser uma data válida.',
+            'dataChegada.date' => 'A data de chegada deve ser uma data válida.',
+            'dataSaida.date' => 'A data de saída deve ser uma data válida.',
         ];
     }
 
     public function validate($rules = null, $messages = [], $attributes = []): void
     {
-        $this->datahoraChegada = blank($this->datahoraChegada) ? null : $this->datahoraChegada;
-        $this->datahoraSaida = blank($this->datahoraSaida) ? null : $this->datahoraSaida;
+        $this->dataChegada = blank($this->dataChegada) ? null : $this->dataChegada;
+        $this->dataSaida = blank($this->dataSaida) ? null : $this->dataSaida;
 
         parent::validate($rules, $messages, $attributes);
 
@@ -175,8 +175,8 @@ class OcorrenciaForm extends Form
         $this->agencia = $ocorrencia->agencia ?? '';
         $this->contratoLabel = ContratoSolucionador::tryFrom((string) $ocorrencia->contrato)?->label() ?? '';
         $this->endereco = $ocorrencia->endereco;
-        $this->datahoraChegada = $ocorrencia->datahora_chegada?->format('Y-m-d\TH:i');
-        $this->datahoraSaida = $ocorrencia->datahora_saida?->format('Y-m-d\TH:i');
+        $this->dataChegada = $ocorrencia->data_chegada?->format('Y-m-d');
+        $this->dataSaida = $ocorrencia->data_saida?->format('Y-m-d');
         $this->comentarios = $ocorrencia->comentarios;
         $this->comentarios_prestador = $ocorrencia->comentarios_prestador;
     }
@@ -206,9 +206,11 @@ class OcorrenciaForm extends Form
             'comentarios' => $this->comentarios,
         ];
 
-        if ($ocorrencia?->podeEditarDatahorasAtendimento()) {
-            $data['datahora_chegada'] = $this->datahoraChegada;
-            $data['datahora_saida'] = $this->datahoraSaida;
+        $data['data_chegada'] = $this->dataChegada ?? $ocorrencia?->data_chegada;
+        $data['data_saida'] = $this->dataSaida ?? $ocorrencia?->data_saida;
+
+        if ($data['data_chegada'] && $data['status'] === OcorrenciaStatus::Aberto->value) {
+            $data['status'] = OcorrenciaStatus::Andamento->value;
         }
 
         return $data;

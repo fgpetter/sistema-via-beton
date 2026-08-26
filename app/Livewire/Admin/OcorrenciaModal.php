@@ -97,12 +97,6 @@ class OcorrenciaModal extends Component
         return Ocorrencia::with('enderecoVinculado')->find($this->form->editingId);
     }
 
-    #[Computed]
-    public function datahorasEditaveis(): bool
-    {
-        return $this->editingOcorrencia?->podeEditarDatahorasAtendimento() ?? false;
-    }
-
     public function openCreateModal(): void
     {
         $this->ensureUserIsAuthorized();

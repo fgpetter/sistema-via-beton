@@ -277,134 +277,126 @@ class OcorrenciaModalTest extends TestCase
             ->assertHasErrors(['form.status']);
     }
 
-    public function test_edit_modal_shows_datahora_inputs_when_revisar_and_filled(): void
+    public function test_edit_modal_shows_data_chegada_and_saida_inputs(): void
     {
-        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create();
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->assertSee('Data/Hora de Chegada')
-            ->assertSee('Data/Hora de Saída')
-            ->assertSeeHtml('wire:model="form.datahoraChegada"')
-            ->assertSeeHtml('wire:model="form.datahoraSaida"');
+            ->assertSee('Data de Chegada')
+            ->assertSee('Data de Saída')
+            ->assertSeeHtml('wire:model="form.dataChegada"')
+            ->assertSeeHtml('wire:model="form.dataSaida"');
     }
 
-    public function test_create_modal_does_not_show_datahora_chegada_and_saida_inputs(): void
+    public function test_create_modal_shows_data_chegada_and_saida_inputs(): void
     {
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openCreateModal')
-            ->assertDontSee('Data/Hora de Chegada')
-            ->assertDontSee('Data/Hora de Saída');
+            ->assertSee('Data de Chegada')
+            ->assertSee('Data de Saída');
     }
 
-    public function test_open_edit_modal_hydrates_datahora_chegada_and_saida(): void
+    public function test_open_edit_modal_hydrates_data_chegada_and_saida(): void
     {
-        $chegada = now()->setTime(9, 30);
-        $saida = now()->setTime(17, 45);
         $ocorrencia = Ocorrencia::factory()->create([
-            'datahora_chegada' => $chegada,
-            'datahora_saida' => $saida,
+            'data_chegada' => '2026-03-20',
+            'data_saida' => '2026-03-21',
         ]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->assertSet('form.datahoraChegada', $chegada->format('Y-m-d\TH:i'))
-            ->assertSet('form.datahoraSaida', $saida->format('Y-m-d\TH:i'));
+            ->assertSet('form.dataChegada', '2026-03-20')
+            ->assertSet('form.dataSaida', '2026-03-21');
     }
 
-    public function test_admin_can_edit_datahora_chegada_and_saida_when_revisar_and_filled(): void
+    public function test_admin_can_edit_data_chegada_and_saida_in_any_status(): void
     {
-        $ocorrencia = Ocorrencia::factory()->revisar()->create();
+        $ocorrencia = Ocorrencia::factory()->emAndamento()->create();
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->set('form.datahoraChegada', '2026-03-20T09:30')
-            ->set('form.datahoraSaida', '2026-03-20T17:45')
+            ->set('form.dataChegada', '2026-03-20')
+            ->set('form.dataSaida', '2026-03-21')
             ->call('save')
             ->assertHasNoErrors();
 
         $ocorrencia->refresh();
-        $this->assertEquals('2026-03-20 09:30:00', $ocorrencia->datahora_chegada->format('Y-m-d H:i:s'));
-        $this->assertEquals('2026-03-20 17:45:00', $ocorrencia->datahora_saida->format('Y-m-d H:i:s'));
+        $this->assertEquals('2026-03-20', $ocorrencia->data_chegada->toDateString());
+        $this->assertEquals('2026-03-21', $ocorrencia->data_saida->toDateString());
     }
 
-    public function test_admin_cannot_edit_datahora_when_status_is_not_revisar(): void
+    public function test_admin_filling_data_chegada_on_aberto_sets_andamento(): void
     {
-        $chegada = now()->subHours(4)->startOfMinute();
-        $saida = now()->subHours(2)->startOfMinute();
-        $ocorrencia = Ocorrencia::factory()->emAndamento()->create([
-            'datahora_chegada' => $chegada,
-            'datahora_saida' => $saida,
+        $ocorrencia = Ocorrencia::factory()->aberto()->create([
+            'data_chegada' => null,
         ]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->assertDontSee('Data/Hora de Chegada')
-            ->assertDontSee('Data/Hora de Saída')
-            ->set('form.datahoraChegada', '2026-03-20T09:30')
-            ->set('form.datahoraSaida', '2026-03-20T17:45')
+            ->set('form.dataChegada', '2026-03-20')
             ->call('save')
             ->assertHasNoErrors();
 
         $ocorrencia->refresh();
-        $this->assertEquals($chegada->format('Y-m-d H:i:s'), $ocorrencia->datahora_chegada->format('Y-m-d H:i:s'));
-        $this->assertEquals($saida->format('Y-m-d H:i:s'), $ocorrencia->datahora_saida->format('Y-m-d H:i:s'));
+        $this->assertEquals(OcorrenciaStatus::Andamento, $ocorrencia->status);
+        $this->assertEquals('2026-03-20', $ocorrencia->data_chegada->toDateString());
     }
 
-    public function test_admin_cannot_edit_datahora_when_revisar_but_fields_are_empty(): void
+    public function test_admin_filling_data_chegada_on_espera_does_not_change_status(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->create([
+            'status' => OcorrenciaStatus::Espera,
+            'data_chegada' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.dataChegada', '2026-03-20')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals(OcorrenciaStatus::Espera, $ocorrencia->status);
+        $this->assertEquals('2026-03-20', $ocorrencia->data_chegada->toDateString());
+    }
+
+    public function test_admin_blank_datas_do_not_persist_null(): void
     {
         $ocorrencia = Ocorrencia::factory()->revisar()->create([
-            'datahora_chegada' => null,
-            'datahora_saida' => null,
+            'data_chegada' => '2026-03-20',
+            'data_saida' => '2026-03-21',
         ]);
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->assertDontSee('Data/Hora de Chegada')
-            ->assertDontSee('Data/Hora de Saída')
-            ->set('form.datahoraChegada', '2026-03-20T09:30')
-            ->set('form.datahoraSaida', '2026-03-20T17:45')
+            ->set('form.dataChegada', '')
+            ->set('form.dataSaida', '')
             ->call('save')
             ->assertHasNoErrors();
 
         $ocorrencia->refresh();
-        $this->assertNull($ocorrencia->datahora_chegada);
-        $this->assertNull($ocorrencia->datahora_saida);
+        $this->assertEquals('2026-03-20', $ocorrencia->data_chegada->toDateString());
+        $this->assertEquals('2026-03-21', $ocorrencia->data_saida->toDateString());
     }
 
-    public function test_admin_can_clear_datahora_chegada_and_saida_when_editable(): void
+    public function test_invalid_data_chegada_is_rejected(): void
     {
         $ocorrencia = Ocorrencia::factory()->revisar()->create();
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaModal::class)
             ->call('openEditModal', $ocorrencia->id)
-            ->set('form.datahoraChegada', '')
-            ->set('form.datahoraSaida', '')
+            ->set('form.dataChegada', 'nao-e-data')
             ->call('save')
-            ->assertHasNoErrors();
-
-        $ocorrencia->refresh();
-        $this->assertNull($ocorrencia->datahora_chegada);
-        $this->assertNull($ocorrencia->datahora_saida);
-    }
-
-    public function test_invalid_datahora_chegada_is_rejected(): void
-    {
-        $ocorrencia = Ocorrencia::factory()->revisar()->create();
-
-        Livewire::actingAs($this->admin)
-            ->test(OcorrenciaModal::class)
-            ->call('openEditModal', $ocorrencia->id)
-            ->set('form.datahoraChegada', 'nao-e-data')
-            ->call('save')
-            ->assertHasErrors(['form.datahoraChegada']);
+            ->assertHasErrors(['form.dataChegada']);
     }
 
     public function test_admin_can_edit_ocorrencia(): void

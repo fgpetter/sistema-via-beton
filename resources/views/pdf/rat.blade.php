@@ -167,14 +167,14 @@
 
     <table class="rat" cellspacing="0" style="margin-top: 8px;">
         <tr>
-            <td class="lbl">Data e hora CHEGADA</td>
-            <td class="lbl">Data e hora SAÍDA</td>
+            <td class="lbl">CHEGADA</td>
+            <td class="lbl">SAÍDA</td>
             <td class="lbl">Identificação do representante da contratada</td>
             <td class="lbl">Assinatura do representante da contratada</td>
         </tr>
         <tr>
-            <td class="val"><br><br></td>
-            <td class="val"><br><br></td>
+            <td class="val">{{ $dados['data_chegada'] }}</td>
+            <td class="val">{{ $dados['data_saida'] }}</td>
             <td class="val">{{ $dados['identificacao_representante'] }}</td>
             <td class="val">{{ $dados['assinatura_representante'] }}</td>
         </tr>

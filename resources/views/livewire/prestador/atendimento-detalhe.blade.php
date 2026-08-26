@@ -69,11 +69,30 @@
             @endif
             <div class="flex flex-wrap gap-4 text-sm text-default-500">
                 <span>Abertura: <strong>{{ $this->ocorrencia->abertura->format('d/m/Y') }}</strong></span>
-                @if ($this->ocorrencia->datahora_chegada)
-                    <span>Chegada: <strong>{{ $this->ocorrencia->datahora_chegada->format('d/m/Y H:i') }}</strong></span>
-                @endif
-                @if ($this->ocorrencia->datahora_saida)
-                    <span>Saída: <strong>{{ $this->ocorrencia->datahora_saida->format('d/m/Y H:i') }}</strong></span>
+                @if ($this->ocorrencia->status === OcorrenciaStatus::Andamento && $this->ocorrencia->atendimentoIniciado())
+                    <label class="flex items-center gap-2">
+                        Chegada:
+                        <input
+                            wire:model.blur="dataChegada"
+                            type="date"
+                            class="form-input py-1 px-2 text-sm @error('dataChegada') border-danger @enderror"
+                        >
+                    </label>
+                    <label class="flex items-center gap-2">
+                        Saída:
+                        <input
+                            wire:model.blur="dataSaida"
+                            type="date"
+                            class="form-input py-1 px-2 text-sm @error('dataSaida') border-danger @enderror"
+                        >
+                    </label>
+                @else
+                    @if ($this->ocorrencia->data_chegada)
+                        <span>Chegada: <strong>{{ $this->ocorrencia->data_chegada->format('d/m/Y') }}</strong></span>
+                    @endif
+                    @if ($this->ocorrencia->data_saida)
+                        <span>Saída: <strong>{{ $this->ocorrencia->data_saida->format('d/m/Y') }}</strong></span>
+                    @endif
                 @endif
             </div>
         </div>

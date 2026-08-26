@@ -119,35 +119,33 @@
 
                                 </div>
 
-                                @if ($this->datahorasEditaveis)
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <label for="datahoraChegada" class="block text-sm font-medium text-default-700 mb-1">Data/Hora de Chegada</label>
+                                            <label for="dataChegada" class="block text-sm font-medium text-default-700 mb-1">Data de Chegada</label>
                                             <input
-                                                wire:model="form.datahoraChegada"
-                                                type="datetime-local"
-                                                id="datahoraChegada"
-                                                class="form-input w-full @error('form.datahoraChegada') border-danger @enderror"
+                                                wire:model="form.dataChegada"
+                                                type="date"
+                                                id="dataChegada"
+                                                class="form-input w-full @error('form.dataChegada') border-danger @enderror"
                                             >
-                                            @error('form.datahoraChegada')
+                                            @error('form.dataChegada')
                                                 <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                             @enderror
                                         </div>
 
                                         <div>
-                                            <label for="datahoraSaida" class="block text-sm font-medium text-default-700 mb-1">Data/Hora de Saída</label>
+                                            <label for="dataSaida" class="block text-sm font-medium text-default-700 mb-1">Data de Saída</label>
                                             <input
-                                                wire:model="form.datahoraSaida"
-                                                type="datetime-local"
-                                                id="datahoraSaida"
-                                                class="form-input w-full @error('form.datahoraSaida') border-danger @enderror"
+                                                wire:model="form.dataSaida"
+                                                type="date"
+                                                id="dataSaida"
+                                                class="form-input w-full @error('form.dataSaida') border-danger @enderror"
                                             >
-                                            @error('form.datahoraSaida')
+                                            @error('form.dataSaida')
                                                 <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                             @enderror
                                         </div>
                                     </div>
-                                @endif
 
                                 <div>
                                     <label for="titulo" class="block text-sm font-medium text-default-700 mb-1">Título</label>
