@@ -32,6 +32,7 @@ class Ocorrencia extends Model
         'prioridade',
         'ordem_prestador',
         'colaborador_id',
+        'prestador_nome',
         'prazo_id',
         'responsavel_engenharia_id',
         'disciplina_id',

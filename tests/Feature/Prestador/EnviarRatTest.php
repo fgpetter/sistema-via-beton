@@ -5,6 +5,7 @@ namespace Tests\Feature\Prestador;
 use App\Actions\Ocorrencias\BuildRatPdfDataFromOcorrencia;
 use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\PrazoUnidade;
+use App\Enums\TipoColaborador;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Models\Colaborador;
 use App\Models\Disciplina;
@@ -214,5 +215,65 @@ class EnviarRatTest extends TestCase
             '/SAÍDA<\/td>\s*<td class="lbl">Prazo de Atendimento/',
             $html,
         );
+    }
+
+    public function test_rat_com_administrativo_e_nome_prestador_usa_prestador_nome(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $colaborador = Colaborador::factory()->create([
+            'user_id' => $admin->id,
+            'tipo' => TipoColaborador::Administrativos,
+            'nome' => 'Maria Admin',
+        ]);
+        $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
+            'colaborador_id' => $colaborador->id,
+            'prestador_nome' => 'Carlos Adriano Vidal',
+        ]);
+
+        $dados = app(BuildRatPdfDataFromOcorrencia::class)(
+            $ocorrencia->fresh(['colaborador'])
+        );
+
+        $this->assertSame('Carlos Adriano Vidal', $dados['identificacao_representante']);
+    }
+
+    public function test_rat_com_administrativo_sem_nome_prestador_usa_nome_do_colaborador(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $colaborador = Colaborador::factory()->create([
+            'user_id' => $admin->id,
+            'tipo' => TipoColaborador::Administrativos,
+            'nome' => 'Maria Admin',
+        ]);
+        $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
+            'colaborador_id' => $colaborador->id,
+            'prestador_nome' => null,
+        ]);
+
+        $dados = app(BuildRatPdfDataFromOcorrencia::class)(
+            $ocorrencia->fresh(['colaborador'])
+        );
+
+        $this->assertSame('Maria Admin', $dados['identificacao_representante']);
+    }
+
+    public function test_rat_com_prestador_ignora_prestador_nome_residual(): void
+    {
+        $prestador = User::factory()->prestador()->create();
+        $colaborador = Colaborador::factory()->create([
+            'user_id' => $prestador->id,
+            'tipo' => TipoColaborador::Prestadores,
+            'nome' => 'João Prestador',
+        ]);
+        $ocorrencia = Ocorrencia::factory()->emAtendimentoIniciado()->create([
+            'colaborador_id' => $colaborador->id,
+            'prestador_nome' => 'Carlos Residual',
+        ]);
+
+        $dados = app(BuildRatPdfDataFromOcorrencia::class)(
+            $ocorrencia->fresh(['colaborador'])
+        );
+
+        $this->assertSame('João Prestador', $dados['identificacao_representante']);
     }
 }

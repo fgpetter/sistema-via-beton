@@ -4,6 +4,7 @@ namespace Tests\Feature\Livewire\Admin;
 
 use App\Enums\ContratoSolucionador;
 use App\Enums\OcorrenciaStatus;
+use App\Enums\TipoColaborador;
 use App\Livewire\Admin\OcorrenciaFotoGaleria;
 use App\Livewire\Admin\OcorrenciaModal;
 use App\Mail\OcorrenciaCriada;
@@ -856,6 +857,139 @@ class OcorrenciaModalTest extends TestCase
             'id' => $ocorrencia->id,
             'responsavel_engenharia_id' => $responsavel->id,
         ]);
+    }
+
+    public function test_create_nao_mostra_nem_persiste_nome_do_prestador(): void
+    {
+        Mail::fake();
+
+        $adminUser = User::factory()->admin()->create();
+        $colaborador = Colaborador::factory()->create([
+            'user_id' => $adminUser->id,
+            'tipo' => TipoColaborador::Administrativos,
+            'nome' => 'Maria Admin',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->assertDontSee('Nome do Prestador')
+            ->set('form.titulo', 'Nova com Admin')
+            ->set('form.status', OcorrenciaStatus::Andamento->value)
+            ->set('form.abertura', '2026-02-18')
+            ->set('form.agencia', 'Agência Central')
+            ->set('form.colaboradorId', $colaborador->id)
+            ->set('form.prestadorNome', 'Carlos Adriano Vidal')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'titulo' => 'Nova com Admin',
+            'colaborador_id' => $colaborador->id,
+            'prestador_nome' => null,
+        ]);
+    }
+
+    public function test_edit_com_prestador_nao_mostra_nome_do_prestador(): void
+    {
+        $colaborador = Colaborador::factory()->create([
+            'user_id' => $this->prestador->id,
+            'tipo' => TipoColaborador::Prestadores,
+            'nome' => 'João Prestador',
+        ]);
+        $ocorrencia = Ocorrencia::factory()->create([
+            'colaborador_id' => $colaborador->id,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertDontSee('Nome do Prestador');
+    }
+
+    public function test_edit_com_administrativo_mostra_e_persiste_nome_do_prestador(): void
+    {
+        $adminUser = User::factory()->admin()->create();
+        $colaborador = Colaborador::factory()->create([
+            'user_id' => $adminUser->id,
+            'tipo' => TipoColaborador::Administrativos,
+            'nome' => 'Maria Admin',
+        ]);
+        $ocorrencia = Ocorrencia::factory()->create([
+            'colaborador_id' => $colaborador->id,
+            'prestador_nome' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->assertSee('Nome do Prestador')
+            ->set('form.prestadorNome', 'Carlos Adriano Vidal')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $ocorrencia->id,
+            'prestador_nome' => 'Carlos Adriano Vidal',
+        ]);
+    }
+
+    public function test_salvar_trocando_administrativo_para_prestador_zera_nome_do_prestador(): void
+    {
+        $adminUser = User::factory()->admin()->create();
+        $colaboradorAdmin = Colaborador::factory()->create([
+            'user_id' => $adminUser->id,
+            'tipo' => TipoColaborador::Administrativos,
+            'nome' => 'Maria Admin',
+        ]);
+        $colaboradorPrestador = Colaborador::factory()->create([
+            'user_id' => $this->prestador->id,
+            'tipo' => TipoColaborador::Prestadores,
+            'nome' => 'João Prestador',
+        ]);
+        $ocorrencia = Ocorrencia::factory()->create([
+            'colaborador_id' => $colaboradorAdmin->id,
+            'prestador_nome' => 'Carlos Adriano Vidal',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.colaboradorId', $colaboradorPrestador->id)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('ocorrencias', [
+            'id' => $ocorrencia->id,
+            'colaborador_id' => $colaboradorPrestador->id,
+            'prestador_nome' => null,
+        ]);
+    }
+
+    public function test_salvar_nome_do_prestador_nao_altera_rat_pdf_path(): void
+    {
+        $adminUser = User::factory()->admin()->create();
+        $colaborador = Colaborador::factory()->create([
+            'user_id' => $adminUser->id,
+            'tipo' => TipoColaborador::Administrativos,
+            'nome' => 'Maria Admin',
+        ]);
+        $ocorrencia = Ocorrencia::factory()->create([
+            'colaborador_id' => $colaborador->id,
+            'rat_pdf_path' => 'ocorrencias/1/rat/RAT-1.pdf',
+            'email_rat_enviado' => now(),
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.prestadorNome', 'Carlos Adriano Vidal')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertSame('ocorrencias/1/rat/RAT-1.pdf', $ocorrencia->rat_pdf_path);
+        $this->assertSame('Carlos Adriano Vidal', $ocorrencia->prestador_nome);
     }
 
     private function idResponsavelEngenharia(string $nome): int

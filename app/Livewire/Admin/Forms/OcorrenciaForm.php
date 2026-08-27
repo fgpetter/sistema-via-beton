@@ -4,6 +4,8 @@ namespace App\Livewire\Admin\Forms;
 
 use App\Enums\ContratoSolucionador;
 use App\Enums\OcorrenciaStatus;
+use App\Enums\TipoColaborador;
+use App\Models\Colaborador;
 use App\Models\Ocorrencia;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -22,6 +24,8 @@ class OcorrenciaForm extends Form
     public string $abertura = '';
 
     public ?int $colaboradorId = null;
+
+    public ?string $prestadorNome = null;
 
     public ?int $prazoId = null;
 
@@ -60,6 +64,7 @@ class OcorrenciaForm extends Form
             'descricao' => ['nullable', 'string'],
             'abertura' => ['required', 'date'],
             'colaboradorId' => ['nullable', 'exists:colaboradores,id'],
+            'prestadorNome' => ['nullable', 'string', 'max:255'],
             'prazoId' => ['nullable', 'exists:prazos,id'],
             'responsavelEngenhariaId' => [
                 'nullable',
@@ -113,6 +118,7 @@ class OcorrenciaForm extends Form
             'abertura.required' => 'A data de abertura é obrigatória.',
             'abertura.date' => 'A data de abertura deve ser uma data válida.',
             'colaboradorId.exists' => 'O colaborador selecionado não existe.',
+            'prestadorNome.max' => 'O nome do prestador não pode ter mais de 255 caracteres.',
             'prazoId.exists' => 'A categoria selecionada não existe.',
             'responsavelEngenhariaId.exists' => 'O responsável de engenharia selecionado é inválido.',
             'disciplinaId.exists' => 'A disciplina selecionada é inválida.',
@@ -130,6 +136,7 @@ class OcorrenciaForm extends Form
     {
         $this->dataChegada = blank($this->dataChegada) ? null : $this->dataChegada;
         $this->dataSaida = blank($this->dataSaida) ? null : $this->dataSaida;
+        $this->prestadorNome = blank($this->prestadorNome) ? null : trim((string) $this->prestadorNome);
 
         parent::validate($rules, $messages, $attributes);
 
@@ -166,6 +173,7 @@ class OcorrenciaForm extends Form
         $this->descricao = $ocorrencia->descricao;
         $this->abertura = $ocorrencia->abertura->format('Y-m-d');
         $this->colaboradorId = $ocorrencia->colaborador_id;
+        $this->prestadorNome = $ocorrencia->prestador_nome;
         $this->prazoId = $ocorrencia->prazo_id;
         $this->responsavelEngenhariaId = $ocorrencia->responsavel_engenharia_id;
         $this->disciplinaId = $ocorrencia->disciplina_id;
@@ -192,6 +200,7 @@ class OcorrenciaForm extends Form
             'descricao' => $this->descricao,
             'abertura' => $this->abertura,
             'colaborador_id' => $this->colaboradorId,
+            'prestador_nome' => $this->resolvedPrestadorNome(),
             'prazo_id' => $this->prazoId,
             'responsavel_engenharia_id' => blank($this->responsavelEngenhariaId)
                 ? null
@@ -223,5 +232,24 @@ class OcorrenciaForm extends Form
         }
 
         return Ocorrencia::query()->whereKey($this->editingId)->value('responsavel_engenharia_id');
+    }
+
+    protected function resolvedPrestadorNome(): ?string
+    {
+        if (! $this->editingId) {
+            return null;
+        }
+
+        if ($this->colaboradorId === null) {
+            return null;
+        }
+
+        $colaborador = Colaborador::query()->find($this->colaboradorId);
+
+        if ($colaborador?->tipo !== TipoColaborador::Administrativos) {
+            return null;
+        }
+
+        return blank($this->prestadorNome) ? null : (string) $this->prestadorNome;
     }
 }

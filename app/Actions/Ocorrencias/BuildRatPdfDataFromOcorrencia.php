@@ -2,6 +2,7 @@
 
 namespace App\Actions\Ocorrencias;
 
+use App\Enums\TipoColaborador;
 use App\Models\Ocorrencia;
 use App\Models\Prazo;
 use Illuminate\Support\Carbon;
@@ -75,10 +76,24 @@ class BuildRatPdfDataFromOcorrencia
             'comentarios_prestador' => $ocorrencia->comentarios_prestador ?? '',
             'data_chegada' => $ocorrencia->data_chegada?->format('d/m/Y') ?? '',
             'data_saida' => $dataSaidaPdf->format('d/m/Y'),
-            'identificacao_representante' => (string) ($ocorrencia->colaborador?->nome ?? ''),
+            'identificacao_representante' => $this->identificacaoRepresentante($ocorrencia),
             'assinatura_representante' => '',
             'carimbo_banrisul' => '',
         ];
+    }
+
+    protected function identificacaoRepresentante(Ocorrencia $ocorrencia): string
+    {
+        $colaborador = $ocorrencia->colaborador;
+
+        if (
+            $colaborador?->tipo === TipoColaborador::Administrativos
+            && filled($ocorrencia->prestador_nome)
+        ) {
+            return (string) $ocorrencia->prestador_nome;
+        }
+
+        return (string) ($colaborador?->nome ?? '');
     }
 
     /**

@@ -245,7 +245,11 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div @class([
+                                    'grid grid-cols-1 gap-4',
+                                    'sm:grid-cols-2 lg:grid-cols-4' => $this->editingOcorrencia?->colaborador?->tipo === \App\Enums\TipoColaborador::Administrativos,
+                                    'sm:grid-cols-3' => $this->editingOcorrencia?->colaborador?->tipo !== \App\Enums\TipoColaborador::Administrativos,
+                                ])>
                                     <div>
                                         <label for="agencia" class="block text-sm font-medium text-default-700 mb-1">Agência</label>
                                         <input
@@ -276,6 +280,22 @@
                                             <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                         @enderror
                                     </div>
+
+                                    @if ($this->editingOcorrencia?->colaborador?->tipo === \App\Enums\TipoColaborador::Administrativos)
+                                        <div>
+                                            <label for="prestadorNome" class="block text-sm font-medium text-default-700 mb-1">Nome do Prestador</label>
+                                            <input
+                                                wire:model="form.prestadorNome"
+                                                type="text"
+                                                id="prestadorNome"
+                                                class="form-input w-full @error('form.prestadorNome') border-danger @enderror"
+                                                placeholder="Identificação na RAT"
+                                            >
+                                            @error('form.prestadorNome')
+                                                <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    @endif
 
                                     <div>
                                         <label for="contratoSolucionador" class="block text-sm font-medium text-default-700 mb-1">Contrato Solucionador</label>

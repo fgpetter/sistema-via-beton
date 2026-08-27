@@ -96,7 +96,7 @@ class OcorrenciaModal extends Component
             return null;
         }
 
-        return Ocorrencia::with('enderecoVinculado')->find($this->form->editingId);
+        return Ocorrencia::with(['enderecoVinculado', 'colaborador'])->find($this->form->editingId);
     }
 
     public function openCreateModal(): void
