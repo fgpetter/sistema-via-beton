@@ -92,6 +92,14 @@ class OcorrenciasImport implements SkipsEmptyRows, ToModel, WithHeadingRow
         return $this->importedCount;
     }
 
+    /**
+     * @return list<int>
+     */
+    public function getImportedIds(): array
+    {
+        return array_map('intval', array_keys($this->idsImportados));
+    }
+
     public function getSkippedCount(): int
     {
         return $this->skippedCount;

@@ -9,6 +9,7 @@ A Importação de Ocorrências foi concluída:
 | **Arquivo** | {{ $arquivo }} |
 | **Importadas** | {{ $importadas }} |
 | **Linhas ignoradas** | {{ $linhasIgnoradas }} |
+| **IDs** | {{ empty($ocorrenciaIds) ? '—' : implode(', ', $ocorrenciaIds) }} |
 </x-mail::table>
 
 Atenciosamente,<br>

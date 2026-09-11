@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Ocorrencia extends Model
@@ -158,6 +159,11 @@ class Ocorrencia extends Model
     public function imagens(): HasMany
     {
         return $this->hasMany(OcorrenciaImagem::class);
+    }
+
+    public function imagemImportacao(): HasOne
+    {
+        return $this->hasOne(OcorrenciaImagemImportacao::class);
     }
 
     public function imagensAntes(): HasMany

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\OcorrenciaImagem;
+use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,7 @@ use Intervention\Image\ImageManager;
 
 class ProcessarImagemOcorrencia implements ShouldQueue
 {
+    use Batchable;
     use Queueable;
 
     public bool $deleteWhenMissingModels = true;

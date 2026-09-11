@@ -56,6 +56,7 @@ class ImportarOcorrenciasCommand extends Command
 
         $importadas = $import->getImportedCount();
         $linhasIgnoradas = $import->getSkippedCount();
+        $ocorrenciaIds = $import->getImportedIds();
 
         $this->info("Arquivo: {$arquivo->getFilename()}");
         $this->info("Importadas: {$importadas}");
@@ -68,6 +69,7 @@ class ImportarOcorrenciasCommand extends Command
                     $arquivo->getFilename(),
                     $importadas,
                     $linhasIgnoradas,
+                    $ocorrenciaIds,
                 ));
         }
 

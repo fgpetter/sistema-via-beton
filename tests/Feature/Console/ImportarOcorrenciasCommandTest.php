@@ -74,7 +74,8 @@ test('xlsx novo cria ocorrencias apaga arquivos e enfileira e-mail de sucesso', 
             && $mail->hasCc('fgpetter@gmail.com')
             && $mail->arquivo === 'novo.xlsx'
             && $mail->importadas === 1
-            && $mail->linhasIgnoradas === 0;
+            && $mail->linhasIgnoradas === 0
+            && $mail->ocorrenciaIds === [9100001];
     });
     Mail::assertNotQueued(ImportacaoOcorrenciasFalhou::class);
 });
@@ -123,7 +124,9 @@ test('dois arquivos so o mais recente gera ocorrencias e ambos sao apagados', fu
     $this->assertFileDoesNotExist($antigo);
     $this->assertFileDoesNotExist($recente);
     Mail::assertQueued(ImportacaoOcorrenciasConcluida::class, function (ImportacaoOcorrenciasConcluida $mail): bool {
-        return $mail->arquivo === 'recente.xlsx' && $mail->importadas === 1;
+        return $mail->arquivo === 'recente.xlsx'
+            && $mail->importadas === 1
+            && $mail->ocorrenciaIds === [9100004];
     });
 });
 

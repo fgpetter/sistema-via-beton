@@ -13,10 +13,14 @@ class ImportacaoOcorrenciasConcluida extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    /**
+     * @param  list<int>  $ocorrenciaIds
+     */
     public function __construct(
         public string $arquivo,
         public int $importadas,
         public int $linhasIgnoradas,
+        public array $ocorrenciaIds = [],
     ) {}
 
     public function envelope(): Envelope

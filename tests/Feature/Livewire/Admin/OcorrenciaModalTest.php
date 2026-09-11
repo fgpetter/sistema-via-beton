@@ -368,6 +368,49 @@ class OcorrenciaModalTest extends TestCase
         $this->assertEquals('2026-03-20', $ocorrencia->data_chegada->toDateString());
     }
 
+    public function test_admin_assigns_empty_datas_on_revisar_without_changing_status(): void
+    {
+        $ocorrencia = Ocorrencia::factory()->revisar()->create([
+            'data_chegada' => null,
+            'data_saida' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openEditModal', $ocorrencia->id)
+            ->set('form.dataChegada', '2026-03-20')
+            ->set('form.dataSaida', '2026-03-21')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia->refresh();
+        $this->assertEquals(OcorrenciaStatus::Revisar, $ocorrencia->status);
+        $this->assertEquals('2026-03-20', $ocorrencia->data_chegada->toDateString());
+        $this->assertEquals('2026-03-21', $ocorrencia->data_saida->toDateString());
+    }
+
+    public function test_admin_create_with_data_chegada_persists_andamento(): void
+    {
+        Mail::fake();
+
+        Livewire::actingAs($this->admin)
+            ->test(OcorrenciaModal::class)
+            ->call('openCreateModal')
+            ->set('form.titulo', 'Ocorrência com datas')
+            ->set('form.agencia', 'Agência Centro')
+            ->set('form.dataChegada', '2026-03-20')
+            ->set('form.dataSaida', '2026-03-21')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $ocorrencia = Ocorrencia::query()->where('titulo', 'Ocorrência com datas')->first();
+
+        $this->assertNotNull($ocorrencia);
+        $this->assertEquals(OcorrenciaStatus::Andamento, $ocorrencia->status);
+        $this->assertEquals('2026-03-20', $ocorrencia->data_chegada->toDateString());
+        $this->assertEquals('2026-03-21', $ocorrencia->data_saida->toDateString());
+    }
+
     public function test_admin_blank_datas_do_not_persist_null(): void
     {
         $ocorrencia = Ocorrencia::factory()->revisar()->create([

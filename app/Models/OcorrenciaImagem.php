@@ -22,6 +22,7 @@ class OcorrenciaImagem extends Model
         'par',
         'path',
         'legenda',
+        'ocorrencia_imagem_importacao_id',
     ];
 
     /**
@@ -37,5 +38,10 @@ class OcorrenciaImagem extends Model
     public function ocorrencia(): BelongsTo
     {
         return $this->belongsTo(Ocorrencia::class);
+    }
+
+    public function importacao(): BelongsTo
+    {
+        return $this->belongsTo(OcorrenciaImagemImportacao::class, 'ocorrencia_imagem_importacao_id');
     }
 }
