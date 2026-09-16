@@ -58,7 +58,7 @@ class OcorrenciaFotoGaleria extends Component
     #[Computed]
     public function fotoPares(): array
     {
-        return $this->ocorrencia->fotoPares($this->totalPares);
+        return array_reverse($this->ocorrencia->fotoPares($this->totalPares), true);
     }
 
     public function placeholder(): string
@@ -95,18 +95,32 @@ HTML;
         $this->validate(['fotoUpload' => ['image', 'max:5120']]);
 
         $tipo = TipoImagemOcorrencia::from($this->uploadingTipo);
+        $par = $tipo === TipoImagemOcorrencia::Antes
+            ? $this->resolverParAntes($this->uploadingPar)
+            : $this->uploadingPar;
+
+        if ($tipo === TipoImagemOcorrencia::Depois && ! $this->parTemFotoAntes($par)) {
+            $this->reset(['fotoUpload']);
+            $this->swalToastError(SwalToast::errorOptions(
+                'É necessário uma foto Antes para enviar a foto Depois.'
+            ));
+
+            return;
+        }
+
         $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
 
         $imagem = OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrenciaId,
             'tipo' => $tipo,
-            'par' => $this->uploadingPar,
+            'par' => $par,
             'path' => $path,
         ]);
 
         ProcessarImagemOcorrencia::dispatch($imagem);
 
-        $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
+        $this->totalPares = max($this->totalPares, $par);
+        $this->reset(['fotoUpload']);
         unset($this->ocorrencia, $this->fotoPares);
 
         $this->swalToastSuccess(SwalToast::successOptions('Foto enviada!'));
@@ -142,6 +156,24 @@ HTML;
     public function render(): View
     {
         return view('livewire.admin.ocorrencia-foto-galeria');
+    }
+
+    protected function resolverParAntes(int $parSugerido): int
+    {
+        if (! $this->parTemFotoAntes($parSugerido)) {
+            return $parSugerido;
+        }
+
+        return $this->ocorrencia->proximoPar();
+    }
+
+    protected function parTemFotoAntes(int $par): bool
+    {
+        return OcorrenciaImagem::query()
+            ->where('ocorrencia_id', $this->ocorrenciaId)
+            ->where('par', $par)
+            ->where('tipo', TipoImagemOcorrencia::Antes)
+            ->exists();
     }
 
     protected function ensureUserIsAuthorized(): void

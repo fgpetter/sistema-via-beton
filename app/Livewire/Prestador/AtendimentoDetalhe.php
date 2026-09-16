@@ -116,7 +116,7 @@ class AtendimentoDetalhe extends Component
     #[Computed]
     public function fotoPares(): array
     {
-        return $this->ocorrencia->fotoPares($this->totalPares);
+        return array_reverse($this->ocorrencia->fotoPares($this->totalPares), true);
     }
 
     public function adicionarPar(): void

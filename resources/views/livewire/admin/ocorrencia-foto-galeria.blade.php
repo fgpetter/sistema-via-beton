@@ -6,27 +6,79 @@
         dropzoneEnabled: true,
         isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.screen.width <= 1024),
         activeDropPar: null,
+        activeDropTipo: null,
         clickAntes(par) {
             $wire.uploadingPar = par;
             $wire.uploadingTipo = 'antes';
             $nextTick(() => $refs.fotoInputGaleria.click());
         },
-        dropOnAntes(event, par) {
-            const file = event.dataTransfer?.files?.[0];
-            if (! file || ! file.type.startsWith('image/')) {
+        clickDepois(par) {
+            $wire.uploadingPar = par;
+            $wire.uploadingTipo = 'depois';
+            $nextTick(() => $refs.fotoInputDepois.click());
+        },
+        async selectFotos(event) {
+            const par = $wire.uploadingPar;
+            const tipo = $wire.uploadingTipo;
+            if (! par || ! tipo) {
+                return;
+            }
+            const files = Array.from(event.target.files ?? []).filter(file => file.type.startsWith('image/'));
+            event.target.value = '';
+            if (files.length === 0) {
+                return;
+            }
+            if (tipo === 'depois') {
+                if (files.length !== 1) {
+                    return;
+                }
+                await this.enviarDepois(files, par);
+                return;
+            }
+            await this.enviarAntes(files, par);
+        },
+        async dropOnAntes(event, par) {
+            const files = Array.from(event.dataTransfer?.files ?? []).filter(file => file.type.startsWith('image/'));
+            if (files.length === 0) {
                 return;
             }
             this.activeDropPar = null;
-            $wire.set('uploadingPar', par);
-            $wire.set('uploadingTipo', 'antes');
-            $wire.upload('fotoUpload', file);
+            this.activeDropTipo = null;
+            await this.enviarAntes(files, par);
+        },
+        async dropOnDepois(event, par) {
+            const files = Array.from(event.dataTransfer?.files ?? []).filter(file => file.type.startsWith('image/'));
+            this.activeDropPar = null;
+            this.activeDropTipo = null;
+            if (files.length !== 1) {
+                return;
+            }
+            await this.enviarDepois(files, par);
+        },
+        async enviarAntes(files, par) {
+            await $wire.set('uploadingPar', par);
+            await $wire.set('uploadingTipo', 'antes');
+            for (const file of files) {
+                await $wire.upload('fotoUpload', file);
+            }
+        },
+        async enviarDepois(files, par) {
+            await $wire.set('uploadingPar', par);
+            await $wire.set('uploadingTipo', 'depois');
+            await $wire.upload('fotoUpload', files[0]);
         },
         dragOverAntes(par) {
             this.activeDropPar = par;
+            this.activeDropTipo = 'antes';
         },
-        dragLeaveAntes(event) {
+        dragOverDepois(par) {
+            this.activeDropPar = par;
+            this.activeDropTipo = 'depois';
+        },
+        dragLeaveSlot(event) {
             if (! event.currentTarget.contains(event.relatedTarget)) {
                 this.activeDropPar = null;
+                this.activeDropTipo = null;
             }
         },
         @endif
@@ -92,8 +144,8 @@
                                 @keydown.space.prevent="clickAntes({{ $par }})"
                                 @drop.prevent="dropzoneEnabled && !isMobile && dropOnAntes($event, {{ $par }})"
                                 @dragover.prevent="dropzoneEnabled && !isMobile && dragOverAntes({{ $par }})"
-                                @dragleave.prevent="dragLeaveAntes($event)"
-                                :class="{ 'border-primary bg-primary/5': activeDropPar === {{ $par }} }"
+                                @dragleave.prevent="dragLeaveSlot($event)"
+                                :class="{ 'border-primary bg-primary/5': activeDropPar === {{ $par }} && activeDropTipo === 'antes' }"
                                 class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
@@ -132,6 +184,33 @@
                                 class="w-full mt-1 text-xs border border-default-200 rounded px-2 py-1 focus:outline-none focus:border-primary"
                             >
                         </div>
+                    @elseif ($fotos['antes'])
+                        @if ($dropzoneHabilitado)
+                            <div
+                                role="button"
+                                tabindex="0"
+                                @click="clickDepois({{ $par }})"
+                                @keydown.enter.prevent="clickDepois({{ $par }})"
+                                @keydown.space.prevent="clickDepois({{ $par }})"
+                                @drop.prevent="dropzoneEnabled && !isMobile && dropOnDepois($event, {{ $par }})"
+                                @dragover.prevent="dropzoneEnabled && !isMobile && dragOverDepois({{ $par }})"
+                                @dragleave.prevent="dragLeaveSlot($event)"
+                                :class="{ 'border-primary bg-primary/5': activeDropPar === {{ $par }} && activeDropTipo === 'depois' }"
+                                class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                <span class="text-[10px] text-default-400 mt-1 uppercase font-medium">Depois</span>
+                                <span x-show="dropzoneEnabled && !isMobile" class="text-[10px] text-default-400 mt-0.5 normal-case">Arraste ou clique</span>
+                            </div>
+                        @else
+                            <div
+                                @click="$wire.uploadingPar = {{ $par }}; $wire.uploadingTipo = 'depois'; $nextTick(() => $refs.fotoInputGaleria.click())"
+                                class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                <span class="text-[10px] text-default-400 mt-1 uppercase font-medium">Depois</span>
+                            </div>
+                        @endif
                     @else
                         <div class="aspect-square border-2 border-dashed border-default-200 rounded flex flex-col items-center justify-center bg-default-50">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-200"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
@@ -145,7 +224,25 @@
                 Carregando imagem...
             </div>
 
-            <input x-ref="fotoInputGaleria" wire:model="fotoUpload" type="file" accept="image/*" class="hidden">
+            @if ($dropzoneHabilitado)
+                <input
+                    x-ref="fotoInputGaleria"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    class="hidden"
+                    @change="selectFotos($event)"
+                >
+                <input
+                    x-ref="fotoInputDepois"
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    @change="selectFotos($event)"
+                >
+            @else
+                <input x-ref="fotoInputGaleria" wire:model="fotoUpload" type="file" accept="image/*" class="hidden">
+            @endif
         </div>
     </div>
 </div>

@@ -250,6 +250,25 @@ class AtendimentoDetalheTest extends TestCase
             ->assertSeeInOrder(['Adicionar Foto', 'Antes', 'Depois']);
     }
 
+    public function test_novo_espaco_de_foto_aparece_no_topo_da_lista(): void
+    {
+        OcorrenciaImagem::create([
+            'ocorrencia_id' => $this->ocorrencia->id,
+            'tipo' => TipoImagemOcorrencia::Antes,
+            'par' => 1,
+            'path' => 'ocorrencias/existente/antes.jpg',
+        ]);
+
+        Livewire::actingAs($this->prestador)
+            ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
+            ->call('adicionarPar')
+            ->assertSeeInOrder([
+                'Adicionar Foto',
+                'par-2',
+                'par-1',
+            ]);
+    }
+
     public function test_foto_placeholders_show_camera_and_gallery_buttons(): void
     {
         Livewire::actingAs($this->prestador)
