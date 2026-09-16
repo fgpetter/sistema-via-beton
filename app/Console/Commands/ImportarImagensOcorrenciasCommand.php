@@ -21,10 +21,12 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
-#[Signature('ocorrencias:importar-imagens {--pasta= : Pasta com subpastas por ID de ocorrência}')]
-#[Description('Importa imagens temporárias de ocorrências e enfileira o processamento')]
 class ImportarImagensOcorrenciasCommand extends Command
 {
+    protected $signature = 'ocorrencias:importar-imagens {--pasta= : Pasta com subpastas por ID de ocorrência}';
+
+    protected $description = 'Importa imagens temporárias de ocorrências e enfileira o processamento';
+
     /**
      * Execute the console command.
      */
