@@ -8,7 +8,6 @@ use App\Enums\TipoColaborador;
 use App\Models\Colaborador;
 use App\Models\Ocorrencia;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use Livewire\Form;
 
 class OcorrenciaForm extends Form
@@ -38,6 +37,12 @@ class OcorrenciaForm extends Form
     public ?int $subdisciplina2Id = null;
 
     public ?int $subdisciplina3Id = null;
+
+    public ?int $subdisciplina4Id = null;
+
+    public ?int $subdisciplina5Id = null;
+
+    public ?int $subdisciplina6Id = null;
 
     public string $agencia = '';
 
@@ -97,6 +102,21 @@ class OcorrenciaForm extends Form
                 'integer',
                 Rule::exists('disciplinas', 'id')->where('subdisciplina', 1),
             ],
+            'subdisciplina4Id' => [
+                'nullable',
+                'integer',
+                Rule::exists('disciplinas', 'id')->where('subdisciplina', 1),
+            ],
+            'subdisciplina5Id' => [
+                'nullable',
+                'integer',
+                Rule::exists('disciplinas', 'id')->where('subdisciplina', 1),
+            ],
+            'subdisciplina6Id' => [
+                'nullable',
+                'integer',
+                Rule::exists('disciplinas', 'id')->where('subdisciplina', 1),
+            ],
             'agencia' => ['required', 'string', 'max:255'],
             'endereco' => ['nullable', 'string', 'max:255'],
             'dataChegada' => ['nullable', 'date'],
@@ -125,6 +145,9 @@ class OcorrenciaForm extends Form
             'subdisciplina1Id.exists' => 'A subdisciplina 1 selecionada é inválida.',
             'subdisciplina2Id.exists' => 'A subdisciplina 2 selecionada é inválida.',
             'subdisciplina3Id.exists' => 'A subdisciplina 3 selecionada é inválida.',
+            'subdisciplina4Id.exists' => 'A subdisciplina 4 selecionada é inválida.',
+            'subdisciplina5Id.exists' => 'A subdisciplina 5 selecionada é inválida.',
+            'subdisciplina6Id.exists' => 'A subdisciplina 6 selecionada é inválida.',
             'agencia.required' => 'A agência é obrigatória.',
             'agencia.max' => 'A agência não pode ter mais de 255 caracteres.',
             'dataChegada.date' => 'A data de chegada deve ser uma data válida.',
@@ -139,23 +162,6 @@ class OcorrenciaForm extends Form
         $this->prestadorNome = blank($this->prestadorNome) ? null : trim((string) $this->prestadorNome);
 
         parent::validate($rules, $messages, $attributes);
-
-        $ids = array_values(array_filter([
-            $this->disciplinaId,
-            $this->subdisciplina1Id,
-            $this->subdisciplina2Id,
-            $this->subdisciplina3Id,
-        ], fn ($id) => $id !== null));
-
-        if (count($ids) !== count(array_unique($ids))) {
-            $this->addError('disciplinaId', 'Não é permitido repetir a mesma disciplina ou subdisciplina.');
-
-            throw ValidationException::withMessages([
-                $this->getPropertyName().'.disciplinaId' => [
-                    'Não é permitido repetir a mesma disciplina ou subdisciplina.',
-                ],
-            ]);
-        }
     }
 
     public function setForCreate(): void
@@ -180,6 +186,9 @@ class OcorrenciaForm extends Form
         $this->subdisciplina1Id = $ocorrencia->subdisciplina_1_id;
         $this->subdisciplina2Id = $ocorrencia->subdisciplina_2_id;
         $this->subdisciplina3Id = $ocorrencia->subdisciplina_3_id;
+        $this->subdisciplina4Id = $ocorrencia->subdisciplina_4_id;
+        $this->subdisciplina5Id = $ocorrencia->subdisciplina_5_id;
+        $this->subdisciplina6Id = $ocorrencia->subdisciplina_6_id;
         $this->agencia = $ocorrencia->agencia ?? '';
         $this->contratoLabel = ContratoSolucionador::tryFrom((string) $ocorrencia->contrato)?->label() ?? '';
         $this->endereco = $ocorrencia->endereco;
@@ -209,6 +218,9 @@ class OcorrenciaForm extends Form
             'subdisciplina_1_id' => $this->subdisciplina1Id,
             'subdisciplina_2_id' => $this->subdisciplina2Id,
             'subdisciplina_3_id' => $this->subdisciplina3Id,
+            'subdisciplina_4_id' => $this->subdisciplina4Id,
+            'subdisciplina_5_id' => $this->subdisciplina5Id,
+            'subdisciplina_6_id' => $this->subdisciplina6Id,
             'agencia' => $this->agencia,
             'endereco_id' => Ocorrencia::resolverEnderecoId($this->agencia),
             'endereco' => $this->endereco,

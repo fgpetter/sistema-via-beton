@@ -137,6 +137,20 @@
             <td class="val"></td>
         </tr>
         <tr>
+            <td class="lbl"></td>
+            <td class="lbl">Sub Disciplina 4</td>
+            <td class="lbl">Sub Disciplina 5</td>
+            <td class="lbl">Sub Disciplina 6</td>
+            <td class="lbl"></td>
+        </tr>
+        <tr>
+            <td class="val"></td>
+            <td class="val">{{ $dados['subdisciplina_4'] ?? ''}}</td>
+            <td class="val">{{ $dados['subdisciplina_5'] ?? ''}}</td>
+            <td class="val">{{ $dados['subdisciplina_6'] ?? ''}}</td>
+            <td class="val"></td>
+        </tr>
+        <tr>
             <td class="secao-servicos" colspan="5">SERVIÇOS SOLICITADOS NO LOCAL</td>
         </tr>
         <tr>

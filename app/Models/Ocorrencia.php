@@ -40,6 +40,9 @@ class Ocorrencia extends Model
         'subdisciplina_1_id',
         'subdisciplina_2_id',
         'subdisciplina_3_id',
+        'subdisciplina_4_id',
+        'subdisciplina_5_id',
+        'subdisciplina_6_id',
         'agencia',
         'endereco_id',
         'endereco',
@@ -105,6 +108,21 @@ class Ocorrencia extends Model
     public function subdisciplina3(): BelongsTo
     {
         return $this->belongsTo(Disciplina::class, 'subdisciplina_3_id');
+    }
+
+    public function subdisciplina4(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_4_id');
+    }
+
+    public function subdisciplina5(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_5_id');
+    }
+
+    public function subdisciplina6(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_6_id');
     }
 
     public function enderecoVinculado(): BelongsTo

@@ -25,6 +25,9 @@ class BuildRatPdfDataFromOcorrencia
             'subdisciplina1',
             'subdisciplina2',
             'subdisciplina3',
+            'subdisciplina4',
+            'subdisciplina5',
+            'subdisciplina6',
         ]);
 
         $timezoneApp = (string) config('app.timezone');
@@ -71,6 +74,9 @@ class BuildRatPdfDataFromOcorrencia
             'subdisciplina_1' => (string) ($ocorrencia->subdisciplina1?->disciplina ?? ''),
             'subdisciplina_2' => (string) ($ocorrencia->subdisciplina2?->disciplina ?? ''),
             'subdisciplina_3' => (string) ($ocorrencia->subdisciplina3?->disciplina ?? ''),
+            'subdisciplina_4' => (string) ($ocorrencia->subdisciplina4?->disciplina ?? ''),
+            'subdisciplina_5' => (string) ($ocorrencia->subdisciplina5?->disciplina ?? ''),
+            'subdisciplina_6' => (string) ($ocorrencia->subdisciplina6?->disciplina ?? ''),
             'item_descricao_servico' => $itemDescricao,
             'situacao_codigo' => '',
             'comentarios_prestador' => $ocorrencia->comentarios_prestador ?? '',
@@ -118,6 +124,9 @@ class BuildRatPdfDataFromOcorrencia
             'subdisciplina_1' => 'Tomada',
             'subdisciplina_2' => 'Interruptor',
             'subdisciplina_3' => '',
+            'subdisciplina_4' => '',
+            'subdisciplina_5' => '',
+            'subdisciplina_6' => '',
             'item_descricao_servico' => "Manutenção preventiva no ar condicionado\n\nSubstituição de filtros e verificação do sistema de refrigeração.",
             'situacao_codigo' => '',
             'comentarios_prestador' => 'Comentários do prestador',

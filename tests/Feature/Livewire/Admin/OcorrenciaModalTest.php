@@ -755,27 +755,6 @@ class OcorrenciaModalTest extends TestCase
             ->assertHasErrors(['form.disciplinaId']);
     }
 
-    public function test_cannot_repeat_disciplina_ids_on_ocorrencia(): void
-    {
-        $sub = Disciplina::factory()->subdisciplina()->create();
-
-        Livewire::actingAs($this->admin)
-            ->test(OcorrenciaModal::class)
-            ->call('openCreateModal')
-            ->set('form.titulo', 'Duplicada')
-            ->set('form.status', OcorrenciaStatus::Aberto->value)
-            ->set('form.abertura', '2026-06-01')
-            ->set('form.agencia', 'Agência Central')
-            ->set('form.subdisciplina1Id', $sub->id)
-            ->set('form.subdisciplina2Id', $sub->id)
-            ->call('save')
-            ->assertHasErrors();
-
-        $this->assertDatabaseMissing('ocorrencias', [
-            'titulo' => 'Duplicada',
-        ]);
-    }
-
     public function test_admin_can_save_ocorrencia_without_disciplinas(): void
     {
         Mail::fake();

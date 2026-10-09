@@ -245,6 +245,59 @@
                                     </div>
                                 </div>
 
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                    <div>
+                                        <label for="subdisciplina4Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 4</label>
+                                        <select
+                                            wire:model="form.subdisciplina4Id"
+                                            id="subdisciplina4Id"
+                                            class="form-input w-full @error('form.subdisciplina4Id') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione</option>
+                                            @foreach ($this->subdisciplinasOptions as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.subdisciplina4Id')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="subdisciplina5Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 5</label>
+                                        <select
+                                            wire:model="form.subdisciplina5Id"
+                                            id="subdisciplina5Id"
+                                            class="form-input w-full @error('form.subdisciplina5Id') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione</option>
+                                            @foreach ($this->subdisciplinasOptions as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.subdisciplina5Id')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="subdisciplina6Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 6</label>
+                                        <select
+                                            wire:model="form.subdisciplina6Id"
+                                            id="subdisciplina6Id"
+                                            class="form-input w-full @error('form.subdisciplina6Id') border-danger @enderror"
+                                        >
+                                            <option value="">Selecione</option>
+                                            @foreach ($this->subdisciplinasOptions as $id => $nome)
+                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('form.subdisciplina6Id')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
                                 <div @class([
                                     'grid grid-cols-1 gap-4',
                                     'sm:grid-cols-2 lg:grid-cols-4' => $this->editingOcorrencia?->colaborador?->tipo === \App\Enums\TipoColaborador::Administrativos,

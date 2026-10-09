@@ -171,6 +171,9 @@ class OcorrenciaModal extends Component
             'subdisciplina1',
             'subdisciplina2',
             'subdisciplina3',
+            'subdisciplina4',
+            'subdisciplina5',
+            'subdisciplina6',
         ]);
 
         $relativePath = 'ocorrencias/'.$ocorrencia->id.'/rat/RAT-'.$ocorrencia->id.'.pdf';
