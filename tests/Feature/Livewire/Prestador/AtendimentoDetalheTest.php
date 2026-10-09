@@ -223,18 +223,18 @@ class AtendimentoDetalheTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_foto_placeholders_are_hidden_when_there_are_no_photos(): void
+    public function test_foto_placeholders_visiveis_sem_fotos_enviadas(): void
     {
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
-            ->assertSee('Adicionar Foto')
-            ->assertDontSee('Câmera')
-            ->assertDontSee('Galeria')
-            ->assertDontSee('alt="Antes"', false)
-            ->assertDontSee('Tirar foto Antes', false);
+            ->assertDontSee('Adicionar Foto')
+            ->assertSee('Câmera')
+            ->assertSee('Galeria')
+            ->assertSee('par-1')
+            ->assertDontSee('alt="Antes"', false);
     }
 
-    public function test_adicionar_foto_aparece_no_topo_da_galeria(): void
+    public function test_galeria_exibe_fotos_em_ordem_crescente(): void
     {
         Storage::fake('public');
 
@@ -247,10 +247,11 @@ class AtendimentoDetalheTest extends TestCase
 
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
-            ->assertSeeInOrder(['Adicionar Foto', 'Antes', 'Depois']);
+            ->assertDontSee('Adicionar Foto')
+            ->assertSeeInOrder(['par-1', 'par-2']);
     }
 
-    public function test_novo_espaco_de_foto_aparece_no_topo_da_lista(): void
+    public function test_novo_espaco_de_foto_aparece_no_fim_da_lista(): void
     {
         OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrencia->id,
@@ -259,21 +260,23 @@ class AtendimentoDetalheTest extends TestCase
             'path' => 'ocorrencias/existente/antes.jpg',
         ]);
 
-        Livewire::actingAs($this->prestador)
+        $component = Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
-            ->call('adicionarPar')
             ->assertSeeInOrder([
-                'Adicionar Foto',
-                'par-2',
                 'par-1',
+                'par-2',
             ]);
+
+        $pares = $component->instance()->fotoPares;
+        $this->assertSame([1, 2], array_keys($pares));
+        $this->assertNotNull($pares[1]['antes']);
+        $this->assertNull($pares[2]['antes']);
     }
 
     public function test_foto_placeholders_show_camera_and_gallery_buttons(): void
     {
         Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
-            ->call('adicionarPar')
             ->assertSee('Câmera')
             ->assertSee('Galeria')
             ->assertSee("fonte === 'camera'", false);
@@ -375,11 +378,15 @@ class AtendimentoDetalheTest extends TestCase
             'path' => 'ocorrencias/test/antes/test.jpg',
         ]);
 
-        Livewire::actingAs($this->prestador)
+        $component = Livewire::actingAs($this->prestador)
             ->test(AtendimentoDetalhe::class, ['ocorrenciaId' => $this->ocorrencia->id])
             ->call('removerImagem', $imagem->id)
-            ->assertDontSee('Câmera')
-            ->assertDontSee('Tirar foto Antes', false);
+            ->assertSee('par-1')
+            ->assertDontSee('alt="Antes"', false);
+
+        $pares = $component->instance()->fotoPares;
+        $this->assertSame([1], array_keys($pares));
+        $this->assertNull($pares[1]['antes']);
 
         $this->assertDatabaseMissing('ocorrencia_imagens', ['id' => $imagem->id]);
     }

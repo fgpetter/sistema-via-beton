@@ -9,8 +9,6 @@ use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
 use App\Models\OcorrenciaImagemImportacao;
 use Illuminate\Bus\Batch;
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\File;

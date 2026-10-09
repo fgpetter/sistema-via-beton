@@ -58,7 +58,9 @@ class OcorrenciaFotoGaleria extends Component
     #[Computed]
     public function fotoPares(): array
     {
-        return array_reverse($this->ocorrencia->fotoPares($this->totalPares), true);
+        $maxPar = (int) $this->ocorrencia->imagens->max('par');
+
+        return $this->ocorrencia->fotoPares(max(1, $maxPar + 1));
     }
 
     public function placeholder(): string
@@ -77,12 +79,6 @@ class OcorrenciaFotoGaleria extends Component
     </div>
 </div>
 HTML;
-    }
-
-    public function adicionarPar(): void
-    {
-        $this->ensureUserIsAuthorized();
-        $this->totalPares++;
     }
 
     public function updatedFotoUpload(): void

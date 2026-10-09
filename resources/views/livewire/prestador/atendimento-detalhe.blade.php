@@ -165,15 +165,6 @@
                 aria-labelledby="hs-fotos-prestador-toggle"
             >
                 <div class="card-body pt-0 space-y-3 mt-4">
-                    <button
-                        type="button"
-                        wire:click="adicionarPar"
-                        class="btn w-full border-2 border-dashed border-default-300 text-default-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Adicionar Foto
-                    </button>
-
                     @foreach ($this->fotoPares as $par => $fotos)
                         <div wire:key="par-{{ $par }}" class="grid grid-cols-2 gap-3">
                             @if ($fotos['antes'])

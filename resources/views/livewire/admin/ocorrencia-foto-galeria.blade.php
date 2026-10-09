@@ -55,6 +55,49 @@
             }
             await this.enviarDepois(files, par);
         },
+        arquivoComNome(file) {
+            if (file.name) {
+                return file;
+            }
+            const ext = (file.type.split('/')[1] ?? 'png').split('+')[0];
+            return new File([file], 'clipboard.' + ext, { type: file.type });
+        },
+        imagensDoClipboard(event) {
+            const fromItems = Array.from(event.clipboardData?.items ?? [])
+                .filter(item => item.kind === 'file' && item.type.startsWith('image/'))
+                .map(item => item.getAsFile())
+                .filter(file => file)
+                .map(file => this.arquivoComNome(file));
+            if (fromItems.length > 0) {
+                return fromItems;
+            }
+            return Array.from(event.clipboardData?.files ?? [])
+                .filter(file => file.type.startsWith('image/'))
+                .map(file => this.arquivoComNome(file));
+        },
+        async pasteOnAntes(event, par) {
+            const files = this.imagensDoClipboard(event);
+            if (files.length === 0) {
+                return;
+            }
+            await this.enviarAntes(files, par);
+        },
+        async pasteOnDepois(event, par) {
+            const files = this.imagensDoClipboard(event);
+            if (files.length !== 1) {
+                return;
+            }
+            await this.enviarDepois(files, par);
+        },
+        bloquearDigitacao(event) {
+            if (event.ctrlKey || event.metaKey) {
+                return;
+            }
+            if (['Enter', ' ', 'Tab', 'Escape'].includes(event.key)) {
+                return;
+            }
+            event.preventDefault();
+        },
         async enviarAntes(files, par) {
             await $wire.set('uploadingPar', par);
             await $wire.set('uploadingTipo', 'antes');
@@ -97,15 +140,6 @@
     </button>
     <div x-show="fotosOpen" x-collapse>
         <div class="px-4 pb-4 space-y-3">
-            <button
-                type="button"
-                wire:click="adicionarPar"
-                class="btn w-full border-2 border-dashed border-default-300 text-default-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors text-sm"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Adicionar Foto
-            </button>
-
             <div class="grid grid-cols-2 gap-2 text-center">
                 <span class="text-xs font-semibold text-default-500 uppercase">Antes</span>
                 <span class="text-xs font-semibold text-default-500 uppercase">Depois</span>
@@ -139,18 +173,23 @@
                             <div
                                 role="button"
                                 tabindex="0"
+                                spellcheck="false"
+                                :contenteditable="!isMobile"
                                 @click="clickAntes({{ $par }})"
                                 @keydown.enter.prevent="clickAntes({{ $par }})"
                                 @keydown.space.prevent="clickAntes({{ $par }})"
+                                @keydown="bloquearDigitacao($event)"
+                                @beforeinput.prevent
+                                @paste.prevent="dropzoneEnabled && !isMobile && pasteOnAntes($event, {{ $par }})"
                                 @drop.prevent="dropzoneEnabled && !isMobile && dropOnAntes($event, {{ $par }})"
                                 @dragover.prevent="dropzoneEnabled && !isMobile && dragOverAntes({{ $par }})"
                                 @dragleave.prevent="dragLeaveSlot($event)"
                                 :class="{ 'border-primary bg-primary/5': activeDropPar === {{ $par }} && activeDropTipo === 'antes' }"
-                                class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                                class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors select-none caret-transparent"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                 <span class="text-[10px] text-default-400 mt-1 uppercase font-medium">Antes</span>
-                                <span x-show="dropzoneEnabled && !isMobile" class="text-[10px] text-default-400 mt-0.5 normal-case">Arraste ou clique</span>
+                                <span x-show="dropzoneEnabled && !isMobile" class="text-[10px] text-default-400 mt-0.5 normal-case">Arraste, clique ou cole</span>
                             </div>
                         @else
                             <div
@@ -189,18 +228,23 @@
                             <div
                                 role="button"
                                 tabindex="0"
+                                spellcheck="false"
+                                :contenteditable="!isMobile"
                                 @click="clickDepois({{ $par }})"
                                 @keydown.enter.prevent="clickDepois({{ $par }})"
                                 @keydown.space.prevent="clickDepois({{ $par }})"
+                                @keydown="bloquearDigitacao($event)"
+                                @beforeinput.prevent
+                                @paste.prevent="dropzoneEnabled && !isMobile && pasteOnDepois($event, {{ $par }})"
                                 @drop.prevent="dropzoneEnabled && !isMobile && dropOnDepois($event, {{ $par }})"
                                 @dragover.prevent="dropzoneEnabled && !isMobile && dragOverDepois({{ $par }})"
                                 @dragleave.prevent="dragLeaveSlot($event)"
                                 :class="{ 'border-primary bg-primary/5': activeDropPar === {{ $par }} && activeDropTipo === 'depois' }"
-                                class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                                class="aspect-square border-2 border-dashed border-default-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors select-none caret-transparent"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                 <span class="text-[10px] text-default-400 mt-1 uppercase font-medium">Depois</span>
-                                <span x-show="dropzoneEnabled && !isMobile" class="text-[10px] text-default-400 mt-0.5 normal-case">Arraste ou clique</span>
+                                <span x-show="dropzoneEnabled && !isMobile" class="text-[10px] text-default-400 mt-0.5 normal-case">Arraste, clique ou cole</span>
                             </div>
                         @else
                             <div

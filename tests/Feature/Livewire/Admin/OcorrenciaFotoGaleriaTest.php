@@ -238,17 +238,24 @@ class OcorrenciaFotoGaleriaTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_adicionar_par(): void
+    public function test_slot_vazio_sempre_no_fim_sem_fotos(): void
     {
         $ocorrencia = Ocorrencia::factory()->create();
 
-        Livewire::actingAs($this->admin)
-            ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
-            ->call('adicionarPar')
-            ->assertSet('totalPares', 2);
+        $component = Livewire::actingAs($this->admin)
+            ->test(OcorrenciaFotoGaleria::class, [
+                'ocorrenciaId' => $ocorrencia->id,
+                'dropzoneHabilitado' => true,
+            ])
+            ->assertDontSee('Adicionar Foto')
+            ->assertSee('clickAntes(1)');
+
+        $pares = $component->instance()->fotoPares;
+        $this->assertSame([1], array_keys($pares));
+        $this->assertNull($pares[1]['antes']);
     }
 
-    public function test_novo_espaco_de_foto_aparece_no_topo_da_lista(): void
+    public function test_novo_espaco_de_foto_aparece_no_fim_da_lista(): void
     {
         $ocorrencia = Ocorrencia::factory()->create();
         OcorrenciaImagem::create([
@@ -259,25 +266,30 @@ class OcorrenciaFotoGaleriaTest extends TestCase
         ]);
 
         $component = Livewire::actingAs($this->admin)
-            ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
-            ->call('adicionarPar')
+            ->test(OcorrenciaFotoGaleria::class, [
+                'ocorrenciaId' => $ocorrencia->id,
+                'dropzoneHabilitado' => true,
+            ])
             ->assertSeeInOrder([
-                'Adicionar Foto',
-                'admin-foto-par-2',
                 'admin-foto-par-1',
-            ]);
+                'admin-foto-par-2',
+            ])
+            ->assertSee('clickAntes(2)');
 
         $pares = $component->instance()->fotoPares;
-        $this->assertSame([2, 1], array_keys($pares));
+        $this->assertSame([1, 2], array_keys($pares));
+        $this->assertNotNull($pares[1]['antes']);
+        $this->assertNull($pares[2]['antes']);
     }
 
-    public function test_adicionar_foto_aparece_no_topo_da_galeria(): void
+    public function test_galeria_exibe_slots_antes_depois_sem_botao_adicionar(): void
     {
         $ocorrencia = Ocorrencia::factory()->create();
 
         Livewire::actingAs($this->admin)
             ->test(OcorrenciaFotoGaleria::class, ['ocorrenciaId' => $ocorrencia->id])
-            ->assertSeeInOrder(['Adicionar Foto', 'Antes', 'Depois']);
+            ->assertDontSee('Adicionar Foto')
+            ->assertSeeInOrder(['Antes', 'Depois']);
     }
 
     public function test_admin_can_salvar_legenda(): void
