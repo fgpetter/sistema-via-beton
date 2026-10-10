@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\DownloadChecklistPdfController;
 use App\Http\Controllers\Admin\DownloadRatPdfController;
 use App\Http\Controllers\Admin\DownloadRelatorioAtendimentoPdfController;
+use App\Http\Controllers\Admin\DownloadRelatorioExecutivoPdfController;
+use App\Http\Controllers\Admin\DownloadRelatorioMedicaoPdfController;
+use App\Http\Controllers\Admin\DownloadVistoriaPdfController;
 use App\Http\Controllers\RoutingController;
 use App\Http\Middleware\RedirectPrestadorDashboard;
 use App\Livewire\Admin\OcorrenciasList;
@@ -24,10 +28,11 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
         Route::get('/ocorrencias', OcorrenciasList::class)->name('admin.ocorrencias')->can('admin');
         Route::get('/ocorrencias/{ocorrencia}/rat-pdf', DownloadRatPdfController::class)->name('admin.ocorrencias.rat-pdf')->can('admin');
         Route::get('/ocorrencias/{ocorrencia}/relatorio-atendimento-pdf', DownloadRelatorioAtendimentoPdfController::class)->name('admin.ocorrencias.relatorio-atendimento-pdf')->can('admin');
+        Route::get('/ocorrencias/{ocorrencia}/checklist-pdf/{tipo}', DownloadChecklistPdfController::class)->name('admin.ocorrencias.checklist-pdf')->can('admin');
         Route::get('/preventivas', PreventivasList::class)->name('admin.preventivas')->can('admin');
-        Route::get('/preventivas/{preventiva}/vistoria-pdf', App\Http\Controllers\Admin\DownloadVistoriaPdfController::class)->name('admin.preventivas.vistoria-pdf')->can('admin');
-        Route::get('/preventivas/{preventiva}/relatorio-executivo-pdf', App\Http\Controllers\Admin\DownloadRelatorioExecutivoPdfController::class)->name('admin.preventivas.relatorio-executivo-pdf')->can('admin');
-        Route::get('/preventivas/{preventiva}/relatorio-medicao-pdf', App\Http\Controllers\Admin\DownloadRelatorioMedicaoPdfController::class)->name('admin.preventivas.relatorio-medicao-pdf')->can('admin');
+        Route::get('/preventivas/{preventiva}/vistoria-pdf', DownloadVistoriaPdfController::class)->name('admin.preventivas.vistoria-pdf')->can('admin');
+        Route::get('/preventivas/{preventiva}/relatorio-executivo-pdf', DownloadRelatorioExecutivoPdfController::class)->name('admin.preventivas.relatorio-executivo-pdf')->can('admin');
+        Route::get('/preventivas/{preventiva}/relatorio-medicao-pdf', DownloadRelatorioMedicaoPdfController::class)->name('admin.preventivas.relatorio-medicao-pdf')->can('admin');
         Route::view('/enderecos', 'admin.enderecos')->name('admin.enderecos')->can('admin');
         Route::view('/configuracoes-sistema', 'admin.configuracoes-sistema')->name('admin.configuracoes-sistema')->can('admin');
     });

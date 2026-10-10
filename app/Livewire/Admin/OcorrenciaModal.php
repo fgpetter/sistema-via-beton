@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Actions\Ocorrencias\RenderRatPdfFromOcorrencia;
 use App\Enums\OcorrenciaStatus;
 use App\Enums\PrazoNome;
+use App\Enums\TipoChecklist;
 use App\Enums\TipoColaborador;
 use App\Livewire\Admin\Forms\OcorrenciaForm;
 use App\Mail\OcorrenciaCriada;
@@ -191,6 +192,20 @@ class OcorrenciaModal extends Component
         $this->js('window.open('.json_encode($url).', "_blank")');
 
         $this->swalToastSuccess(SwalToast::successOptions('Nova RAT gerada com sucesso!'));
+    }
+
+    public function abrirChecklist(string $tipo): void
+    {
+        $this->ensureUserIsAuthorized();
+
+        if (! $this->form->editingId || TipoChecklist::tryFrom($tipo) === null) {
+            abort(404);
+        }
+
+        $ocorrenciaId = $this->form->editingId;
+
+        $this->closeModal();
+        $this->dispatch('open-checklist-modal', id: $ocorrenciaId, tipo: $tipo);
     }
 
     public function concluirRevisao(int $ocorrenciaId): void

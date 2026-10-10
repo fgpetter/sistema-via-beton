@@ -487,6 +487,28 @@
                         </div>
 
                         <div class="flex items-center justify-end gap-2 p-4 border-t border-default-200">
+                            @if ($form->editingId)
+                                <div class="flex flex-wrap items-center gap-2 mr-auto">
+                                    <button
+                                        type="button"
+                                        wire:click="abrirChecklist('civil')"
+                                        class="btn border border-primary text-primary hover:bg-primary/10"
+                                        wire:loading.attr="disabled"
+                                        wire:target="abrirChecklist"
+                                    >
+                                        Checklist Civil
+                                    </button>
+                                    <button
+                                        type="button"
+                                        wire:click="abrirChecklist('eletrica')"
+                                        class="btn border border-primary text-primary hover:bg-primary/10"
+                                        wire:loading.attr="disabled"
+                                        wire:target="abrirChecklist"
+                                    >
+                                        Checklist Elétrica
+                                    </button>
+                                </div>
+                            @endif
                             <button
                                 type="button"
                                 @click="$wire.closeModal()"

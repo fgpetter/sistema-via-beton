@@ -184,6 +184,16 @@ class Ocorrencia extends Model
         return $this->hasOne(OcorrenciaImagemImportacao::class);
     }
 
+    public function checklistCivil(): HasOne
+    {
+        return $this->hasOne(OcorrenciaChecklistCivil::class);
+    }
+
+    public function checklistEletrica(): HasOne
+    {
+        return $this->hasOne(OcorrenciaChecklistEletrica::class);
+    }
+
     public function imagensAntes(): HasMany
     {
         return $this->imagens()->where('tipo', TipoImagemOcorrencia::Antes);

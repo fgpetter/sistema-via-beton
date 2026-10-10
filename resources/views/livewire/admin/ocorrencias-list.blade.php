@@ -286,6 +286,9 @@
     <!-- Modal Criar/Editar Ocorrência -->
     <livewire:admin.ocorrencia-modal wire:key="ocorrencia-modal" />
 
+    <!-- Modal Checklist de Levantamento -->
+    <livewire:admin.ocorrencia-checklist-modal wire:key="ocorrencia-checklist-modal" />
+
     <!-- Modal Confirmar Exclusão -->
     @include('livewire.admin.partials.modal-confirmar-exclusao')
 </div>
