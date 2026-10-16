@@ -131,9 +131,12 @@
             class="card mb-4"
             x-data="{
                 isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.screen.width <= 1024),
+                erroFormato: '',
+                parSelecionado: null,
+                tipoSelecionado: null,
                 triggerFoto(par, tipo, fonte) {
-                    $wire.uploadingPar = par;
-                    $wire.uploadingTipo = tipo;
+                    this.parSelecionado = par;
+                    this.tipoSelecionado = tipo;
                     const input = $refs.fotoInput;
                     if (fonte === 'camera') {
                         input.setAttribute('capture', 'environment');
@@ -142,19 +145,40 @@
                     }
                     $nextTick(() => input.click());
                 },
-                registrarUploadCliente(evento) {
-                    const file = $refs.fotoInput?.files?.[0];
-                    $wire.registrarEventoUploadFoto(evento, {
-                        nome: file?.name ?? null,
-                        tamanho: file?.size ?? null,
-                        mime: file?.type ?? null,
-                        online: navigator.onLine,
-                        visivel: document.visibilityState,
-                    });
+                formatoAceito(file) {
+                    const extensao = (file.name.split('.').pop() || '').toLowerCase();
+                    const mime = (file.type || '').toLowerCase();
+
+                    if (['heic', 'heif'].includes(extensao) || ['image/heic', 'image/heif'].includes(mime)) {
+                        return false;
+                    }
+
+                    const extensoes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+                    const mimes = ['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png', 'image/gif', 'image/bmp', 'image/x-ms-bmp', 'image/webp', 'image/svg+xml'];
+
+                    return extensoes.includes(extensao) || mimes.includes(mime);
+                },
+                async enviarFoto(event) {
+                    const input = event.target;
+                    const file = input.files?.[0] ?? null;
+                    input.value = '';
+
+                    if (! file) {
+                        return;
+                    }
+
+                    if (! this.formatoAceito(file)) {
+                        this.erroFormato = 'Formato não aceito. Envie uma imagem JPG, PNG, GIF, BMP, WEBP ou SVG.';
+
+                        return;
+                    }
+
+                    this.erroFormato = '';
+                    await $wire.set('uploadingPar', this.parSelecionado);
+                    await $wire.set('uploadingTipo', this.tipoSelecionado);
+                    await $wire.upload('fotoUpload', file);
                 }
             }"
-            x-on:livewire-upload-error="registrarUploadCliente('erro_cliente')"
-            x-on:livewire-upload-cancel="registrarUploadCliente('cancelado')"
         >
             <button
                 type="button"
@@ -281,11 +305,18 @@
                         </div>
                     @endforeach
 
+                    <p
+                        x-show="erroFormato"
+                        x-text="erroFormato"
+                        role="alert"
+                        class="text-sm text-danger text-center"
+                    ></p>
+
                     <div wire:loading wire:target="fotoUpload" class="text-sm text-primary text-center py-2">
                         Carregando imagem...
                     </div>
 
-                    <input x-ref="fotoInput" wire:model="fotoUpload" type="file" accept="image/*" class="hidden">
+                    <input x-ref="fotoInput" type="file" accept="image/*" class="hidden" @change="enviarFoto($event)">
                 </div>
             </div>
         </div>

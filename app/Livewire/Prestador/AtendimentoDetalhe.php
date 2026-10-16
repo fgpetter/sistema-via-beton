@@ -13,30 +13,21 @@ use App\Models\OcorrenciaImagem;
 use App\Models\User;
 use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Renderless;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use SweetAlert2\Laravel\Traits\WithSweetAlert;
-use Throwable;
 
 #[Layout('layouts.vertical')]
 #[Title('Detalhes do Atendimento')]
 class AtendimentoDetalhe extends Component
 {
-    use WithFileUploads {
-        _startUpload as livewireStartUpload;
-        _finishUpload as livewireFinishUpload;
-        _uploadErrored as livewireUploadErrored;
-    }
+    use WithFileUploads;
     use WithSweetAlert;
 
     #[Locked]
@@ -127,175 +118,31 @@ class AtendimentoDetalhe extends Component
         return $this->ocorrencia->fotoPares(max(1, $maxPar + 1));
     }
 
-    public function updatedUploadingTipo(): void
+    public function updatedFotoUpload(): void
     {
-        if ($this->uploadingPar === null || $this->uploadingTipo === null) {
-            return;
-        }
-
-        $this->registrarUpload('slot_selecionado');
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $fileInfo
-     */
-    public function _startUpload(string $name, array $fileInfo, bool $isMultiple): void
-    {
-        if ($name === 'fotoUpload') {
-            $this->registrarUpload('inicio', [
-                'arquivos' => collect($fileInfo)->map(fn (array $arquivo): array => [
-                    'nome' => Str::limit((string) ($arquivo['name'] ?? ''), 180),
-                    'tamanho' => (int) ($arquivo['size'] ?? 0),
-                    'mime' => Str::limit((string) ($arquivo['type'] ?? ''), 80),
-                ])->all(),
-                'limites' => [
-                    'upload_max_filesize' => ini_get('upload_max_filesize'),
-                    'post_max_size' => ini_get('post_max_size'),
-                ],
-            ]);
-        }
-
-        $this->livewireStartUpload($name, $fileInfo, $isMultiple);
-    }
-
-    /**
-     * @param  array<int, string>  $tmpPath
-     */
-    public function _finishUpload(string $name, array $tmpPath, bool $isMultiple, bool $append = true): void
-    {
-        if ($name === 'fotoUpload') {
-            $this->registrarUpload('temporario_recebido');
-        }
-
-        try {
-            $this->livewireFinishUpload($name, $tmpPath, $isMultiple, $append);
-        } catch (ValidationException $e) {
-            throw $e;
-        } catch (Throwable $e) {
-            if ($name === 'fotoUpload') {
-                $this->registrarUpload('erro_finalizar', [
-                    'exception' => $e::class,
-                    'message' => $e->getMessage(),
-                ], 'error');
-            }
-
-            throw $e;
-        }
-    }
-
-    public function _uploadErrored(string $name, ?string $errorsInJson, bool $isMultiple): void
-    {
-        if ($name === 'fotoUpload') {
-            $this->registrarUpload('erro_servidor', [
-                'erros' => $errorsInJson === null ? null : Str::limit($errorsInJson, 2000),
-            ], 'error');
-        }
-
-        $this->livewireUploadErrored($name, $errorsInJson, $isMultiple);
-    }
-
-    /**
-     * @param  array<string, mixed>  $detalhe
-     */
-    #[Renderless]
-    public function registrarEventoUploadFoto(string $evento, array $detalhe = []): void
-    {
-        if (! in_array($evento, ['erro_cliente', 'cancelado'], true)) {
+        if (! $this->fotoUpload || $this->uploadingPar === null || ! $this->uploadingTipo) {
             return;
         }
 
         $this->ensureUserOwnsOcorrencia();
+        $this->validateOnly('fotoUpload');
 
-        $this->registrarUpload($evento, [
-            'nome' => isset($detalhe['nome']) ? Str::limit((string) $detalhe['nome'], 180) : null,
-            'tamanho' => isset($detalhe['tamanho']) ? (int) $detalhe['tamanho'] : null,
-            'mime' => isset($detalhe['mime']) ? Str::limit((string) $detalhe['mime'], 80) : null,
-            'online' => array_key_exists('online', $detalhe) ? (bool) $detalhe['online'] : null,
-            'visivel' => isset($detalhe['visivel']) ? Str::limit((string) $detalhe['visivel'], 20) : null,
-        ], $evento === 'cancelado' ? 'warning' : 'error');
-    }
+        $tipo = TipoImagemOcorrencia::from($this->uploadingTipo);
+        $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
 
-    public function updatedFotoUpload(): void
-    {
-        if (! $this->fotoUpload || $this->uploadingPar === null || ! $this->uploadingTipo) {
-            $this->registrarUpload('interrompido', [
-                'motivo' => 'estado_incompleto',
-                'tem_arquivo' => (bool) $this->fotoUpload,
-                'par' => $this->uploadingPar,
-                'tipo' => $this->uploadingTipo,
-            ], 'warning');
-
-            return;
-        }
-
-        try {
-            $this->ensureUserOwnsOcorrencia();
-            $this->validateOnly('fotoUpload');
-
-            $tipo = TipoImagemOcorrencia::from($this->uploadingTipo);
-            $nome = $this->fotoUpload->getClientOriginalName();
-            $tamanho = $this->fotoUpload->getSize();
-            $mime = $this->fotoUpload->getMimeType();
-            $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
-
-            $imagem = OcorrenciaImagem::create([
-                'ocorrencia_id' => $this->ocorrenciaId,
-                'tipo' => $tipo,
-                'par' => $this->uploadingPar,
-                'path' => $path,
-            ]);
-
-            ProcessarImagemOcorrencia::dispatch($imagem);
-
-            $this->registrarUpload('salvo', [
-                'imagem_id' => $imagem->id,
-                'path' => $path,
-                'nome' => $nome,
-                'tamanho' => $tamanho,
-                'mime' => $mime,
-            ]);
-
-            $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
-            unset($this->ocorrencia, $this->fotoPares);
-
-            $this->swalToastSuccess(SwalToast::successOptions('Foto enviada!'));
-        } catch (ValidationException $e) {
-            $this->registrarUpload('validacao', [
-                'erros' => $e->errors(),
-            ], 'warning');
-
-            throw $e;
-        } catch (Throwable $e) {
-            $this->registrarUpload('excecao', [
-                'exception' => $e::class,
-                'message' => $e->getMessage(),
-            ], 'error');
-
-            throw $e;
-        }
-    }
-
-    /**
-     * @param  array<string, mixed>  $contexto
-     */
-    protected function registrarUpload(string $evento, array $contexto = [], string $nivel = 'info'): void
-    {
-        $contexto = array_merge([
+        $imagem = OcorrenciaImagem::create([
             'ocorrencia_id' => $this->ocorrenciaId,
-            'user_id' => auth()->id(),
+            'tipo' => $tipo,
             'par' => $this->uploadingPar,
-            'tipo' => $this->uploadingTipo,
-            'ip' => request()->ip(),
-            'user_agent' => Str::limit((string) request()->userAgent(), 300),
-        ], $contexto);
+            'path' => $path,
+        ]);
 
-        $canal = Log::channel('upload_fotos');
+        ProcessarImagemOcorrencia::dispatch($imagem);
 
-        match ($nivel) {
-            'warning' => $canal->warning($evento, $contexto),
-            'error' => $canal->error($evento, $contexto),
-            default => $canal->info($evento, $contexto),
-        };
+        $this->reset(['fotoUpload', 'uploadingPar', 'uploadingTipo']);
+        unset($this->ocorrencia, $this->fotoPares);
+
+        $this->swalToastSuccess(SwalToast::successOptions('Foto enviada!'));
     }
 
     public function removerImagem(int $imagemId): void
