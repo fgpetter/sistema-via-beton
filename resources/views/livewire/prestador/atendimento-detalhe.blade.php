@@ -141,8 +141,20 @@
                         input.removeAttribute('capture');
                     }
                     $nextTick(() => input.click());
+                },
+                registrarUploadCliente(evento) {
+                    const file = $refs.fotoInput?.files?.[0];
+                    $wire.registrarEventoUploadFoto(evento, {
+                        nome: file?.name ?? null,
+                        tamanho: file?.size ?? null,
+                        mime: file?.type ?? null,
+                        online: navigator.onLine,
+                        visivel: document.visibilityState,
+                    });
                 }
             }"
+            x-on:livewire-upload-error="registrarUploadCliente('erro_cliente')"
+            x-on:livewire-upload-cancel="registrarUploadCliente('cancelado')"
         >
             <button
                 type="button"
