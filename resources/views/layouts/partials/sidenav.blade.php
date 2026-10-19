@@ -65,6 +65,12 @@
                             </a>
                         </li>
                         <li class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('admin.programadas') ? 'active' : '' }}" href="{{ route('admin.programadas') }}">
+                                <span class="menu-icon"><i data-lucide="calendar-check"></i></span>
+                                <div class="menu-text">Programadas</div>
+                            </a>
+                        </li>
+                        <li class="menu-item">
                             <a class="menu-link {{ request()->routeIs('admin.enderecos') ? 'active' : '' }}" href="{{ route('admin.enderecos') }}">
                                 <span class="menu-icon"><i data-lucide="map-pin"></i></span>
                                 <div class="menu-text">Endereços</div>

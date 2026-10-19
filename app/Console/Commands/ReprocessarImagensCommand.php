@@ -4,8 +4,10 @@ namespace App\Console\Commands;
 
 use App\Jobs\ProcessarImagemOcorrencia;
 use App\Jobs\ProcessarImagemPreventiva;
+use App\Jobs\ProcessarImagemProgramada;
 use App\Models\OcorrenciaImagem;
 use App\Models\PreventivaImagem;
+use App\Models\ProgramadaImagem;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -13,17 +15,17 @@ use Illuminate\Support\Facades\Storage;
 class ReprocessarImagensCommand extends Command
 {
     protected $signature = 'imagens:reprocessar
-                            {pasta : ocorrencias|preventivas}
+                            {pasta : ocorrencias|preventivas|programadas}
                             {--step= : Limite de imagens a enfileirar (ex.: 1 para teste)}';
 
-    protected $description = 'Reprocessa imagens enfileirando jobs a partir de ocorrencias ou preventivas';
+    protected $description = 'Reprocessa imagens enfileirando jobs a partir de ocorrencias, preventivas ou programadas';
 
     public function handle(): int
     {
         $pasta = (string) $this->argument('pasta');
 
-        if (! in_array($pasta, ['ocorrencias', 'preventivas'], true)) {
-            $this->error('Pasta inválida. Use: ocorrencias ou preventivas.');
+        if (! in_array($pasta, ['ocorrencias', 'preventivas', 'programadas'], true)) {
+            $this->error('Pasta inválida. Use: ocorrencias, preventivas ou programadas.');
 
             return self::FAILURE;
         }
@@ -88,6 +90,10 @@ class ReprocessarImagensCommand extends Command
             'preventivas' => [
                 'model' => PreventivaImagem::class,
                 'job' => ProcessarImagemPreventiva::class,
+            ],
+            'programadas' => [
+                'model' => ProgramadaImagem::class,
+                'job' => ProcessarImagemProgramada::class,
             ],
         };
     }
