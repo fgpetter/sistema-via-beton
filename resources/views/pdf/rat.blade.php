@@ -87,7 +87,7 @@
 
     <table class="rat" cellspacing="0">
         <tr>
-            <td class="lbl">Número da ocorrência</td>
+            <td class="lbl">{{ $dados['identificador_label'] ?? 'Número da ocorrência' }}</td>
             <td class="lbl">Emergencial (Sim/Não)</td>
             <td class="lbl">Prazo de Atendimento</td>
             <td class="lbl">Número do Contrato</td>

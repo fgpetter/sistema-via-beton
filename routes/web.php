@@ -2,11 +2,10 @@
 
 use App\Http\Controllers\Admin\DownloadChecklistPdfController;
 use App\Http\Controllers\Admin\DownloadRatPdfController;
+use App\Http\Controllers\Admin\DownloadRatProgramadaPdfController;
 use App\Http\Controllers\Admin\DownloadRelatorioAtendimentoPdfController;
 use App\Http\Controllers\Admin\DownloadRelatorioExecutivoPdfController;
-use App\Http\Controllers\Admin\DownloadRelatorioExecutivoProgramadaPdfController;
 use App\Http\Controllers\Admin\DownloadRelatorioMedicaoPdfController;
-use App\Http\Controllers\Admin\DownloadRelatorioMedicaoProgramadaPdfController;
 use App\Http\Controllers\Admin\DownloadVistoriaPdfController;
 use App\Http\Controllers\Admin\DownloadVistoriaProgramadaPdfController;
 use App\Http\Controllers\RoutingController;
@@ -16,6 +15,7 @@ use App\Livewire\Admin\PreventivasList;
 use App\Livewire\Admin\ProgramadasList;
 use App\Livewire\Prestador\AtendimentoDetalhe;
 use App\Livewire\Prestador\MeusAtendimentos;
+use App\Livewire\Prestador\ProgramadaAtendimentoDetalhe;
 use Illuminate\Support\Facades\Route;
 
 // Rota do painel (home do sistema autenticado)
@@ -39,14 +39,14 @@ Route::group(['prefix' => '/painel', 'middleware' => 'auth'], function () {
         Route::get('/preventivas/{preventiva}/relatorio-medicao-pdf', DownloadRelatorioMedicaoPdfController::class)->name('admin.preventivas.relatorio-medicao-pdf')->can('admin');
         Route::get('/programadas', ProgramadasList::class)->name('admin.programadas')->can('admin');
         Route::get('/programadas/{programada}/vistoria-pdf', DownloadVistoriaProgramadaPdfController::class)->name('admin.programadas.vistoria-pdf')->can('admin');
-        Route::get('/programadas/{programada}/relatorio-executivo-pdf', DownloadRelatorioExecutivoProgramadaPdfController::class)->name('admin.programadas.relatorio-executivo-pdf')->can('admin');
-        Route::get('/programadas/{programada}/relatorio-medicao-pdf', DownloadRelatorioMedicaoProgramadaPdfController::class)->name('admin.programadas.relatorio-medicao-pdf')->can('admin');
+        Route::get('/programadas/{programada}/rat-pdf', DownloadRatProgramadaPdfController::class)->name('admin.programadas.rat-pdf')->can('admin');
         Route::view('/enderecos', 'admin.enderecos')->name('admin.enderecos')->can('admin');
         Route::view('/configuracoes-sistema', 'admin.configuracoes-sistema')->name('admin.configuracoes-sistema')->can('admin');
     });
 
     Route::group(['prefix' => '/prestador'], function () {
         Route::get('/atendimentos', MeusAtendimentos::class)->name('prestador.atendimentos')->can('prestador');
+        Route::get('/atendimentos/programadas/{programadaId}', ProgramadaAtendimentoDetalhe::class)->name('prestador.programada-atendimento')->can('prestador');
         Route::get('/atendimentos/{ocorrenciaId}', AtendimentoDetalhe::class)->name('prestador.atendimento')->can('prestador');
     });
 

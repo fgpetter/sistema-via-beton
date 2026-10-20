@@ -3,7 +3,9 @@
 namespace App\Livewire\Prestador;
 
 use App\Enums\OcorrenciaStatus;
+use App\Enums\ProgramadaStatus;
 use App\Models\Ocorrencia;
+use App\Models\Programada;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
@@ -44,6 +46,22 @@ class MeusAtendimentos extends Component
         }
 
         return $query->ordemListaPrestador()->get();
+    }
+
+    #[Computed]
+    public function programadas()
+    {
+        $colaborador = auth()->user()->colaborador;
+        if (! $colaborador) {
+            return collect();
+        }
+
+        return Programada::query()
+            ->where('colaborador_id', $colaborador->id)
+            ->when($this->mostrarConcluidos,
+                fn ($query) => $query->where('status', ProgramadaStatus::Concluido),
+                fn ($query) => $query->where('status', '!=', ProgramadaStatus::Concluido))
+            ->orderByDesc('abertura')->get();
     }
 
     public function render(): View

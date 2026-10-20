@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('programada_id')->constrained('programadas')->onDelete('cascade');
             $table->string('path');
+            $table->string('tipo');
+            $table->unsignedInteger('par');
             $table->string('legenda')->nullable();
-            $table->boolean('recusada')->default(false);
-            $table->unsignedInteger('position');
-            $table->index(['programada_id', 'position']);
+            $table->unique(['programada_id', 'tipo', 'par']);
+            $table->index(['programada_id', 'par']);
             $table->timestamps();
         });
     }

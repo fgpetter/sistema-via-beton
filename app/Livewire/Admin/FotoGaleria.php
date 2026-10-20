@@ -4,11 +4,15 @@ namespace App\Livewire\Admin;
 
 use App\Enums\TipoImagemOcorrencia;
 use App\Jobs\ProcessarImagemOcorrencia;
+use App\Jobs\ProcessarImagemProgramada;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaImagem;
+use App\Models\Programada;
+use App\Models\ProgramadaImagem;
 use App\Models\User;
 use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -16,13 +20,16 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
-class OcorrenciaFotoGaleria extends Component
+class FotoGaleria extends Component
 {
     use WithFileUploads;
     use WithSweetAlert;
 
     #[Locked]
-    public int $ocorrenciaId;
+    public string $registroTipo;
+
+    #[Locked]
+    public int $registroId;
 
     public $fotoUpload;
 
@@ -30,37 +37,32 @@ class OcorrenciaFotoGaleria extends Component
 
     public ?string $uploadingTipo = null;
 
-    public int $totalPares = 1;
+    public bool $dropzoneHabilitado = true;
 
-    public bool $dropzoneHabilitado = false;
-
-    public function mount(int $ocorrenciaId): void
+    public function mount(string $registroTipo, int $registroId): void
     {
-        $this->ocorrenciaId = $ocorrenciaId;
+        abort_unless(in_array($registroTipo, ['ocorrencia', 'programada'], true), 404);
+
+        $this->registroTipo = $registroTipo;
+        $this->registroId = $registroId;
         $this->ensureUserIsAuthorized();
-
-        Ocorrencia::query()->where('id', $this->ocorrenciaId)->firstOrFail();
-
-        $maxPar = (int) OcorrenciaImagem::query()
-            ->where('ocorrencia_id', $this->ocorrenciaId)
-            ->max('par');
-        $this->totalPares = max(1, $maxPar);
+        $this->registroQuery()->findOrFail($registroId);
     }
 
     #[Computed]
-    public function ocorrencia(): Ocorrencia
+    public function registro(): Ocorrencia|Programada
     {
-        return Ocorrencia::query()
+        return $this->registroQuery()
             ->with('imagens')
-            ->findOrFail($this->ocorrenciaId);
+            ->findOrFail($this->registroId);
     }
 
     #[Computed]
     public function fotoPares(): array
     {
-        $maxPar = (int) $this->ocorrencia->imagens->max('par');
+        $maxPar = (int) $this->registro->imagens->max('par');
 
-        return $this->ocorrencia->fotoPares(max(1, $maxPar + 1));
+        return $this->registro->fotoPares(max(1, $maxPar + 1));
     }
 
     public function placeholder(): string
@@ -104,20 +106,26 @@ HTML;
             return;
         }
 
-        $path = $this->fotoUpload->store("ocorrencias/{$this->ocorrenciaId}/{$tipo->value}", 'public');
-
-        $imagem = OcorrenciaImagem::create([
-            'ocorrencia_id' => $this->ocorrenciaId,
+        $path = $this->fotoUpload->store("{$this->registroTipo}s/{$this->registroId}/{$tipo->value}", 'public');
+        $imagem = $this->imagemClass()::create([
+            $this->foreignKey() => $this->registroId,
             'tipo' => $tipo,
             'par' => $par,
             'path' => $path,
         ]);
 
-        ProcessarImagemOcorrencia::dispatch($imagem);
+        if ($this->registroTipo === 'ocorrencia') {
+            ProcessarImagemOcorrencia::dispatch($imagem);
+        } else {
+            ProcessarImagemProgramada::dispatch($imagem);
+        }
 
-        $this->totalPares = max($this->totalPares, $par);
         $this->reset(['fotoUpload']);
-        unset($this->ocorrencia, $this->fotoPares);
+        unset($this->registro, $this->fotoPares);
+
+        if ($this->registroTipo === 'programada') {
+            $this->dispatch('programada-imagens-atualizadas');
+        }
 
         $this->swalToastSuccess(SwalToast::successOptions('Foto enviada!'));
     }
@@ -125,33 +133,27 @@ HTML;
     public function salvarLegenda(int $imagemId, string $legenda): void
     {
         $this->ensureUserIsAuthorized();
-
-        $imagem = OcorrenciaImagem::query()
-            ->where('id', $imagemId)
-            ->where('ocorrencia_id', $this->ocorrenciaId)
-            ->firstOrFail();
-
-        $imagem->update(['legenda' => $legenda]);
-
-        unset($this->ocorrencia, $this->fotoPares);
+        $this->imagemQuery()->findOrFail($imagemId)->update(['legenda' => $legenda]);
+        unset($this->registro, $this->fotoPares);
     }
 
     public function removerImagem(int $imagemId): void
     {
         $this->ensureUserIsAuthorized();
-
-        $imagem = OcorrenciaImagem::query()
-            ->where('ocorrencia_id', $this->ocorrenciaId)
-            ->findOrFail($imagemId);
+        $imagem = $this->imagemQuery()->findOrFail($imagemId);
 
         Storage::disk('public')->delete($imagem->path);
         $imagem->delete();
-        unset($this->ocorrencia, $this->fotoPares);
+        unset($this->registro, $this->fotoPares);
+
+        if ($this->registroTipo === 'programada') {
+            $this->dispatch('programada-imagens-atualizadas');
+        }
     }
 
     public function render(): View
     {
-        return view('livewire.admin.ocorrencia-foto-galeria');
+        return view('livewire.admin.foto-galeria');
     }
 
     protected function resolverParAntes(int $parSugerido): int
@@ -160,13 +162,12 @@ HTML;
             return $parSugerido;
         }
 
-        return $this->ocorrencia->proximoPar();
+        return $this->registro->proximoPar();
     }
 
     protected function parTemFotoAntes(int $par): bool
     {
-        return OcorrenciaImagem::query()
-            ->where('ocorrencia_id', $this->ocorrenciaId)
+        return $this->imagemQuery()
             ->where('par', $par)
             ->where('tipo', TipoImagemOcorrencia::Antes)
             ->exists();
@@ -176,8 +177,28 @@ HTML;
     {
         /** @var User|null $user */
         $user = auth()->user();
-        if (! $user?->isAdmin()) {
-            abort(403, 'Você não tem permissão para acessar esta funcionalidade.');
-        }
+        abort_unless($user?->isAdmin(), 403, 'Você não tem permissão para acessar esta funcionalidade.');
+    }
+
+    protected function registroQuery(): Builder
+    {
+        $model = $this->registroTipo === 'programada' ? Programada::class : Ocorrencia::class;
+
+        return $model::query();
+    }
+
+    protected function imagemQuery(): Builder
+    {
+        return $this->imagemClass()::query()->where($this->foreignKey(), $this->registroId);
+    }
+
+    protected function imagemClass(): string
+    {
+        return $this->registroTipo === 'programada' ? ProgramadaImagem::class : OcorrenciaImagem::class;
+    }
+
+    protected function foreignKey(): string
+    {
+        return $this->registroTipo === 'programada' ? 'programada_id' : 'ocorrencia_id';
     }
 }

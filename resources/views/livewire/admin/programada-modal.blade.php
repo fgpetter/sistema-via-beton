@@ -2,7 +2,7 @@
     x-data="{ showModal: $wire.entangle('showModal') }"
     x-on:open-edit-modal-programada.window="$wire.openEditModal($event.detail.id)"
     x-on:open-create-modal-programada.window="$wire.openCreateModal()"
-    x-init="$watch('showModal', v => document.body.classList.toggle('overflow-hidden', v))"
+    x-init="$watch('showModal', v => { document.body.classList.toggle('overflow-hidden', v); if (v) $nextTick(() => window.initializeModalSelects?.()) })"
 >
     <template x-teleport="body">
         <div
@@ -52,18 +52,18 @@
                     <form wire:submit="save">
                         <div class="p-4 overflow-y-auto max-h-[70vh]">
                             <div class="space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div>
+                                <div class="grid grid-cols-1 sm:grid-cols-6 gap-4">
+                                    <div class="sm:col-span-2 min-w-0">
                                         <label for="tipo" class="block text-sm font-medium text-default-700 mb-1">Tipo</label>
-                                        <select wire:model="form.tipo" id="tipo" class="form-input w-full @error('form.tipo') border-danger @enderror">
+                                        <select data-modal-select wire:model="form.tipo" id="tipo" class="form-input w-full @error('form.tipo') border-danger @enderror">
                                             <option value="">Selecione um tipo</option>
                                             @foreach ($this->tipos as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                                         </select>
                                         @error('form.tipo')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
                                     </div>
-                                    <div>
+                                    <div class="sm:col-span-1 min-w-0">
                                         <label for="status" class="block text-sm font-medium text-default-700 mb-1">Status</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.status"
                                             id="status"
                                             class="form-input w-full @error('status') border-danger @enderror"
@@ -78,7 +78,7 @@
                                         @enderror
                                     </div>
 
-                                    <div>
+                                    <div class="sm:col-span-1 min-w-0">
                                         <label for="abertura" class="block text-sm font-medium text-default-700 mb-1">Data de Abertura</label>
                                         <input
                                             wire:model="form.abertura"
@@ -91,9 +91,9 @@
                                         @enderror
                                     </div>
 
-                                    <div>
+                                    <div class="sm:col-span-2 min-w-0">
                                         <label for="responsavelEngenhariaId" class="block text-sm font-medium text-default-700 mb-1">Resp. Eng. Banrisul</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.responsavelEngenhariaId"
                                             id="responsavelEngenhariaId"
                                             class="form-input w-full @error('responsavelEngenhariaId') border-danger @enderror"
@@ -110,6 +110,23 @@
 
                                 </div>
 
+                                @if ($this->editingProgramada?->colaborador?->tipo === \App\Enums\TipoColaborador::Administrativos)
+                                <div>
+                                    <label for="prestadorNome" class="block text-sm font-medium text-default-700 mb-1">Nome do Prestador (RAT)</label>
+                                    <input wire:model="form.prestadorNome" id="prestadorNome" type="text" class="form-input w-full" placeholder="Usado quando o responsável é Administrativo">
+                                </div>
+                                @endif
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    @foreach ([['dataChegada', 'Data de Chegada'], ['dataSaida', 'Data de Saída']] as [$campoData, $rotuloData])
+                                        <div>
+                                            <label for="{{ $campoData }}" class="block text-sm font-medium text-default-700 mb-1">{{ $rotuloData }}</label>
+                                            <input wire:model="form.{{ $campoData }}" type="date" id="{{ $campoData }}" class="form-input w-full @error('form.' . $campoData) border-danger @enderror">
+                                            @error('form.' . $campoData)<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
+                                        </div>
+                                    @endforeach
+                                </div>
+
                                 <div>
                                     <label for="titulo" class="block text-sm font-medium text-default-700 mb-1">Título</label>
                                     <input
@@ -122,6 +139,40 @@
                                     @error('form.titulo')
                                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                                     @enderror
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                    <div>
+                                        <label for="disciplinaId" class="block text-sm font-medium text-default-700 mb-1">Disciplina</label>
+                                        <select data-modal-select wire:model="form.disciplinaId" id="disciplinaId" class="form-input w-full">
+                                            <option value="">Nenhuma</option>
+                                            @foreach ($this->disciplinasOptions as $id => $nome)<option value="{{ $id }}">{{ $nome }}</option>@endforeach
+                                        </select>
+                                        @error('form.disciplinaId')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
+                                    </div>
+                                    @foreach (range(1, 3) as $numeroSubdisciplina)
+                                        <div>
+                                            <label for="subdisciplina{{ $numeroSubdisciplina }}Id" class="block text-sm font-medium text-default-700 mb-1">Subdisciplina {{ $numeroSubdisciplina }}</label>
+                                            <select data-modal-select wire:model="form.subdisciplina{{ $numeroSubdisciplina }}Id" id="subdisciplina{{ $numeroSubdisciplina }}Id" class="form-input w-full">
+                                                <option value="">Nenhuma</option>
+                                                @foreach ($this->subdisciplinasOptions as $id => $nome)<option value="{{ $id }}">{{ $nome }}</option>@endforeach
+                                            </select>
+                                            @error('form.subdisciplina' . $numeroSubdisciplina . 'Id')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                    @foreach (range(4, 6) as $numeroSubdisciplina)
+                                        <div>
+                                            <label for="subdisciplina{{ $numeroSubdisciplina }}Id" class="block text-sm font-medium text-default-700 mb-1">Subdisciplina {{ $numeroSubdisciplina }}</label>
+                                            <select data-modal-select wire:model="form.subdisciplina{{ $numeroSubdisciplina }}Id" id="subdisciplina{{ $numeroSubdisciplina }}Id" class="form-input w-full">
+                                                <option value="">Nenhuma</option>
+                                                @foreach ($this->subdisciplinasOptions as $id => $nome)<option value="{{ $id }}">{{ $nome }}</option>@endforeach
+                                            </select>
+                                            @error('form.subdisciplina' . $numeroSubdisciplina . 'Id')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
+                                        </div>
+                                    @endforeach
                                 </div>
 
                                 <div>
@@ -158,7 +209,7 @@
 
                                     <div>
                                         <label for="colaboradorId" class="block text-sm font-medium text-default-700 mb-1">Responsável</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.colaboradorId"
                                             id="colaboradorId"
                                             class="form-input w-full @error('colaboradorId') border-danger @enderror"
@@ -198,6 +249,16 @@
                                     </div>
                                 @endif
 
+                                @if ($this->editingProgramada?->rat_pdf_path && $this->editingProgramada?->email_rat_enviado)
+                                    <div class="bg-green-50 border border-green-200 rounded p-3 flex items-center justify-between gap-3">
+                                        <div><span class="text-xs font-medium uppercase text-default-500">RAT enviada por e-mail</span><p class="text-sm">{{ $this->editingProgramada->email_rat }} · {{ $this->editingProgramada->email_rat_enviado->format('d/m/Y H:i') }}</p></div>
+                                        <div class="flex gap-3">
+                                            <a href="{{ route('admin.programadas.rat-pdf', $this->editingProgramada) }}" target="_blank" class="text-sm text-primary hover:underline">Visualizar RAT</a>
+                                            <button type="button" class="text-sm text-primary hover:underline" x-on:click="(async () => { if (!window.Swal) { window.Swal = (await import('https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.esm.all.min.js')).default; } const r = await window.Swal.fire({text:'Salvar dados e gerar nova RAT sem reenviar?',icon:'question',showCancelButton:true,confirmButtonText:'Confirmar',cancelButtonText:'Cancelar'}); if(r.isConfirmed) $wire.gerarNovaRat() })()">Gerar nova RAT</button>
+                                        </div>
+                                    </div>
+                                @endif
+
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     @if ($this->editingProgramada && $this->editingProgramada->relatoriosDisponiveis())
                                         <div class="bg-blue-50 border border-blue-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -213,47 +274,18 @@
                                                 Baixar relatório
                                             </a>
                                         </div>
-                                        <div class="bg-blue-50 border border-blue-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                            <div>
-                                                <span class="text-xs font-medium text-default-500 uppercase">Relatório Executivo</span>
-                                            </div>
-                                            <a
-                                                href="{{ route('admin.programadas.relatorio-executivo-pdf', $this->editingProgramada) }}"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
-                                            >
-                                                Baixar relatório
-                                            </a>
-                                        </div>
-                                    @endif
-                                    @if ($this->editingProgramada && $this->editingProgramada->relatorioMedicaoDisponivel())
-                                        <div class="bg-blue-50 border border-blue-200 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                            <div>
-                                                <span class="text-xs font-medium text-default-500 uppercase">Relatório de Medição</span>
-                                            </div>
-                                            <a
-                                                href="{{ route('admin.programadas.relatorio-medicao-pdf', $this->editingProgramada) }}"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="inline-flex items-center justify-center text-sm font-medium text-primary hover:underline"
-                                            >
-                                                Baixar relatório
-                                            </a>
-                                        </div>
                                     @endif
                                 </div>
 
+                                @if ($this->editingProgramada?->status === \App\Enums\ProgramadaStatus::Revisar)
+                                    <button type="button" wire:click="concluirRevisao({{ $this->editingProgramada->id }})" class="btn bg-success text-white">Concluir revisão</button>
+                                @endif
+
                                 @if ($form->editingId)
-                                    <livewire:admin.programada-foto-galeria
-                                        :programada-id="$form->editingId"
-                                        :dropzone-habilitado="true"
-                                        :wire:key="'foto-galeria-' . $form->editingId"
-                                    />
-                                    <livewire:admin.programada-medicao-galeria
-                                        :programada-id="$form->editingId"
-                                        :dropzone-habilitado="true"
-                                        :wire:key="'medicao-galeria-' . $form->editingId"
+                                    <livewire:admin.foto-galeria
+                                        registro-tipo="programada"
+                                        :registro-id="$form->editingId"
+                                        :wire:key="'foto-galeria-programada-' . $form->editingId"
                                     />
                                 @endif
 

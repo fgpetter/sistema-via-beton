@@ -46,6 +46,7 @@
                 </div>
             </a>
         @empty
+                            @if ($this->programadas->isEmpty())
             <div class="card">
                 <div class="card-body">
                     <div class="flex flex-col items-center gap-3 py-8">
@@ -62,4 +63,29 @@
             </div>
         @endforelse
     </div>
+
+    @if ($this->programadas->isNotEmpty())
+        <h2 class="text-lg font-semibold text-default-800 mt-8 mb-3">Programadas</h2>
+        <div class="space-y-4">
+            @foreach ($this->programadas as $programada)
+                <a wire:key="programada-{{ $programada->id }}" href="{{ route('prestador.programada-atendimento', $programada->id) }}" class="block card hover:shadow-lg transition-shadow duration-200">
+                    <div class="card-body">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="min-w-0">
+                                <span class="text-xs text-primary font-medium">{{ $programada->tipo->label() }}</span>
+                                <h6 class="font-semibold text-default-800 text-base mb-1">{{ $programada->agencia }} - {{ $programada->id }}</h6>
+                                <p class="text-default-700 font-medium text-sm">{{ $programada->titulo }}</p>
+                                @if ($programada->descricao)<p class="text-default-500 text-sm line-clamp-2">{{ $programada->descricao }}</p>@endif
+                            </div>
+                            @endif
+                            <div class="flex flex-col items-end gap-2 shrink-0">
+                                <span class="py-0.5 px-2.5 inline-flex items-center text-xs font-medium bg-{{ $programada->status->color() }}/10 text-{{ $programada->status->color() }} rounded">{{ $programada->status->label() }}</span>
+                                <span class="text-xs text-default-400">{{ $programada->abertura->format('d/m/Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    @endif
 </div>

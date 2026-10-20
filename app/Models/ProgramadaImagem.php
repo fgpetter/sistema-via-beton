@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\TipoImagemOcorrencia;
 use Database\Factories\ProgramadaImagemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProgramadaImagem extends Model
 {
@@ -21,9 +21,9 @@ class ProgramadaImagem extends Model
     protected $fillable = [
         'programada_id',
         'path',
+        'tipo',
+        'par',
         'legenda',
-        'recusada',
-        'position',
     ];
 
     /**
@@ -32,17 +32,12 @@ class ProgramadaImagem extends Model
     protected function casts(): array
     {
         return [
-            'recusada' => 'boolean',
+            'tipo' => TipoImagemOcorrencia::class,
         ];
     }
 
     public function programada(): BelongsTo
     {
         return $this->belongsTo(Programada::class);
-    }
-
-    public function medicaoImagens(): HasMany
-    {
-        return $this->hasMany(ProgramadaMedicaoImagem::class)->orderBy('id');
     }
 }

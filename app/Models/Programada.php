@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ProgramadaStatus;
 use App\Enums\ProgramadaTipo;
+use App\Enums\TipoImagemOcorrencia;
 use Database\Factories\ProgramadaFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,10 +35,22 @@ class Programada extends Model
         'agencia',
         'endereco_id',
         'endereco',
-        'datahora_chegada',
-        'datahora_saida',
         'comentarios',
         'concluido_por',
+        'prestador_nome',
+        'data_chegada',
+        'data_saida',
+        'comentarios_prestador',
+        'email_rat',
+        'email_rat_enviado',
+        'rat_pdf_path',
+        'disciplina_id',
+        'subdisciplina_1_id',
+        'subdisciplina_2_id',
+        'subdisciplina_3_id',
+        'subdisciplina_4_id',
+        'subdisciplina_5_id',
+        'subdisciplina_6_id',
     ];
 
     /**
@@ -49,8 +62,9 @@ class Programada extends Model
             'status' => ProgramadaStatus::class,
             'tipo' => ProgramadaTipo::class,
             'abertura' => 'date',
-            'datahora_chegada' => 'datetime',
-            'datahora_saida' => 'datetime',
+            'data_chegada' => 'date',
+            'data_saida' => 'date',
+            'email_rat_enviado' => 'datetime',
         ];
     }
 
@@ -62,6 +76,41 @@ class Programada extends Model
     public function responsavelEngenharia(): BelongsTo
     {
         return $this->belongsTo(ResponsavelEngenharia::class)->withTrashed();
+    }
+
+    public function disciplina(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class)->where('subdisciplina', false);
+    }
+
+    public function subdisciplina1(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_1_id')->where('subdisciplina', true);
+    }
+
+    public function subdisciplina2(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_2_id')->where('subdisciplina', true);
+    }
+
+    public function subdisciplina3(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_3_id')->where('subdisciplina', true);
+    }
+
+    public function subdisciplina4(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_4_id')->where('subdisciplina', true);
+    }
+
+    public function subdisciplina5(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_5_id')->where('subdisciplina', true);
+    }
+
+    public function subdisciplina6(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'subdisciplina_6_id')->where('subdisciplina', true);
     }
 
     public function enderecoVinculado(): BelongsTo
@@ -90,46 +139,58 @@ class Programada extends Model
     public function imagens(): HasMany
     {
         return $this->hasMany(ProgramadaImagem::class)
-            ->orderBy('position')
+            ->orderBy('par')
             ->orderBy('id');
     }
 
-    public function imagensAceitas(): HasMany
+    public function imagensAntes(): HasMany
     {
-        return $this->hasMany(ProgramadaImagem::class)->where('recusada', false);
+        return $this->imagens()->where('tipo', TipoImagemOcorrencia::Antes);
     }
 
-    public function imagensRecusadas(): HasMany
+    public function imagensDepois(): HasMany
     {
-        return $this->hasMany(ProgramadaImagem::class)->where('recusada', true);
-    }
-
-    public function imagensAceitasComMedicao(): HasMany
-    {
-        return $this->hasMany(ProgramadaImagem::class)
-            ->where('recusada', false)
-            ->orderBy('position')
-            ->orderBy('id')
-            ->with('medicaoImagens');
+        return $this->imagens()->where('tipo', TipoImagemOcorrencia::Depois);
     }
 
     public function atendimentoIniciado(): bool
     {
-        return $this->datahora_chegada !== null;
+        return $this->data_chegada !== null;
+    }
+
+    public function podeConcluir(): bool
+    {
+        return $this->imagensAntes()->exists()
+            && $this->imagensDepois()->exists()
+            && $this->email_rat_enviado !== null;
+    }
+
+    /** @return array<int, array{antes: ProgramadaImagem|null, depois: ProgramadaImagem|null}> */
+    public function fotoPares(int $minPares = 1): array
+    {
+        $imagens = $this->imagens;
+        $maxPar = max($minPares, (int) $imagens->max('par'));
+        $pares = [];
+
+        for ($numero = 1; $numero <= $maxPar; $numero++) {
+            $doPar = $imagens->where('par', $numero);
+            $pares[$numero] = [
+                'antes' => $doPar->firstWhere('tipo', TipoImagemOcorrencia::Antes),
+                'depois' => $doPar->firstWhere('tipo', TipoImagemOcorrencia::Depois),
+            ];
+        }
+
+        return $pares;
+    }
+
+    public function proximoPar(): int
+    {
+        return (int) $this->imagens()->max('par') + 1;
     }
 
     public function relatoriosDisponiveis(): bool
     {
-        return filled(trim((string) $this->descricao))
-            && $this->imagens()->exists();
-    }
-
-    public function relatorioMedicaoDisponivel(): bool
-    {
-        return $this->relatoriosDisponiveis()
-            && $this->imagensAceitas()
-                ->whereHas('medicaoImagens')
-                ->exists();
+        return filled(trim((string) $this->descricao)) && $this->imagens()->exists();
     }
 
     public function scopeStatus(Builder $query, ProgramadaStatus $status): Builder

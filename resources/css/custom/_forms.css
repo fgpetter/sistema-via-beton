@@ -18,6 +18,19 @@ _forms.scss
     transition-property: color, box-shadow;
 }
 
+.modal-select-toggle {
+    @apply !flex flex-row items-center justify-between;
+}
+
+.modal-select-toggle [data-title] {
+    order: 1;
+    margin-inline-end: auto;
+}
+
+.modal-select-toggle svg {
+    order: 2;
+}
+
 .form-input-sm {
     @apply h-7.5 text-xs;
 }

@@ -58,7 +58,7 @@ class ProgramadasList extends Component
         return Programada::query()
             ->semRascunho()
             ->with(['colaborador.user', 'concluidoPor', 'enderecoVinculado'])
-            ->withCount(['imagens', 'imagensRecusadas'])
+            ->withCount('imagens')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('titulo', 'like', "%{$this->search}%")

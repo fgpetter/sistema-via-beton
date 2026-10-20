@@ -9,81 +9,46 @@ use Throwable;
 
 class BuildVistoriaPdfDataFromProgramada
 {
-    /**
-     * @return array{
-     *   numero_programada: string,
-     *   numero_contrato: string,
-     *   responsavel_engenharia_banrisul: string,
-     *   codigo_nome_local: string,
-     *   endereco: string,
-     *   titulo_relatorio: string,
-     *   descricao: string,
-     *   imagens: array<int, array{src: string, legenda: string, recusada: bool}>,
-     *   incluirRecusadas: true,
-     * }
-     */
     public function __invoke(Programada $programada): array
     {
         $programada->loadMissing(['enderecoVinculado', 'imagens', 'responsavelEngenharia']);
-
         $endereco = $programada->enderecoVinculado;
-        $codigoNomeLocal = '';
-        if ($endereco !== null && $programada->agencia) {
-            $codigoNomeLocal = $endereco->numero.' - '.$programada->agencia;
-        } elseif ($endereco !== null) {
-            $codigoNomeLocal = (string) $endereco->numero;
-        } elseif ($programada->agencia) {
-            $codigoNomeLocal = $programada->agencia;
-        }
-
-        $enderecoTexto = $endereco?->endereco ?? '';
-
+        $codigoNomeLocal = $endereco && $programada->agencia
+            ? $endereco->numero.' - '.$programada->agencia
+            : ($endereco?->numero ?? $programada->agencia);
         $disk = Storage::disk('public');
-        $imagens = [];
-
-        foreach ($programada->imagens as $imagem) {
-            $dadosImagem = $this->resolverImagemParaPdf($imagem->path, $imagem->legenda, $disk);
-            if ($dadosImagem !== null) {
-                $dadosImagem['recusada'] = $imagem->recusada;
-                $imagens[] = $dadosImagem;
-            }
+        $pares = [];
+        foreach ($programada->fotoPares() as $numero => $par) {
+            $pares[$numero] = [
+                'antes' => $this->resolverImagem($par['antes']?->path, $par['antes']?->legenda, $disk),
+                'depois' => $this->resolverImagem($par['depois']?->path, $par['depois']?->legenda, $disk),
+            ];
         }
 
         return [
-            'numero_programada' => (string) $programada->id,
+            'requisicao' => (string) $programada->id,
             'tipo_programada' => $programada->tipo->label(),
             'numero_contrato' => (string) ($programada->contrato ?? ''),
             'responsavel_engenharia_banrisul' => $programada->responsavelEngenharia?->nome ?? '',
-            'codigo_nome_local' => $codigoNomeLocal,
-            'endereco' => $enderecoTexto,
+            'codigo_nome_local' => (string) $codigoNomeLocal,
+            'endereco' => $endereco?->endereco ?? '',
             'titulo_relatorio' => 'RELATÓRIO TÉCNICO FOTOGRÁFICO',
             'descricao' => trim((string) $programada->descricao),
-            'imagens' => $imagens,
-            'incluirRecusadas' => true,
+            'pares' => $pares,
         ];
     }
 
-    /**
-     * @return array{src: string, legenda: string}|null
-     */
-    private function resolverImagemParaPdf(?string $path, ?string $legenda, FilesystemAdapter $disk): ?array
+    private function resolverImagem(?string $path, ?string $legenda, FilesystemAdapter $disk): ?array
     {
         if ($path === null || $disk->missing($path)) {
             return null;
         }
-
         try {
-            $conteudo = $disk->get($path);
-            $mime = $disk->mimeType($path) ?: 'image/jpeg';
+            $src = 'data:'.($disk->mimeType($path) ?: 'image/jpeg').';base64,'.base64_encode($disk->get($path));
         } catch (Throwable) {
             return null;
         }
 
-        $src = 'data:'.$mime.';base64,'.base64_encode($conteudo);
-
-        return [
-            'src' => $src,
-            'legenda' => (string) ($legenda ?? ''),
-        ];
+        return ['src' => $src, 'legenda' => (string) ($legenda ?? '')];
     }
 }

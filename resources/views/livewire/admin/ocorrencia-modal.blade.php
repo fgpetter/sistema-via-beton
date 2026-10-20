@@ -3,7 +3,7 @@
     x-on:open-edit-modal.window="$wire.openEditModal($event.detail.id)"
     x-on:open-create-modal.window="$wire.openCreateModal()"
     x-on:keydown.escape.window="if (showModal) $wire.closeModal()"
-    x-init="$watch('showModal', v => document.body.classList.toggle('overflow-hidden', v))"
+    x-init="$watch('showModal', v => { document.body.classList.toggle('overflow-hidden', v); if (v) $nextTick(() => window.initializeModalSelects?.()) })"
 >
     <template x-teleport="body">
         <div
@@ -56,7 +56,7 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div>
                                         <label for="status" class="block text-sm font-medium text-default-700 mb-1">Status</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.status"
                                             id="status"
                                             class="form-input w-full @error('status') border-danger @enderror"
@@ -85,7 +85,7 @@
                                     </div>
                                     <div>
                                         <label for="prazoId" class="block text-sm font-medium text-default-700 mb-1">Categoria</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.prazoId"
                                             id="prazoId"
                                             class="form-input w-full @error('prazoId') border-danger @enderror"
@@ -102,7 +102,7 @@
 
                                     <div>
                                         <label for="responsavelEngenhariaId" class="block text-sm font-medium text-default-700 mb-1">Resp. Eng. Banrisul</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.responsavelEngenhariaId"
                                             id="responsavelEngenhariaId"
                                             class="form-input w-full @error('responsavelEngenhariaId') border-danger @enderror"
@@ -178,7 +178,7 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                     <div>
                                         <label for="disciplinaId" class="block text-sm font-medium text-default-700 mb-1">Disciplina</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.disciplinaId"
                                             id="disciplinaId"
                                             class="form-input w-full @error('form.disciplinaId') border-danger @enderror"
@@ -195,7 +195,7 @@
 
                                     <div>
                                         <label for="subdisciplina1Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 1</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.subdisciplina1Id"
                                             id="subdisciplina1Id"
                                             class="form-input w-full @error('form.subdisciplina1Id') border-danger @enderror"
@@ -212,7 +212,7 @@
 
                                     <div>
                                         <label for="subdisciplina2Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 2</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.subdisciplina2Id"
                                             id="subdisciplina2Id"
                                             class="form-input w-full @error('form.subdisciplina2Id') border-danger @enderror"
@@ -229,7 +229,7 @@
 
                                     <div>
                                         <label for="subdisciplina3Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 3</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.subdisciplina3Id"
                                             id="subdisciplina3Id"
                                             class="form-input w-full @error('form.subdisciplina3Id') border-danger @enderror"
@@ -248,7 +248,7 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                     <div>
                                         <label for="subdisciplina4Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 4</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.subdisciplina4Id"
                                             id="subdisciplina4Id"
                                             class="form-input w-full @error('form.subdisciplina4Id') border-danger @enderror"
@@ -265,7 +265,7 @@
 
                                     <div>
                                         <label for="subdisciplina5Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 5</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.subdisciplina5Id"
                                             id="subdisciplina5Id"
                                             class="form-input w-full @error('form.subdisciplina5Id') border-danger @enderror"
@@ -282,7 +282,7 @@
 
                                     <div>
                                         <label for="subdisciplina6Id" class="block text-sm font-medium text-default-700 mb-1">Sub Disciplina 6</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.subdisciplina6Id"
                                             id="subdisciplina6Id"
                                             class="form-input w-full @error('form.subdisciplina6Id') border-danger @enderror"
@@ -319,7 +319,7 @@
 
                                     <div>
                                         <label for="colaboradorId" class="block text-sm font-medium text-default-700 mb-1">Responsável</label>
-                                        <select
+                                        <select data-modal-select
                                             wire:model="form.colaboradorId"
                                             id="colaboradorId"
                                             class="form-input w-full @error('colaboradorId') border-danger @enderror"
@@ -450,10 +450,10 @@
                            
 
                                 @if ($form->editingId)
-                                    <livewire:admin.ocorrencia-foto-galeria
-                                        :ocorrencia-id="$form->editingId"
-                                        :dropzone-habilitado="true"
-                                        :wire:key="'foto-galeria-' . $form->editingId"
+                                    <livewire:admin.foto-galeria
+                                        registro-tipo="ocorrencia"
+                                        :registro-id="$form->editingId"
+                                        :wire:key="'foto-galeria-ocorrencia-' . $form->editingId"
                                     />
                                 @endif
 

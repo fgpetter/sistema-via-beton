@@ -28,8 +28,8 @@ class ProgramadaFactory extends Factory
             'colaborador_id' => Colaborador::factory(),
             'agencia' => fake()->company(),
             'endereco' => fake()->optional()->address(),
-            'datahora_chegada' => fake()->optional(0.4)->dateTimeBetween('-3 months', 'now'),
-            'datahora_saida' => fake()->optional(0.3)->dateTimeBetween('-3 months', 'now'),
+            'data_chegada' => null,
+            'data_saida' => null,
             'comentarios' => fake()->optional()->paragraph(),
             'responsavel_engenharia_id' => fake()->boolean()
                 ? ResponsavelEngenharia::factory()

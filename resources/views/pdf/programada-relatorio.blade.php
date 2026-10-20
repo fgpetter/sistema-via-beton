@@ -60,8 +60,10 @@
         }
         .foto-img {
             max-width: 100%;
+            max-height: 260px;
             height: auto;
             display: block;
+            margin: 0 auto;
         }
         .foto-legenda {
             font-size: 6.5pt;
@@ -119,13 +121,13 @@
     {{-- Tabela de campos --}}
     <table class="rat" cellspacing="0">
         <tr>
-            <td class="lbl">Número da programada</td>
+            <td class="lbl">Requisição</td>
             <td class="lbl">Tipo</td>
             <td class="lbl">Número do Contrato</td>
             <td class="lbl">Responsável Engenharia Banrisul</td>
         </tr>
         <tr>
-            <td class="val">{{ $dados['numero_programada'] }}</td>
+            <td class="val">{{ $dados['requisicao'] }}</td>
             <td class="val">{{ $dados['tipo_programada'] }}</td>
             <td class="val">{{ $dados['numero_contrato'] }}</td>
             <td class="val">{{ $dados['responsavel_engenharia_banrisul'] }}</td>
@@ -146,39 +148,26 @@
         </tr>
     </table>
 
-    {{-- Tabela de fotos --}}
-    @if (count($dados['imagens']) > 0)
-        <table class="rat" cellspacing="0" style="margin-top: 8px;">
+    {{-- Fotografias em pares Antes e Depois --}}
+    @forelse ($dados['pares'] as $numero => $par)
+        <table class="rat" cellspacing="0" style="margin-top: 8px; page-break-inside: avoid;">
+            <tr><th class="th-foto" colspan="2">FOTOGRAFIAS · PAR {{ $numero }}</th></tr>
+            <tr><td class="lbl">ANTES</td><td class="lbl">DEPOIS</td></tr>
             <tr>
-                <th class="th-foto" colspan="2">FOTOGRAFIAS</th>
-            </tr>
-            @foreach (array_chunk($dados['imagens'], 2) as $linha)
-                <tr>
-                    @foreach ($linha as $imagem)
-                        <td class="td-foto">
-                            @if ($dados['incluirRecusadas'] && $imagem['recusada'])
-                                <span class="recusado-badge">RECUSADO</span>
-                            @endif
-                            <img class="foto-img" src="{{ $imagem['src'] }}">
-                            @if ($imagem['legenda'] !== '')
-                                <div class="foto-legenda">{{ $imagem['legenda'] }}</div>
-                            @endif
-                        </td>
-                    @endforeach
-                    @if (count($linha) === 1)
-                        <td class="td-foto">
-                            <span class="sem-foto"></span>
-                        </td>
-                    @endif
-                </tr>
-            @endforeach
-        </table>
-    @else
-        <table class="rat" cellspacing="0" style="margin-top: 8px;">
-            <tr>
-                <td class="sem-foto">Nenhuma fotografia disponível.</td>
+                @foreach (['antes', 'depois'] as $lado)
+                    <td class="td-foto">
+                        @if ($par[$lado])
+                            <img class="foto-img" src="{{ $par[$lado]['src'] }}">
+                            @if ($par[$lado]['legenda'] !== '')<div class="foto-legenda">{{ $par[$lado]['legenda'] }}</div>@endif
+                        @else
+                            <span class="sem-foto">Sem foto</span>
+                        @endif
+                    </td>
+                @endforeach
             </tr>
         </table>
-    @endif
+    @empty
+        <table class="rat" cellspacing="0" style="margin-top: 8px;"><tr><td class="sem-foto">Nenhuma fotografia disponível.</td></tr></table>
+    @endforelse
 </body>
 </html>
