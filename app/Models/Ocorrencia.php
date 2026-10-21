@@ -71,6 +71,7 @@ class Ocorrencia extends Model
             'email_rat_enviado' => 'datetime',
             'data_chegada' => 'date',
             'data_saida' => 'date',
+            'propriedades_sdm_importadas_em' => 'datetime',
             'ordem_prestador' => 'integer',
         ];
     }

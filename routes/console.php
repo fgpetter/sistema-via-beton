@@ -14,3 +14,8 @@ Schedule::command('ocorrencias:importar-imagens')
     ->dailyAt('06:00')
     ->timezone('America/Sao_Paulo')
     ->withoutOverlapping();
+
+Schedule::command('ocorrencias:importar-propriedades')
+    ->everyFourHours()
+    ->timezone('America/Sao_Paulo')
+    ->withoutOverlapping();
