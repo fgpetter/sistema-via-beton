@@ -46,21 +46,22 @@
                 </div>
             </a>
         @empty
-                            @if ($this->programadas->isEmpty())
-            <div class="card">
-                <div class="card-body">
-                    <div class="flex flex-col items-center gap-3 py-8">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        <p class="text-default-500">
-                            @if ($mostrarConcluidos)
-                                Nenhum atendimento concluído.
-                            @else
-                                Nenhum atendimento em aberto.
-                            @endif
-                        </p>
+            @if ($this->programadas->isEmpty())
+                <div class="card">
+                    <div class="card-body">
+                        <div class="flex flex-col items-center gap-3 py-8">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-default-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            <p class="text-default-500">
+                                @if ($mostrarConcluidos)
+                                    Nenhum atendimento concluído.
+                                @else
+                                    Nenhum atendimento em aberto.
+                                @endif
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
         @endforelse
     </div>
 
@@ -77,7 +78,6 @@
                                 <p class="text-default-700 font-medium text-sm">{{ $programada->titulo }}</p>
                                 @if ($programada->descricao)<p class="text-default-500 text-sm line-clamp-2">{{ $programada->descricao }}</p>@endif
                             </div>
-                            @endif
                             <div class="flex flex-col items-end gap-2 shrink-0">
                                 <span class="py-0.5 px-2.5 inline-flex items-center text-xs font-medium bg-{{ $programada->status->color() }}/10 text-{{ $programada->status->color() }} rounded">{{ $programada->status->label() }}</span>
                                 <span class="text-xs text-default-400">{{ $programada->abertura->format('d/m/Y') }}</span>
