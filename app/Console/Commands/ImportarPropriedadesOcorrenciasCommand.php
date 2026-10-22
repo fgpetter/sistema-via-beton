@@ -8,6 +8,7 @@ use App\Models\ResponsavelEngenharia;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use stdClass;
 use Throwable;
@@ -35,12 +36,18 @@ class ImportarPropriedadesOcorrenciasCommand extends Command
     {
         $arquivo = $this->argument('arquivo') ?? base_path('temp/ocorrencias.json');
         $simular = (bool) $this->option('dry-run');
+        $logger = Log::build([
+            'driver' => 'single',
+            'path' => storage_path('logs/importar-propriedades-ocorrencias.log'),
+            'locking' => true,
+        ]);
 
         try {
             $ocorrencias = $this->lerOcorrencias($arquivo);
             $catalogos = $this->carregarCatalogos();
         } catch (Throwable $e) {
             $this->error($e->getMessage());
+            $logger->error($e->getMessage(), ['arquivo' => $arquivo, 'simulacao' => $simular]);
 
             return self::FAILURE;
         }
@@ -116,15 +123,20 @@ class ImportarPropriedadesOcorrenciasCommand extends Command
             }
         }
 
-        $this->info("Processadas: {$totais['processadas']}");
+        $resumo = ["Processadas: {$totais['processadas']}"];
 
         if ($simular) {
-            $this->info("Previstas (simulação, sem gravação): {$totais['previstas']}");
+            $resumo[] = "Previstas (simulação, sem gravação): {$totais['previstas']}";
         }
 
-        $this->info("Já processadas: {$totais['ja_processadas']}");
-        $this->info("Não encontradas: {$totais['nao_encontradas']}");
-        $this->info("Erros: {$totais['erros']}");
+        $resumo[] = "Já processadas: {$totais['ja_processadas']}";
+        $resumo[] = "Não encontradas: {$totais['nao_encontradas']}";
+        $resumo[] = "Erros: {$totais['erros']}";
+
+        foreach ($resumo as $mensagem) {
+            $this->info($mensagem);
+            $logger->info($mensagem);
+        }
 
         return $totais['erros'] > 0 ? self::FAILURE : self::SUCCESS;
     }
