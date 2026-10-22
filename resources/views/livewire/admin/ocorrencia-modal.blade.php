@@ -61,9 +61,9 @@
                                             id="status"
                                             class="form-input w-full @error('status') border-danger @enderror"
                                         >
-                                            <option value="">Selecione um status</option>
+                                            <option value="" @selected(blank($form->status))>Selecione um status</option>
                                             @foreach ($this->statuses as $value => $label)
-                                                <option value="{{ $value }}">{{ $label }}</option>
+                                                <option value="{{ $value }}" @selected($form->status === $value)>{{ $label }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.status')
@@ -90,9 +90,9 @@
                                             id="prazoId"
                                             class="form-input w-full @error('prazoId') border-danger @enderror"
                                         >
-                                            <option value="">Selecione uma categoria</option>
+                                            <option value="" @selected(blank($form->prazoId))>Selecione uma categoria</option>
                                             @foreach ($this->prazos as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->prazoId === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.prazoId')
@@ -107,9 +107,9 @@
                                             id="responsavelEngenhariaId"
                                             class="form-input w-full @error('responsavelEngenhariaId') border-danger @enderror"
                                         >
-                                            <option value="">Nenhum</option>
+                                            <option value="" @selected(blank($form->responsavelEngenhariaId))>Nenhum</option>
                                             @foreach ($this->responsaveisEngenhariaBanrisul as $id => $label)
-                                                <option value="{{ $id }}">{{ $label }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->responsavelEngenhariaId === (string) $id)>{{ $label }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.responsavelEngenhariaId')
@@ -183,9 +183,9 @@
                                             id="disciplinaId"
                                             class="form-input w-full @error('form.disciplinaId') border-danger @enderror"
                                         >
-                                            <option value="">Selecione</option>
+                                            <option value="" @selected(blank($form->disciplinaId))>Selecione</option>
                                             @foreach ($this->disciplinasOptions as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->disciplinaId === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.disciplinaId')
@@ -200,9 +200,9 @@
                                             id="subdisciplina1Id"
                                             class="form-input w-full @error('form.subdisciplina1Id') border-danger @enderror"
                                         >
-                                            <option value="">Selecione</option>
+                                            <option value="" @selected(blank($form->subdisciplina1Id))>Selecione</option>
                                             @foreach ($this->subdisciplinasOptions as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->subdisciplina1Id === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.subdisciplina1Id')
@@ -217,9 +217,9 @@
                                             id="subdisciplina2Id"
                                             class="form-input w-full @error('form.subdisciplina2Id') border-danger @enderror"
                                         >
-                                            <option value="">Selecione</option>
+                                            <option value="" @selected(blank($form->subdisciplina2Id))>Selecione</option>
                                             @foreach ($this->subdisciplinasOptions as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->subdisciplina2Id === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.subdisciplina2Id')
@@ -234,9 +234,9 @@
                                             id="subdisciplina3Id"
                                             class="form-input w-full @error('form.subdisciplina3Id') border-danger @enderror"
                                         >
-                                            <option value="">Selecione</option>
+                                            <option value="" @selected(blank($form->subdisciplina3Id))>Selecione</option>
                                             @foreach ($this->subdisciplinasOptions as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->subdisciplina3Id === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.subdisciplina3Id')
@@ -253,9 +253,9 @@
                                             id="subdisciplina4Id"
                                             class="form-input w-full @error('form.subdisciplina4Id') border-danger @enderror"
                                         >
-                                            <option value="">Selecione</option>
+                                            <option value="" @selected(blank($form->subdisciplina4Id))>Selecione</option>
                                             @foreach ($this->subdisciplinasOptions as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->subdisciplina4Id === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.subdisciplina4Id')
@@ -270,9 +270,9 @@
                                             id="subdisciplina5Id"
                                             class="form-input w-full @error('form.subdisciplina5Id') border-danger @enderror"
                                         >
-                                            <option value="">Selecione</option>
+                                            <option value="" @selected(blank($form->subdisciplina5Id))>Selecione</option>
                                             @foreach ($this->subdisciplinasOptions as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->subdisciplina5Id === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.subdisciplina5Id')
@@ -287,9 +287,9 @@
                                             id="subdisciplina6Id"
                                             class="form-input w-full @error('form.subdisciplina6Id') border-danger @enderror"
                                         >
-                                            <option value="">Selecione</option>
+                                            <option value="" @selected(blank($form->subdisciplina6Id))>Selecione</option>
                                             @foreach ($this->subdisciplinasOptions as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->subdisciplina6Id === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.subdisciplina6Id')
@@ -324,9 +324,9 @@
                                             id="colaboradorId"
                                             class="form-input w-full @error('colaboradorId') border-danger @enderror"
                                         >
-                                            <option value="">Sem responsável</option>
+                                            <option value="" @selected(blank($form->colaboradorId))>Sem responsável</option>
                                             @foreach ($this->colaboradores as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->colaboradorId === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.colaboradorId')
