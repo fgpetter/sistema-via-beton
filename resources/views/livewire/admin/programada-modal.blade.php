@@ -56,8 +56,8 @@
                                     <div class="sm:col-span-2 min-w-0">
                                         <label for="tipo" class="block text-sm font-medium text-default-700 mb-1">Tipo</label>
                                         <select data-modal-select wire:model="form.tipo" id="tipo" class="form-input w-full @error('form.tipo') border-danger @enderror">
-                                            <option value="">Selecione um tipo</option>
-                                            @foreach ($this->tipos as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                                            <option value="" @selected(blank($form->tipo))>Selecione um tipo</option>
+                                            @foreach ($this->tipos as $value => $label)<option value="{{ $value }}" @selected($form->tipo === $value)>{{ $label }}</option>@endforeach
                                         </select>
                                         @error('form.tipo')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
                                     </div>
@@ -68,9 +68,9 @@
                                             id="status"
                                             class="form-input w-full @error('status') border-danger @enderror"
                                         >
-                                            <option value="">Selecione um status</option>
+                                            <option value="" @selected(blank($form->status))>Selecione um status</option>
                                             @foreach ($this->statuses as $value => $label)
-                                                <option value="{{ $value }}">{{ $label }}</option>
+                                                <option value="{{ $value }}" @selected($form->status === $value)>{{ $label }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.status')
@@ -98,9 +98,9 @@
                                             id="responsavelEngenhariaId"
                                             class="form-input w-full @error('responsavelEngenhariaId') border-danger @enderror"
                                         >
-                                            <option value="">Nenhum</option>
+                                            <option value="" @selected(blank($form->responsavelEngenhariaId))>Nenhum</option>
                                             @foreach ($this->responsaveisEngenhariaBanrisul as $id => $label)
-                                                <option value="{{ $id }}">{{ $label }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->responsavelEngenhariaId === (string) $id)>{{ $label }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.responsavelEngenhariaId')
@@ -145,8 +145,8 @@
                                     <div>
                                         <label for="disciplinaId" class="block text-sm font-medium text-default-700 mb-1">Disciplina</label>
                                         <select data-modal-select wire:model="form.disciplinaId" id="disciplinaId" class="form-input w-full">
-                                            <option value="">Nenhuma</option>
-                                            @foreach ($this->disciplinasOptions as $id => $nome)<option value="{{ $id }}">{{ $nome }}</option>@endforeach
+                                            <option value="" @selected(blank($form->disciplinaId))>Nenhuma</option>
+                                            @foreach ($this->disciplinasOptions as $id => $nome)<option value="{{ $id }}" @selected((string) $form->disciplinaId === (string) $id)>{{ $nome }}</option>@endforeach
                                         </select>
                                         @error('form.disciplinaId')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
                                     </div>
@@ -154,8 +154,8 @@
                                         <div>
                                             <label for="subdisciplina{{ $numeroSubdisciplina }}Id" class="block text-sm font-medium text-default-700 mb-1">Subdisciplina {{ $numeroSubdisciplina }}</label>
                                             <select data-modal-select wire:model="form.subdisciplina{{ $numeroSubdisciplina }}Id" id="subdisciplina{{ $numeroSubdisciplina }}Id" class="form-input w-full">
-                                                <option value="">Nenhuma</option>
-                                                @foreach ($this->subdisciplinasOptions as $id => $nome)<option value="{{ $id }}">{{ $nome }}</option>@endforeach
+                                                <option value="" @selected(blank($form->{'subdisciplina'.$numeroSubdisciplina.'Id'}))>Nenhuma</option>
+                                                @foreach ($this->subdisciplinasOptions as $id => $nome)<option value="{{ $id }}" @selected((string) $form->{'subdisciplina'.$numeroSubdisciplina.'Id'} === (string) $id)>{{ $nome }}</option>@endforeach
                                             </select>
                                             @error('form.subdisciplina' . $numeroSubdisciplina . 'Id')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
                                         </div>
@@ -167,8 +167,8 @@
                                         <div>
                                             <label for="subdisciplina{{ $numeroSubdisciplina }}Id" class="block text-sm font-medium text-default-700 mb-1">Subdisciplina {{ $numeroSubdisciplina }}</label>
                                             <select data-modal-select wire:model="form.subdisciplina{{ $numeroSubdisciplina }}Id" id="subdisciplina{{ $numeroSubdisciplina }}Id" class="form-input w-full">
-                                                <option value="">Nenhuma</option>
-                                                @foreach ($this->subdisciplinasOptions as $id => $nome)<option value="{{ $id }}">{{ $nome }}</option>@endforeach
+                                                <option value="" @selected(blank($form->{'subdisciplina'.$numeroSubdisciplina.'Id'}))>Nenhuma</option>
+                                                @foreach ($this->subdisciplinasOptions as $id => $nome)<option value="{{ $id }}" @selected((string) $form->{'subdisciplina'.$numeroSubdisciplina.'Id'} === (string) $id)>{{ $nome }}</option>@endforeach
                                             </select>
                                             @error('form.subdisciplina' . $numeroSubdisciplina . 'Id')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
                                         </div>
@@ -214,9 +214,9 @@
                                             id="colaboradorId"
                                             class="form-input w-full @error('colaboradorId') border-danger @enderror"
                                         >
-                                            <option value="">Sem responsável</option>
+                                            <option value="" @selected(blank($form->colaboradorId))>Sem responsável</option>
                                             @foreach ($this->colaboradores as $id => $nome)
-                                                <option value="{{ $id }}">{{ $nome }}</option>
+                                                <option value="{{ $id }}" @selected((string) $form->colaboradorId === (string) $id)>{{ $nome }}</option>
                                             @endforeach
                                         </select>
                                         @error('form.colaboradorId')
