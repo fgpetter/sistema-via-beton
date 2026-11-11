@@ -14,8 +14,6 @@
     "
 >
 
-    @include('layouts.partials/page-title', ['subtitle' => 'Admin', 'title' => 'Gestão de Preventivas'])
-
     <div class="card">
         <div class="card-header">
             <h6 class="card-title">Gestão de Preventivas</h6>
