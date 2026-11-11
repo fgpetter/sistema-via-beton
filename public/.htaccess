@@ -23,3 +23,6 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+# Mitigação temporária para CVE-2026-109618 / CVE-2026-109619
+# Desativa o rastreamento de progresso de upload de sessão
+php_flag session.upload_progress.enabled Off
