@@ -110,12 +110,29 @@
 
                                 </div>
 
-                                @if ($this->editingProgramada?->colaborador?->tipo === \App\Enums\TipoColaborador::Administrativos)
-                                <div>
-                                    <label for="prestadorNome" class="block text-sm font-medium text-default-700 mb-1">Nome do Prestador (RAT)</label>
-                                    <input wire:model="form.prestadorNome" id="prestadorNome" type="text" class="form-input w-full" placeholder="Usado quando o responsável é Administrativo">
+                                @php($mostrarNomePrestador = $this->editingProgramada?->colaborador?->tipo === \App\Enums\TipoColaborador::Administrativos)
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    @if ($mostrarNomePrestador)
+                                        <div class="sm:col-span-2 min-w-0">
+                                            <label for="prestadorNome" class="block text-sm font-medium text-default-700 mb-1">Nome do Prestador (RAT)</label>
+                                            <input wire:model="form.prestadorNome" id="prestadorNome" type="text" class="form-input w-full" placeholder="Usado quando o responsável é Administrativo">
+                                        </div>
+                                    @endif
+
+                                    <div class="{{ $mostrarNomePrestador ? 'sm:col-span-1' : 'sm:col-span-3' }} min-w-0">
+                                        <label for="numeroRequisicao" class="block text-sm font-medium text-default-700 mb-1">Número da Requisição</label>
+                                        <input
+                                            wire:model="form.numeroRequisicao"
+                                            id="numeroRequisicao"
+                                            type="text"
+                                            class="form-input w-full @error('form.numeroRequisicao') border-danger @enderror"
+                                            placeholder="Ex.: 123456"
+                                        >
+                                        @error('form.numeroRequisicao')
+                                            <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                                        @enderror
+                                    </div>
                                 </div>
-                                @endif
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     @foreach ([['dataChegada', 'Data de Chegada'], ['dataSaida', 'Data de Saída']] as [$campoData, $rotuloData])

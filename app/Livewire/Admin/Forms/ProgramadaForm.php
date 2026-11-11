@@ -28,6 +28,8 @@ class ProgramadaForm extends Form
 
     public ?string $prestadorNome = null;
 
+    public ?string $numeroRequisicao = null;
+
     public ?int $responsavelEngenhariaId = null;
 
     public ?int $disciplinaId = null;
@@ -64,6 +66,7 @@ class ProgramadaForm extends Form
             'abertura' => ['required', 'date'],
             'colaboradorId' => ['nullable', 'exists:colaboradores,id'],
             'prestadorNome' => ['nullable', 'string', 'max:255'],
+            'numeroRequisicao' => ['nullable', 'string', 'max:255'],
             'responsavelEngenhariaId' => [
                 'nullable', 'integer',
                 Rule::exists('responsavel_engenharia', 'id')->where(function ($query) {
@@ -104,6 +107,7 @@ class ProgramadaForm extends Form
             'dataChegada.date' => 'A data de chegada deve ser válida.',
             'dataSaida.date' => 'A data de saída deve ser válida.',
             'prestadorNome.max' => 'O nome do prestador não pode ter mais de 255 caracteres.',
+            'numeroRequisicao.max' => 'O número da requisição não pode ter mais de 255 caracteres.',
         ];
         foreach (range(1, 6) as $numero) {
             $messages["subdisciplina{$numero}Id.exists"] = "A subdisciplina {$numero} selecionada é inválida.";
@@ -117,6 +121,7 @@ class ProgramadaForm extends Form
         $this->dataChegada = blank($this->dataChegada) ? null : $this->dataChegada;
         $this->dataSaida = blank($this->dataSaida) ? null : $this->dataSaida;
         $this->prestadorNome = blank($this->prestadorNome) ? null : trim($this->prestadorNome);
+        $this->numeroRequisicao = blank($this->numeroRequisicao) ? null : trim($this->numeroRequisicao);
         parent::validate($rules, $messages, $attributes);
     }
 
@@ -137,6 +142,7 @@ class ProgramadaForm extends Form
         $this->abertura = $programada->abertura->format('Y-m-d');
         $this->colaboradorId = $programada->colaborador_id;
         $this->prestadorNome = $programada->prestador_nome;
+        $this->numeroRequisicao = $programada->numero_requisicao;
         $this->responsavelEngenhariaId = $programada->responsavel_engenharia_id;
         $this->disciplinaId = $programada->disciplina_id;
         foreach (range(1, 6) as $numero) {
@@ -159,6 +165,7 @@ class ProgramadaForm extends Form
             'abertura' => $this->abertura,
             'colaborador_id' => $this->colaboradorId,
             'prestador_nome' => $this->resolvedPrestadorNome(),
+            'numero_requisicao' => $this->numeroRequisicao,
             'responsavel_engenharia_id' => blank($this->responsavelEngenhariaId) ? null : (int) $this->responsavelEngenhariaId,
             'disciplina_id' => $this->disciplinaId,
             'agencia' => $this->agencia,

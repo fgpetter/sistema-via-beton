@@ -14,8 +14,6 @@
     "
 >
 
-    @include('layouts.partials/page-title', ['subtitle' => 'Admin', 'title' => 'Gestão de Programadas'])
-
     <div class="card">
         <div class="card-header">
             <h6 class="card-title">Gestão de Programadas</h6>
@@ -81,6 +79,7 @@
                                     <th class="px-3.5 py-3 text-start" scope="col">Tipo</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Título</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Agência</th>
+                                    <th class="px-3.5 py-3 text-start" scope="col">Requisição</th>
                                     <th class="px-3.5 py-3 text-start" scope="col">Responsável</th>
                                     <th class="px-3.5 py-3 text-center" scope="col">Fotos</th>
                                     <th x-show="columns.abertura" class="px-3.5 py-3 text-start" scope="col">Abertura</th>
@@ -91,7 +90,7 @@
                                 @forelse ($this->programadas as $programada)
                                     <tr wire:key="programada-{{ $programada->id }}" class="text-default-800 font-normal text-sm whitespace-nowrap">
                                         <td class="px-3.5 py-3 text-primary cursor-pointer" @click="$dispatch('open-edit-modal-programada', {id: {{ $programada->id }}})">
-                                            #{{ $programada->id }}
+                                            #{{ $programada->numero_requisicao ?: $programada->id }}
                                         </td>
                                         <td x-show="columns.status" class="px-3.5 py-3">
                                             <span class="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-{{ $programada->status->color() }}/10 text-{{ $programada->status->color() }} rounded">
@@ -111,6 +110,7 @@
                                         <td class="px-3.5 py-3">
                                             {{ $programada->agencia }}
                                         </td>
+                                        <td class="px-3.5 py-3">{{ $programada->numero_requisicao ?: '—' }}</td>
                                         <td class="px-3.5 py-3">{{ Illuminate\Support\Str::limit($programada->colaborador?->nome_exibicao ?? '—', 30) }}</td>
                                         <td class="px-3.5 py-3 text-center">
                                             @if ($programada->imagens_count > 0)
@@ -163,7 +163,7 @@
                                 @empty
                                     <tr>
                                         <td
-                                            x-bind:colspan="7 + (columns.status ? 1 : 0) + (columns.abertura ? 1 : 0)"
+                                            x-bind:colspan="8 + (columns.status ? 1 : 0) + (columns.abertura ? 1 : 0)"
                                             class="px-3.5 py-8 text-center text-default-500"
                                         >
                                             <div class="flex flex-col items-center gap-2">

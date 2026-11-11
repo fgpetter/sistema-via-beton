@@ -12,7 +12,7 @@ class RenderRatPdfFromProgramada
 
     public function __invoke(Programada $programada, ?Carbon $geradoEm = null): string
     {
-        return Pdf::loadView('pdf.rat', ['dados' => ($this->buildRatPdfDataFromProgramada)($programada, $geradoEm)])
+        return Pdf::loadView('pdf.rat-programada', ['dados' => ($this->buildRatPdfDataFromProgramada)($programada, $geradoEm)])
             ->setPaper('a4', 'portrait')->output();
     }
 }

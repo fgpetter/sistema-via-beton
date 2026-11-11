@@ -26,7 +26,7 @@ class BuildVistoriaPdfDataFromProgramada
         }
 
         return [
-            'requisicao' => (string) $programada->id,
+            'requisicao' => (string) ($programada->numero_requisicao ?: $programada->id),
             'tipo_programada' => $programada->tipo->label(),
             'numero_contrato' => (string) ($programada->contrato ?? ''),
             'responsavel_engenharia_banrisul' => $programada->responsavelEngenharia?->nome ?? '',

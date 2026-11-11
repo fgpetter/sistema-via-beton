@@ -38,6 +38,7 @@ class Programada extends Model
         'comentarios',
         'concluido_por',
         'prestador_nome',
+        'numero_requisicao',
         'data_chegada',
         'data_saida',
         'comentarios_prestador',

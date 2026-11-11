@@ -25,8 +25,7 @@ class BuildRatPdfDataFromProgramada
             : ($colaborador?->nome ?? '');
 
         return [
-            'identificador_label' => 'Requisição',
-            'numero_ocorrencia' => (string) $programada->id,
+            'requisicao' => (string) ($programada->numero_requisicao ?: $programada->id),
             'emergencial' => '',
             'prazo_atendimento' => '',
             'numero_contrato' => (string) ($programada->contrato ?? ''),
