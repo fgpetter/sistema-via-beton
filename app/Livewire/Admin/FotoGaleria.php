@@ -14,6 +14,7 @@ use App\Support\SwalToast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -133,6 +134,12 @@ HTML;
     public function salvarLegenda(int $imagemId, string $legenda): void
     {
         $this->ensureUserIsAuthorized();
+
+        Validator::make(
+            ['legenda' => $legenda],
+            ['legenda' => ['nullable', 'string', 'max:254']],
+        )->validate();
+
         $this->imagemQuery()->findOrFail($imagemId)->update(['legenda' => $legenda]);
         unset($this->registro, $this->fotoPares);
     }
