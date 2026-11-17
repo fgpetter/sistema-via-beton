@@ -42,7 +42,7 @@
                 >
                     <div class="flex justify-between items-center p-4 border-b border-default-200">
                         <h3 id="modal-title" class="font-bold text-default-800 text-base">
-                            {{ $form->editingId ? 'Editar Ocorrência' : 'Nova Ocorrência' }}
+                            {{ $form->editingId ? 'Editar Ocorrência - '.$form->editingId : 'Nova Ocorrência' }}
                         </h3>
                         <button type="button" aria-label="Fechar" @click="$wire.closeModal()">
                             <span class="sr-only">Fechar</span>

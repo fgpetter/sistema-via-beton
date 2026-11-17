@@ -41,7 +41,7 @@
                 >
                     <div class="flex justify-between items-center p-4 border-b border-default-200">
                         <h3 id="modal-title" class="font-bold text-default-800 text-base">
-                            {{ $isDraft ? 'Nova Programada' : 'Editar Programada' }}
+                            {{ $isDraft ? 'Nova Programada' : 'Editar Programada - '.$form->editingId }}
                         </h3>
                         <button type="button" aria-label="Fechar" @click="$wire.closeModal()">
                             <span class="sr-only">Fechar</span>
